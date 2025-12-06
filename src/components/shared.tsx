@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { RGBA } from "@opentui/core"
 import { COLORS } from "../theme"
+import type { ElementType } from "../lib/types"
 
 export function ActionBtn({ id, label, color, enabled, onPress }: {
   id: string; label: string; color: string; enabled: boolean; onPress: () => void
@@ -85,7 +86,7 @@ function QuickActionBtn({ action, showDivider }: { action: QuickAction; showDivi
 // ============================================
 
 interface ElementOption {
-  type: string
+  type: ElementType
   icon: string
   label: string
   shortcut: string
@@ -110,7 +111,7 @@ export function ElementToolbar({
 }: { 
   expanded: boolean
   onToggle: () => void
-  onAddElement: (type: string) => void 
+  onAddElement: (type: ElementType) => void 
 }) {
   return (
     <box id="element-toolbar" style={{ flexDirection: "row", gap: 0 }}>

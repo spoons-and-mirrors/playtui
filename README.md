@@ -34,21 +34,6 @@ bun run start
 bun run dev  # with hot reload
 ```
 
-## Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| `Del` / `Backspace` | Delete selected element |
-| `D` | Duplicate selected element |
-| `B` | Add box to selected element |
-| `T` | Add text to selected element |
-| `↑` / `↓` | Navigate tree |
-| `C` | Show generated code |
-| `Z` | Undo |
-| `Y` / `Shift+Z` | Redo |
-| `Esc` | Deselect / Close code panel |
-| `Ctrl+Q` | Quit |
-
 ## License
 
 MIT

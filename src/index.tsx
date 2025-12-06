@@ -2,19 +2,33 @@ import { useState, useCallback, useMemo } from "react"
 import { useKeyboard } from "@opentui/react"
 import { RGBA } from "@opentui/core"
 import { COLORS } from "./theme"
-import type { ElementNode } from "./lib/types"
+import type { ElementNode, ElementType } from "./lib/types"
 import {
   genId, resetIdCounter,
   findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode
 } from "./lib/tree"
 import { generateCode } from "./lib/codegen"
 import { ElementRenderer } from "./components/ElementRenderer"
+import { ELEMENT_REGISTRY } from "./components/elements"
 import { TreeView } from "./components/TreeView"
 import { PropertyEditor } from "./components/PropertyEditor"
 import { ActionBtn, Footer, CodePanel, ElementToolbar } from "./components/shared"
 import { FileMenu, type MenuAction } from "./components/FileMenu"
 import { ProjectModal } from "./components/ProjectModal"
 import { useProject, type SaveStatus } from "./hooks/useProject"
+
+// Keyboard shortcut to element type mapping
+const ADD_SHORTCUTS: Record<string, ElementType> = {
+  b: "box",
+  t: "text",
+  s: "scrollbox",
+  i: "input",
+  x: "textarea",
+  e: "select",
+  l: "slider",
+  f: "ascii-font",
+  w: "tab-select",
+}
 
 interface BuilderProps {
   width: number
@@ -119,140 +133,26 @@ export function Builder({ width, height }: BuilderProps) {
     return parent || tree
   }, [tree, selectedId])
 
-  const handleAddBox = useCallback(() => {
+  // Add element by type using registry (single function replaces 9 handleAddXXX functions)
+  const handleAddElement = useCallback((type: ElementType) => {
     if (!tree) return
     const parent = getAddParent()
     if (!parent) return
+    
+    const entry = ELEMENT_REGISTRY[type]
+    if (!entry) return
+    
     const newNode: ElementNode = {
-      id: genId(), type: "box", name: "Box", width: 12, height: 4,
-      backgroundColor: COLORS.bgAlt, flexDirection: "column",
-      border: true, borderStyle: "single", borderColor: COLORS.border, children: [],
+      id: genId(),
+      type,
+      name: entry.label,
+      ...entry.defaults,
+      children: [],
     }
     const newTree = addChild(tree, parent.id, newNode)
     updateTree(newTree)
     setProjectSelectedId(newNode.id)
   }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddText = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "text", name: "Text", content: "Text", fg: COLORS.text, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddScrollbox = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "scrollbox", name: "Scroll", width: 20, height: 8,
-      backgroundColor: COLORS.bgAlt, flexDirection: "column",
-      border: true, borderStyle: "rounded", borderColor: COLORS.border, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddInput = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "input", name: "Input", width: 20, height: 1,
-      placeholder: "Enter text...", children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddTextarea = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "textarea", name: "Textarea", width: 30, height: 4,
-      placeholder: "Enter multi-line text...", minLines: 1, maxLines: 6, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddSelect = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "select", name: "Select", width: 20, height: 5,
-      options: ["Option 1", "Option 2", "Option 3"], children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddSlider = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "slider", name: "Slider", width: 20,
-      orientation: "horizontal", value: 50, min: 0, max: 100,
-      foregroundColor: COLORS.accent, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddAsciiFont = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "ascii-font", name: "AsciiFont",
-      text: "HELLO", font: "tiny", color: COLORS.accent, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  const handleAddTabSelect = useCallback(() => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const newNode: ElementNode = {
-      id: genId(), type: "tab-select", name: "Tabs", width: 40,
-      options: ["Tab 1", "Tab 2", "Tab 3"], tabWidth: 12, children: [],
-    }
-    const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
-
-  // Add element by type (for toolbar)
-  const handleAddElement = useCallback((type: string) => {
-    if (!tree) return
-    switch (type) {
-      case "box": handleAddBox(); break
-      case "text": handleAddText(); break
-      case "scrollbox": handleAddScrollbox(); break
-      case "input": handleAddInput(); break
-      case "textarea": handleAddTextarea(); break
-      case "select": handleAddSelect(); break
-      case "slider": handleAddSlider(); break
-      case "ascii-font": handleAddAsciiFont(); break
-      case "tab-select": handleAddTabSelect(); break
-    }
-  }, [tree, handleAddBox, handleAddText, handleAddScrollbox, handleAddInput, handleAddTextarea, handleAddSelect, handleAddSlider, handleAddAsciiFont, handleAddTabSelect])
 
   // Copy/Paste (C and V keys)
   const handleCopy = useCallback(() => {
@@ -356,18 +256,11 @@ export function Builder({ width, height }: BuilderProps) {
       return
     }
 
-    // Add mode: A toggles out, other keys add components (stay in add mode)
+    // Add mode: A toggles out, other keys add components using ADD_SHORTCUTS mapping
     if (addMode) {
       if (key.name === "escape" || key.name === "a") { setAddMode(false); return }
-      if (key.name === "b") handleAddBox()
-      else if (key.name === "t") handleAddText()
-      else if (key.name === "s") handleAddScrollbox()
-      else if (key.name === "i") handleAddInput()
-      else if (key.name === "x") handleAddTextarea()
-      else if (key.name === "e") handleAddSelect()
-      else if (key.name === "l") handleAddSlider()
-      else if (key.name === "f") handleAddAsciiFont()
-      else if (key.name === "w") handleAddTabSelect()
+      const elementType = ADD_SHORTCUTS[key.name as string]
+      if (elementType) handleAddElement(elementType)
       return
     }
 

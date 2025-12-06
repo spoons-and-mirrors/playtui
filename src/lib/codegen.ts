@@ -1,4 +1,5 @@
-import type { ElementNode, SizeValue, BorderSide } from "./types"
+import type { ElementNode, SizeValue, BorderSide, BoxNode, ScrollboxNode } from "./types"
+import { isContainerNode } from "./types"
 
 function formatSize(val: SizeValue | undefined): string | undefined {
   if (val === undefined) return undefined
@@ -29,6 +30,7 @@ export function generateCode(node: ElementNode, indent = 0): string {
     }
     if (node.borderColor) props.push(`borderColor="${node.borderColor}"`)
     if (node.focusedBorderColor) props.push(`focusedBorderColor="${node.focusedBorderColor}"`)
+    if (node.shouldFill === false) props.push("shouldFill={false}")
     if (node.title) props.push(`title="${node.title}"`)
     if (node.titleAlignment && node.titleAlignment !== "left") {
       props.push(`titleAlignment="${node.titleAlignment}"`)
@@ -39,7 +41,7 @@ export function generateCode(node: ElementNode, indent = 0): string {
 
   const styleProps: string[] = []
 
-  // Sizing
+  // Sizing (common to all elements)
   const w = formatSize(node.width)
   const h = formatSize(node.height)
   if (w) styleProps.push(`width: ${w}`)
@@ -48,47 +50,54 @@ export function generateCode(node: ElementNode, indent = 0): string {
   if (node.maxWidth) styleProps.push(`maxWidth: ${node.maxWidth}`)
   if (node.minHeight) styleProps.push(`minHeight: ${node.minHeight}`)
   if (node.maxHeight) styleProps.push(`maxHeight: ${node.maxHeight}`)
+  if (node.aspectRatio) styleProps.push(`aspectRatio: ${node.aspectRatio}`)
 
-  // Flex container
-  if (node.flexDirection) styleProps.push(`flexDirection: "${node.flexDirection}"`)
-  if (node.flexWrap) styleProps.push(`flexWrap: "${node.flexWrap === "nowrap" ? "no-wrap" : node.flexWrap}"`)
-  if (node.justifyContent) styleProps.push(`justifyContent: "${node.justifyContent}"`)
-  if (node.alignItems) styleProps.push(`alignItems: "${node.alignItems}"`)
-  if (node.gap) styleProps.push(`gap: ${node.gap}`)
-  if (node.rowGap) styleProps.push(`rowGap: ${node.rowGap}`)
-  if (node.columnGap) styleProps.push(`columnGap: ${node.columnGap}`)
+  // Container-only properties (flex, padding, position, overflow)
+  if (isContainerNode(node)) {
+    const container = node as BoxNode | ScrollboxNode
+    
+    // Flex container
+    if (container.flexDirection) styleProps.push(`flexDirection: "${container.flexDirection}"`)
+    if (container.flexWrap) styleProps.push(`flexWrap: "${container.flexWrap}"`)  // OpenTUI uses "no-wrap"
+    if (container.justifyContent) styleProps.push(`justifyContent: "${container.justifyContent}"`)
+    if (container.alignItems) styleProps.push(`alignItems: "${container.alignItems}"`)
+    if (container.alignContent) styleProps.push(`alignContent: "${container.alignContent}"`)
+    if (container.gap) styleProps.push(`gap: ${container.gap}`)
+    if (container.rowGap) styleProps.push(`rowGap: ${container.rowGap}`)
+    if (container.columnGap) styleProps.push(`columnGap: ${container.columnGap}`)
 
-  // Flex item
+    // Padding
+    if (container.padding) styleProps.push(`padding: ${container.padding}`)
+    if (container.paddingTop) styleProps.push(`paddingTop: ${container.paddingTop}`)
+    if (container.paddingRight) styleProps.push(`paddingRight: ${container.paddingRight}`)
+    if (container.paddingBottom) styleProps.push(`paddingBottom: ${container.paddingBottom}`)
+    if (container.paddingLeft) styleProps.push(`paddingLeft: ${container.paddingLeft}`)
+
+    // Positioning
+    if (container.position) styleProps.push(`position: "${container.position}"`)
+    if (container.top !== undefined) styleProps.push(`top: ${container.top}`)
+    if (container.right !== undefined) styleProps.push(`right: ${container.right}`)
+    if (container.bottom !== undefined) styleProps.push(`bottom: ${container.bottom}`)
+    if (container.left !== undefined) styleProps.push(`left: ${container.left}`)
+    if (container.zIndex !== undefined) styleProps.push(`zIndex: ${container.zIndex}`)
+
+    // Overflow
+    if (container.overflow) styleProps.push(`overflow: "${container.overflow}"`)
+  }
+
+  // Flex item (common to all elements)
   if (node.flexGrow) styleProps.push(`flexGrow: ${node.flexGrow}`)
   if (node.flexShrink !== undefined) styleProps.push(`flexShrink: ${node.flexShrink}`)
   const fb = formatSize(node.flexBasis)
   if (fb) styleProps.push(`flexBasis: ${fb}`)
   if (node.alignSelf && node.alignSelf !== "auto") styleProps.push(`alignSelf: "${node.alignSelf}"`)
 
-  // Padding
-  if (node.padding) styleProps.push(`padding: ${node.padding}`)
-  if (node.paddingTop) styleProps.push(`paddingTop: ${node.paddingTop}`)
-  if (node.paddingRight) styleProps.push(`paddingRight: ${node.paddingRight}`)
-  if (node.paddingBottom) styleProps.push(`paddingBottom: ${node.paddingBottom}`)
-  if (node.paddingLeft) styleProps.push(`paddingLeft: ${node.paddingLeft}`)
-
-  // Margin
+  // Margin (common to all elements)
   if (node.margin) styleProps.push(`margin: ${node.margin}`)
   if (node.marginTop) styleProps.push(`marginTop: ${node.marginTop}`)
   if (node.marginRight) styleProps.push(`marginRight: ${node.marginRight}`)
   if (node.marginBottom) styleProps.push(`marginBottom: ${node.marginBottom}`)
   if (node.marginLeft) styleProps.push(`marginLeft: ${node.marginLeft}`)
-
-  // Positioning
-  if (node.position) styleProps.push(`position: "${node.position}"`)
-  if (node.top !== undefined) styleProps.push(`top: ${node.top}`)
-  if (node.right !== undefined) styleProps.push(`right: ${node.right}`)
-  if (node.bottom !== undefined) styleProps.push(`bottom: ${node.bottom}`)
-  if (node.left !== undefined) styleProps.push(`left: ${node.left}`)
-  if (node.zIndex !== undefined) styleProps.push(`zIndex: ${node.zIndex}`)
-
-  // Overflow
-  if (node.overflow) styleProps.push(`overflow: "${node.overflow}"`)
 
   if (styleProps.length > 0) {
     props.push(`style={{ ${styleProps.join(", ")} }}`)
@@ -99,10 +108,12 @@ export function generateCode(node: ElementNode, indent = 0): string {
     const textProps: string[] = []
     if (node.fg) textProps.push(`fg="${node.fg}"`)
     if (node.bg) textProps.push(`bg="${node.bg}"`)
-    if (node.wrapMode) textProps.push(`wrapMode="${node.wrapMode}"`)
+    if (node.wrapMode && node.wrapMode !== "none") textProps.push(`wrapMode="${node.wrapMode}"`)
+    if (node.selectable) textProps.push("selectable")
     if (node.visible === false) textProps.push("visible={false}")
     const content = node.content || ""
     
+    // Build nested formatting tags
     let formattedContent = content
     if (node.bold && node.italic) {
       formattedContent = `<strong><em>${content}</em></strong>`
@@ -114,40 +125,59 @@ export function generateCode(node: ElementNode, indent = 0): string {
     if (node.underline) {
       formattedContent = `<u>${formattedContent}</u>`
     }
+    if (node.strikethrough) {
+      formattedContent = `<span strikethrough>${formattedContent}</span>`
+    }
+    if (node.dim) {
+      formattedContent = `<span dim>${formattedContent}</span>`
+    }
     
-    return `${pad}<text ${textProps.join(" ")}>${formattedContent}</text>`
+    const propsStr = textProps.length > 0 ? ` ${textProps.join(" ")}` : ""
+    return `${pad}<text${propsStr}>${formattedContent}</text>`
   }
 
   // Input element
   if (node.type === "input") {
     const inputProps: string[] = []
     if (node.placeholder) inputProps.push(`placeholder="${node.placeholder}"`)
-    if (node.focusedBorderColor) inputProps.push(`focusedBorderColor="${node.focusedBorderColor}"`)
+    if (node.placeholderColor) inputProps.push(`placeholderColor="${node.placeholderColor}"`)
+    if (node.maxLength) inputProps.push(`maxLength={${node.maxLength}}`)
     if (node.textColor) inputProps.push(`textColor="${node.textColor}"`)
     if (node.focusedTextColor) inputProps.push(`focusedTextColor="${node.focusedTextColor}"`)
+    if (node.backgroundColor) inputProps.push(`backgroundColor="${node.backgroundColor}"`)
     if (node.focusedBackgroundColor) inputProps.push(`focusedBackgroundColor="${node.focusedBackgroundColor}"`)
+    if (node.cursorColor) inputProps.push(`cursorColor="${node.cursorColor}"`)
+    if (node.cursorStyle && node.cursorStyle !== "block") inputProps.push(`cursorStyle="${node.cursorStyle}"`)
     if (node.visible === false) inputProps.push("visible={false}")
     if (styleProps.length > 0) {
       inputProps.push(`style={{ ${styleProps.join(", ")} }}`)
     }
-    return `${pad}<input ${inputProps.join(" ")} />`
+    const propsStr = inputProps.length > 0 ? ` ${inputProps.join(" ")}` : ""
+    return `${pad}<input${propsStr} />`
   }
 
   // Textarea element
   if (node.type === "textarea") {
     const taProps: string[] = []
     if (node.placeholder) taProps.push(`placeholder="${node.placeholder}"`)
-    if (node.minLines) taProps.push(`minHeight={${node.minLines}}`)
-    if (node.maxLines) taProps.push(`maxHeight={${node.maxLines}}`)
-    if (node.focusedBorderColor) taProps.push(`focusedBorderColor="${node.focusedBorderColor}"`)
+    if (node.placeholderColor) taProps.push(`placeholderColor="${node.placeholderColor}"`)
+    if (node.initialValue) taProps.push(`initialValue="${node.initialValue}"`)
     if (node.textColor) taProps.push(`textColor="${node.textColor}"`)
     if (node.focusedTextColor) taProps.push(`focusedTextColor="${node.focusedTextColor}"`)
+    if (node.backgroundColor) taProps.push(`backgroundColor="${node.backgroundColor}"`)
     if (node.focusedBackgroundColor) taProps.push(`focusedBackgroundColor="${node.focusedBackgroundColor}"`)
+    if (node.cursorColor) taProps.push(`cursorColor="${node.cursorColor}"`)
+    if (node.cursorStyle && node.cursorStyle !== "block") taProps.push(`cursorStyle="${node.cursorStyle}"`)
+    if (node.blinking === false) taProps.push("blinking={false}")
+    if (node.showCursor === false) taProps.push("showCursor={false}")
+    if (node.scrollMargin) taProps.push(`scrollMargin={${node.scrollMargin}}`)
+    if (node.tabIndicatorColor) taProps.push(`tabIndicatorColor="${node.tabIndicatorColor}"`)
     if (node.visible === false) taProps.push("visible={false}")
     if (styleProps.length > 0) {
       taProps.push(`style={{ ${styleProps.join(", ")} }}`)
     }
-    return `${pad}<textarea ${taProps.join(" ")} />`
+    const propsStr = taProps.length > 0 ? ` ${taProps.join(" ")}` : ""
+    return `${pad}<textarea${propsStr} />`
   }
 
   // Select element
@@ -157,6 +187,17 @@ export function generateCode(node: ElementNode, indent = 0): string {
       const optionsStr = node.options.map(o => `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, "_")}" }`).join(", ")
       selProps.push(`options={[${optionsStr}]}`)
     }
+    if (node.showScrollIndicator) selProps.push("showScrollIndicator")
+    if (node.showDescription) selProps.push("showDescription")
+    if (node.wrapSelection) selProps.push("wrapSelection")
+    if (node.itemSpacing) selProps.push(`itemSpacing={${node.itemSpacing}}`)
+    if (node.fastScrollStep && node.fastScrollStep !== 5) selProps.push(`fastScrollStep={${node.fastScrollStep}}`)
+    if (node.backgroundColor) selProps.push(`backgroundColor="${node.backgroundColor}"`)
+    if (node.textColor) selProps.push(`textColor="${node.textColor}"`)
+    if (node.selectedBackgroundColor) selProps.push(`selectedBackgroundColor="${node.selectedBackgroundColor}"`)
+    if (node.selectedTextColor) selProps.push(`selectedTextColor="${node.selectedTextColor}"`)
+    if (node.descriptionColor) selProps.push(`descriptionColor="${node.descriptionColor}"`)
+    if (node.selectedDescriptionColor) selProps.push(`selectedDescriptionColor="${node.selectedDescriptionColor}"`)
     if (node.visible === false) selProps.push("visible={false}")
     if (styleProps.length > 0) {
       selProps.push(`style={{ ${styleProps.join(", ")} }}`)
@@ -199,6 +240,12 @@ export function generateCode(node: ElementNode, indent = 0): string {
       tabProps.push(`options={[${optionsStr}]}`)
     }
     if (node.tabWidth) tabProps.push(`tabWidth={${node.tabWidth}}`)
+    if (node.showUnderline === false) tabProps.push("showUnderline={false}")
+    if (node.wrapSelection) tabProps.push("wrapSelection")
+    if (node.backgroundColor) tabProps.push(`backgroundColor="${node.backgroundColor}"`)
+    if (node.textColor) tabProps.push(`textColor="${node.textColor}"`)
+    if (node.selectedBackgroundColor) tabProps.push(`selectedBackgroundColor="${node.selectedBackgroundColor}"`)
+    if (node.selectedTextColor) tabProps.push(`selectedTextColor="${node.selectedTextColor}"`)
     if (node.visible === false) tabProps.push("visible={false}")
     if (styleProps.length > 0) {
       tabProps.push(`style={{ ${styleProps.join(", ")} }}`)
@@ -208,10 +255,27 @@ export function generateCode(node: ElementNode, indent = 0): string {
 
   // Scrollbox element
   if (node.type === "scrollbox") {
-    if (node.stickyScroll) props.push(`stickyScroll={true}`)
-    if (node.scrollX !== undefined) props.push(`scrollX={${node.scrollX}}`)
-    if (node.scrollY !== undefined) props.push(`scrollY={${node.scrollY}}`)
-    if (node.viewportCulling) props.push(`viewportCulling={true}`)
+    if (node.stickyScroll) props.push("stickyScroll")
+    if (node.stickyStart && node.stickyStart !== "bottom") props.push(`stickyStart="${node.stickyStart}"`)
+    if (node.scrollX) props.push("scrollX")
+    if (node.scrollY === false) props.push("scrollY={false}")
+    if (node.viewportCulling) props.push("viewportCulling")
+    // Scrollbar options
+    const hasScrollbarOpts = node.showScrollArrows || node.scrollbarForeground || node.scrollbarBackground
+    if (hasScrollbarOpts) {
+      const scrollbarParts: string[] = []
+      if (node.showScrollArrows) scrollbarParts.push("showArrows: true")
+      if (node.scrollbarForeground || node.scrollbarBackground) {
+        const trackParts: string[] = []
+        if (node.scrollbarForeground) trackParts.push(`foregroundColor: "${node.scrollbarForeground}"`)
+        if (node.scrollbarBackground) trackParts.push(`backgroundColor: "${node.scrollbarBackground}"`)
+        scrollbarParts.push(`trackOptions: { ${trackParts.join(", ")} }`)
+      }
+      styleProps.push(`scrollbarOptions: { ${scrollbarParts.join(", ")} }`)
+    }
+    if (styleProps.length > 0) {
+      props.push(`style={{ ${styleProps.join(", ")} }}`)
+    }
     if (node.children.length === 0) {
       return `${pad}<scrollbox ${props.join(" ")} />`
     }
