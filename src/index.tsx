@@ -401,7 +401,9 @@ export function Builder({ width, height }: BuilderProps) {
       {/* Left Panel - Tree (full height, thin right border) */}
       <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
         style={{ width: treeWidth, height: "100%", backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column" }}>
-        <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Tree</text>
+        <box style={{ alignItems: "center", marginBottom: 1 }}>
+          <ascii-font text="playtui" font="tiny" color={RGBA.fromHex(COLORS.accent)} />
+        </box>
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
           <TreeView root={tree} selectedId={selectedId} collapsed={collapsed}
             onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />

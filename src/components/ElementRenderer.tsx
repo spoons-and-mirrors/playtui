@@ -12,6 +12,18 @@ interface ElementRendererProps {
 export function ElementRenderer({ node, selectedId, hoveredId, onSelect, onHover }: ElementRendererProps) {
   const isSelected = node.id === selectedId
   const isHovered = node.id === hoveredId && !isSelected
+  const isRoot = node.id === "root"
+
+  // Root element: render children directly (canvas is the root container)
+  if (isRoot) {
+    return (
+      <>
+        {node.children.map((child) => (
+          <ElementRenderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} />
+        ))}
+      </>
+    )
+  }
 
   // Handle text element
   if (node.type === "text") {

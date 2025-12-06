@@ -22,61 +22,6 @@ export function syncIdCounter(root: ElementNode): void {
   idCounter = maxId
 }
 
-export function createDefaultTree(): ElementNode {
-  return {
-    id: genId(),
-    type: "box",
-    name: "Card",
-    width: 36,
-    height: 10,
-    backgroundColor: COLORS.card,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 1,
-    padding: 1,
-    border: true,
-    borderStyle: "rounded",
-    borderColor: COLORS.border,
-    children: [
-      {
-        id: genId(),
-        type: "text",
-        name: "Title",
-        content: "Hello World",
-        fg: COLORS.accent,
-        bold: true,
-        children: [],
-      },
-      {
-        id: genId(),
-        type: "box",
-        name: "Button",
-        width: 16,
-        height: 3,
-        backgroundColor: COLORS.success,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        border: true,
-        borderStyle: "rounded",
-        borderColor: COLORS.success,
-        children: [
-          {
-            id: genId(),
-            type: "text",
-            name: "BtnText",
-            content: "Click Me",
-            fg: COLORS.bg,
-            bold: true,
-            children: [],
-          },
-        ],
-      },
-    ],
-  }
-}
-
 export function findNode(root: ElementNode, id: string): ElementNode | null {
   if (root.id === id) return root
   for (const child of root.children) {
