@@ -36,7 +36,7 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
   const hasBorder = node.border === true
   const borderValue = hasBorder
     ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
-    : (isSelected || isHovered)
+    : undefined
 
   const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
     if (val === undefined || val === "auto") return undefined
@@ -98,7 +98,7 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
       onMouseOut={() => onHover(false)}
       border={borderValue}
       borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.accent : node.borderColor}
+      borderColor={node.borderColor}
       visible={node.visible !== false}
       title={node.title}
       titleAlignment={node.titleAlignment}

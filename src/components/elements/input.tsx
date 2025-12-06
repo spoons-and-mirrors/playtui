@@ -34,8 +34,6 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
       onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={isSelected || isHovered}
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.accent : COLORS.muted}
       visible={node.visible !== false}
       style={{
         width: node.width,

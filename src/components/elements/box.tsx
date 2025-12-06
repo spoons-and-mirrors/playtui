@@ -42,7 +42,7 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
   const hasBorder = node.border === true
   const borderValue = hasBorder
     ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
-    : (isSelected || isHovered)
+    : undefined
 
   const boxStyle = {
     // Sizing
@@ -107,7 +107,7 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
       onMouseOut={() => onHover(false)}
       border={borderValue}
       borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.accent : node.borderColor}
+      borderColor={node.borderColor}
       focusedBorderColor={node.focusedBorderColor}
       shouldFill={node.shouldFill}
       visible={node.visible !== false}

@@ -36,9 +36,6 @@ export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onS
       onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={isSelected || isHovered}
-      borderStyle="single"
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.accent : COLORS.muted}
       visible={node.visible !== false}
       style={{
         width: node.width,

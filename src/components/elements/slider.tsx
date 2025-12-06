@@ -45,8 +45,6 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
       onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={isSelected || isHovered}
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.accent : COLORS.muted}
       visible={node.visible !== false}
       style={{
         width: isHorizontal ? (node.width || 20) : 3,

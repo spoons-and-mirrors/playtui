@@ -42,11 +42,9 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
       onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={isSelected ? ["left"] : isHovered ? ["left"] : undefined}
-      borderColor={isSelected ? COLORS.accentBright : isHovered ? COLORS.muted : undefined}
       visible={node.visible !== false}
       style={{
-        backgroundColor: isSelected ? COLORS.bgAlt : "transparent",
+        backgroundColor: "transparent",
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
