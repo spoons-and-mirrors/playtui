@@ -73,6 +73,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
+  const [autoLayout, setAutoLayout] = useState(true)
 
   // Derive state from project
   const tree = project?.tree ?? null
@@ -347,7 +348,7 @@ export function Builder({ width, height }: BuilderProps) {
     }
 
     if (showCode) {
-      if (key.name === "escape" || key.name === "c") setShowCode(false)
+      if (key.name === "escape" || key.name === "o") setShowCode(false)
       return
     }
     if (focusedField) {
@@ -376,7 +377,7 @@ export function Builder({ width, height }: BuilderProps) {
     else if (key.name === "a") setAddMode(true)
     else if (key.name === "c" && key.shift) handleCopy()
     else if (key.name === "v" && !key.ctrl) handlePaste()
-    else if (key.name === "c" && !key.shift) setShowCode(true)
+    else if (key.name === "o") setShowCode(true)
     else if (key.name === "z" && !key.shift) undo()
     else if (key.name === "y" || (key.name === "z" && key.shift)) redo()
     else if (key.name === "up" || key.name === "k") navigateTree("up")
@@ -417,8 +418,14 @@ export function Builder({ width, height }: BuilderProps) {
           <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <FileMenu projectName={project.name} onAction={handleFileAction} />
             <box style={{ flexDirection: "row", gap: 2, alignItems: "center" }}>
+              <box 
+                id="auto-layout-toggle"
+                onMouseDown={() => setAutoLayout(!autoLayout)}
+                style={{ backgroundColor: autoLayout ? COLORS.accent : COLORS.card, paddingLeft: 1, paddingRight: 1 }}
+              >
+                <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞</text>
+              </box>
               <SaveIndicator status={saveStatus} />
-              <ActionBtn id="code-btn" label="Code" color={COLORS.accent} enabled onPress={() => setShowCode(true)} />
             </box>
           </box>
           {/* Element toolbar - second line, left aligned */}
@@ -437,7 +444,12 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Canvas - grows to fill middle */}
         <box id="builder-canvas"
-          onMouseDown={() => setFocusedField(null)} style={{ backgroundColor: COLORS.bg, flexGrow: 1 }}>
+          onMouseDown={() => setFocusedField(null)} style={{ 
+            backgroundColor: COLORS.bg, 
+            flexGrow: 1,
+            justifyContent: autoLayout ? "center" : "flex-start",
+            alignItems: autoLayout ? "center" : "flex-start",
+          }}>
           <ElementRenderer node={tree} selectedId={selectedId} hoveredId={hoveredId}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
         </box>

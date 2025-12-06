@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { RGBA } from "@opentui/core"
 import { COLORS } from "../theme"
 
 export function ActionBtn({ id, label, color, enabled, onPress }: {
@@ -171,6 +172,7 @@ const MAIN_SHORTCUTS = [
   { key: "C/V", desc: "copy/paste" },
   { key: "↑↓", desc: "nav" },
   { key: "Z/Y", desc: "undo/redo" },
+  { key: "O", desc: "code" },
   { key: "^Q", desc: "quit" },
 ]
 
@@ -210,9 +212,9 @@ export function Footer({ addMode }: { addMode?: boolean }) {
 export function CodePanel({ code }: { code: string }) {
   return (
     <box id="code-panel" position="absolute" left={0} top={0}
-      style={{ width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.8)", padding: 2 }}>
+      style={{ width: "100%", height: "100%", backgroundColor: RGBA.fromInts(0, 0, 0, 200), padding: 2 }}>
       <box id="code-panel-inner" border borderStyle="rounded" borderColor={COLORS.accent}
-        title="Generated JSX (Esc to close)" style={{ flexGrow: 1, backgroundColor: COLORS.card, padding: 1 }}>
+        title="Generated JSX (O or Esc to close)" style={{ flexGrow: 1, backgroundColor: COLORS.card, padding: 1 }}>
         <scrollbox id="code-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
           <text fg={COLORS.text} wrapMode="word">{code}</text>
         </scrollbox>
