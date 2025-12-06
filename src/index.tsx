@@ -429,11 +429,15 @@ export function Builder({ width, height }: BuilderProps) {
               onAddElement={handleAddElement} 
             />
           </box>
+          {/* Separator line */}
+          <box style={{ height: 1, marginTop: 1 }}>
+            <text fg={COLORS.border}>{"─".repeat(200)}</text>
+          </box>
         </box>
 
         {/* Canvas - grows to fill middle */}
-        <box id="builder-canvas" border borderStyle="rounded" borderColor={COLORS.border}
-          onMouseDown={() => setFocusedField(null)} style={{ backgroundColor: COLORS.bg, padding: 1, flexGrow: 1, marginTop: 1, marginBottom: 1 }}>
+        <box id="builder-canvas"
+          onMouseDown={() => setFocusedField(null)} style={{ backgroundColor: COLORS.bg, flexGrow: 1 }}>
           <ElementRenderer node={tree} selectedId={selectedId} hoveredId={hoveredId}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
         </box>
