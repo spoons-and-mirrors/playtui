@@ -1,11 +1,12 @@
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { useKeyboard } from "@opentui/react"
 import { RGBA } from "@opentui/core"
 import { COLORS } from "./theme"
 import type { ElementNode, ElementType } from "./lib/types"
+import { log, clearLog } from "./lib/logger"
 import {
   genId, resetIdCounter,
-  findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode
+  findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode, countNodes
 } from "./lib/tree"
 import { generateCode, generateChildrenCode } from "./lib/codegen"
 import { parseCode, parseCodeMultiple } from "./lib/parseCode"
@@ -82,6 +83,9 @@ export function Builder({ width, height }: BuilderProps) {
     canRedo,
   } = useProject()
 
+  // Clear debug log on startup
+  useEffect(() => { clearLog() }, [])
+
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [showCode, setShowCode] = useState(false)
@@ -104,9 +108,11 @@ export function Builder({ width, height }: BuilderProps) {
     return all.filter(n => n.id !== tree.id)  // Exclude hidden root
   }, [tree])
   const code = useMemo(() => (tree ? generateChildrenCode(tree) : ""), [tree])
+  const treeKey = useMemo(() => (tree ? countNodes(tree) : 0), [tree])
 
   // Handle live code editing - parse code and update tree
   const handleCodeChange = useCallback((newCode: string) => {
+    log("HANDLE_CODE_CHANGE", { newCodeLength: newCode.length, showCode })
     if (!tree) return
     
     // Empty code = clear all children
@@ -157,10 +163,13 @@ export function Builder({ width, height }: BuilderProps) {
       ...entry.defaults,
       children: [],
     }
+    log("ADD_ELEMENT", { type, parentId: parent.id, parentChildren: parent.children.length, newNodeId: newNode.id, selectedId })
     const newTree = addChild(tree, parent.id, newNode)
-    updateTree(newTree)
-    setProjectSelectedId(newNode.id)
-  }, [tree, getAddParent, updateTree, setProjectSelectedId])
+    const parentAfter = findNode(newTree, parent.id)
+    log("ADD_RESULT", { parentChildrenAfter: parentAfter?.children.length, newTreeRootChildren: newTree.children.length })
+    updateTree(newTree, true, newNode.id)
+    log("AFTER_UPDATE", { calledUpdateTree: true })
+  }, [tree, getAddParent, updateTree])
 
   // Copy/Paste (C and V keys)
   const handleCopy = useCallback(() => {
@@ -175,26 +184,23 @@ export function Builder({ width, height }: BuilderProps) {
     if (!parent) return
     const cloned = cloneNode(clipboard)
     const newTree = addChild(tree, parent.id, cloned)
-    updateTree(newTree)
-    setProjectSelectedId(cloned.id)
-  }, [clipboard, tree, getAddParent, updateTree, setProjectSelectedId])
+    updateTree(newTree, true, cloned.id)
+  }, [clipboard, tree, getAddParent, updateTree])
 
   const handleDelete = useCallback(() => {
     if (!selectedId || !tree || selectedId === tree.id) return
     const parent = findParent(tree, selectedId)
     const newTree = removeNode(tree, selectedId)
-    updateTree(newTree)
-    // Select sibling or deselect (don't select hidden root)
+    // Determine next selection: sibling or parent (don't select hidden root)
+    let nextId: string | null = null
     if (parent && parent.id !== tree.id) {
-      setProjectSelectedId(parent.id)
+      nextId = parent.id
     } else if (parent && parent.children.length > 1) {
-      // Select a sibling
       const siblings = parent.children.filter(c => c.id !== selectedId)
-      setProjectSelectedId(siblings[0]?.id || null)
-    } else {
-      setProjectSelectedId(null)
+      nextId = siblings[0]?.id || null
     }
-  }, [selectedId, tree, updateTree, setProjectSelectedId])
+    updateTree(newTree, true, nextId)
+  }, [selectedId, tree, updateTree])
 
   const handleDuplicate = useCallback(() => {
     if (!selectedId || !tree) return
@@ -203,9 +209,8 @@ export function Builder({ width, height }: BuilderProps) {
     if (!node || !parent) return
     const cloned = cloneNode(node)
     const newTree = addChild(tree, parent.id, cloned)
-    updateTree(newTree)
-    setProjectSelectedId(cloned.id)
-  }, [selectedId, tree, updateTree, setProjectSelectedId])
+    updateTree(newTree, true, cloned.id)
+  }, [selectedId, tree, updateTree])
 
   const handleToggleCollapse = useCallback((id: string) => {
     const current = project?.collapsed ?? []
@@ -216,6 +221,7 @@ export function Builder({ width, height }: BuilderProps) {
   }, [project?.collapsed, setProjectCollapsed])
 
   const handleRename = useCallback((id: string, name: string) => {
+    log("HANDLE_RENAME", { id, name })
     if (!tree) return
     const node = findNode(tree, id)
     if (!node) return
@@ -225,6 +231,7 @@ export function Builder({ width, height }: BuilderProps) {
   }, [tree, updateTree])
 
   const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
+    log("HANDLE_UPDATE", { updates, selectedId })
     if (!tree || !selectedId) return
     const node = findNode(tree, selectedId)
     if (!node) return
@@ -324,7 +331,7 @@ export function Builder({ width, height }: BuilderProps) {
           <ascii-font text="playtui" font="tiny" color={RGBA.fromHex(COLORS.accent)} />
         </box>
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-          <TreeView root={tree} selectedId={selectedId} collapsed={collapsed}
+          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={collapsed}
             onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
         </scrollbox>
       </box>
@@ -368,7 +375,7 @@ export function Builder({ width, height }: BuilderProps) {
             justifyContent: autoLayout ? "center" : "flex-start",
             alignItems: autoLayout ? "center" : "flex-start",
           }}>
-          <ElementRenderer node={tree} selectedId={selectedId} hoveredId={hoveredId}
+          <ElementRenderer key={treeKey} node={tree} selectedId={selectedId} hoveredId={hoveredId}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
         </box>
 

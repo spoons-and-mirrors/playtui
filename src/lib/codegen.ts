@@ -107,6 +107,22 @@ export function generateCode(node: ElementNode, indent = 0): string {
   if (node.marginBottom) styleProps.push(`marginBottom: ${node.marginBottom}`)
   if (node.marginLeft) styleProps.push(`marginLeft: ${node.marginLeft}`)
 
+  // Scrollbar options (for scrollbox) - must be added before style prop generation
+  if (node.type === "scrollbox") {
+    const hasScrollbarOpts = node.showScrollArrows || node.scrollbarForeground || node.scrollbarBackground
+    if (hasScrollbarOpts) {
+      const scrollbarParts: string[] = []
+      if (node.showScrollArrows) scrollbarParts.push("showArrows: true")
+      if (node.scrollbarForeground || node.scrollbarBackground) {
+        const trackParts: string[] = []
+        if (node.scrollbarForeground) trackParts.push(`foregroundColor: "${node.scrollbarForeground}"`)
+        if (node.scrollbarBackground) trackParts.push(`backgroundColor: "${node.scrollbarBackground}"`)
+        scrollbarParts.push(`trackOptions: { ${trackParts.join(", ")} }`)
+      }
+      styleProps.push(`scrollbarOptions: { ${scrollbarParts.join(", ")} }`)
+    }
+  }
+
   if (styleProps.length > 0) {
     props.push(`style={{ ${styleProps.join(", ")} }}`)
   }
@@ -235,7 +251,7 @@ export function generateCode(node: ElementNode, indent = 0): string {
     const asciiProps: string[] = []
     if (node.text) asciiProps.push(`text="${node.text}"`)
     if (node.font) asciiProps.push(`font="${node.font}"`)
-    if (node.color) asciiProps.push(`color={RGBA.fromHex("${node.color}")}`)
+    if (node.color) asciiProps.push(`color="${node.color}"`)
     if (node.visible === false) asciiProps.push("visible={false}")
     return `${pad}<ascii-font ${asciiProps.join(" ")} />`
   }
@@ -268,22 +284,6 @@ export function generateCode(node: ElementNode, indent = 0): string {
     if (node.scrollX) props.push("scrollX")
     if (node.scrollY === false) props.push("scrollY={false}")
     if (node.viewportCulling) props.push("viewportCulling")
-    // Scrollbar options
-    const hasScrollbarOpts = node.showScrollArrows || node.scrollbarForeground || node.scrollbarBackground
-    if (hasScrollbarOpts) {
-      const scrollbarParts: string[] = []
-      if (node.showScrollArrows) scrollbarParts.push("showArrows: true")
-      if (node.scrollbarForeground || node.scrollbarBackground) {
-        const trackParts: string[] = []
-        if (node.scrollbarForeground) trackParts.push(`foregroundColor: "${node.scrollbarForeground}"`)
-        if (node.scrollbarBackground) trackParts.push(`backgroundColor: "${node.scrollbarBackground}"`)
-        scrollbarParts.push(`trackOptions: { ${trackParts.join(", ")} }`)
-      }
-      styleProps.push(`scrollbarOptions: { ${scrollbarParts.join(", ")} }`)
-    }
-    if (styleProps.length > 0) {
-      props.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
     if (node.children.length === 0) {
       return `${pad}<scrollbox ${props.join(" ")} />`
     }

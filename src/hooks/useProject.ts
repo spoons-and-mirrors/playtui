@@ -5,6 +5,7 @@ import type { Project, ProjectMeta } from "../lib/projectTypes"
 import { createNewProject } from "../lib/projectTypes"
 import type { ElementNode, HistoryEntry } from "../lib/types"
 import { syncIdCounter } from "../lib/tree"
+import { log } from "../lib/logger"
 import * as storage from "../lib/storage"
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error"
@@ -26,7 +27,7 @@ export interface UseProjectReturn {
   deleteProject: (fileName: string) => Promise<boolean>
 
   // State updates (triggers auto-save)
-  updateTree: (tree: ElementNode, pushHistory?: boolean) => void
+  updateTree: (tree: ElementNode, pushHistory?: boolean, selectedId?: string | null) => void
   setSelectedId: (id: string | null) => void
   setCollapsed: (collapsed: string[]) => void
 
@@ -204,13 +205,20 @@ export function useProject(): UseProjectReturn {
     [project, refreshProjects]
   )
 
-  // Update tree with optional history push
+  // Update tree with optional history push and optional selectedId (atomic update)
   const updateTree = useCallback(
-    (tree: ElementNode, pushHistory = true) => {
+    (tree: ElementNode, pushHistory = true, selectedId?: string | null) => {
+      log("UPDATE_TREE_CALLED", { treeRootChildren: tree.children.length, pushHistory, selectedId })
       setProject((prev) => {
         if (!prev) return prev
 
         const updated: Project = { ...prev, tree }
+        log("UPDATE_TREE_INSIDE_SET", { prevTreeChildren: prev.tree.children.length, newTreeChildren: tree.children.length })
+
+        // If selectedId is explicitly provided (including null), update it atomically
+        if (selectedId !== undefined) {
+          updated.selectedId = selectedId
+        }
 
         if (pushHistory) {
           // Push current state to history
@@ -275,8 +283,8 @@ export function useProject(): UseProjectReturn {
         future: [...prev.future, futureEntry],
       }
     })
-    saveNow()
-  }, [saveNow])
+    scheduleSave()
+  }, [scheduleSave])
 
   // Redo
   const redo = useCallback(() => {
@@ -300,8 +308,8 @@ export function useProject(): UseProjectReturn {
         future,
       }
     })
-    saveNow()
-  }, [saveNow])
+    scheduleSave()
+  }, [scheduleSave])
 
   return {
     project,

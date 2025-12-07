@@ -63,6 +63,10 @@ export function flattenTree(node: ElementNode, acc: ElementNode[] = []): Element
   return acc
 }
 
+export function countNodes(node: ElementNode): number {
+  return 1 + node.children.reduce((sum, c) => sum + countNodes(c), 0)
+}
+
 export function cloneNode(n: ElementNode): ElementNode {
   return { ...n, id: genId(), children: n.children.map(cloneNode) }
 }

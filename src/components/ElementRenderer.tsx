@@ -1,5 +1,6 @@
 import type { ElementNode } from "../lib/types"
 import { ELEMENT_REGISTRY } from "./elements"
+import { log } from "../lib/logger"
 
 interface ElementRendererProps {
   node: ElementNode
@@ -13,6 +14,8 @@ export function ElementRenderer({ node, selectedId, hoveredId, onSelect, onHover
   const isSelected = node.id === selectedId
   const isHovered = node.id === hoveredId && !isSelected
   const isRoot = node.id === "root"
+
+  log("RENDER", { id: node.id, type: node.type, childCount: node.children.length, childIds: node.children.map(c => c.id) })
 
   // Root element: render children directly (canvas is the root container)
   if (isRoot) {

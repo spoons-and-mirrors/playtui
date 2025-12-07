@@ -224,37 +224,29 @@ interface CodePanelProps {
 
 export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
   const textareaRef = useRef<TextareaRenderable>(null)
-  const isInitializedRef = useRef(false)
+  const codeRef = useRef(code)
 
-  // Initialize textarea with code on mount
+  // Sync textarea with code prop when it changes externally
   useEffect(() => {
-    if (textareaRef.current && !isInitializedRef.current) {
+    if (!textareaRef.current) return
+    const currentText = textareaRef.current.plainText
+    // Only update if code changed externally (not from our own edits)
+    if (code !== currentText) {
+      // Update ref BEFORE setText to prevent echo via onContentChange
+      codeRef.current = code
       textareaRef.current.setText(code, { history: false })
-      isInitializedRef.current = true
     }
   }, [code])
 
-  // Sync code changes immediately (no debounce)
-  const syncToTree = useCallback(() => {
+  // Handle content changes from textarea - sync back to tree
+  const handleContentChange = useCallback(() => {
     const newCode = textareaRef.current?.plainText
-    if (newCode !== undefined) {
+    // Only sync if actually different from current code prop (avoids echo)
+    if (newCode !== undefined && newCode !== codeRef.current) {
+      codeRef.current = newCode  // Update ref to prevent re-trigger
       onCodeChange(newCode)
     }
   }, [onCodeChange])
-
-  // Listen for keystrokes to trigger sync
-  useKeyboard((key) => {
-    // Trigger sync on any content-changing key (but not escape/modifiers alone)
-    if (key.name !== "escape" && key.name !== "o") {
-      syncToTree()
-    }
-  })
-
-  // Handle paste events
-  const handlePaste = useCallback(() => {
-    // Small delay to let paste complete before reading
-    setTimeout(syncToTree, 10)
-  }, [syncToTree])
 
   return (
     <box id="code-panel" position="absolute" left={0} top={0}
@@ -272,7 +264,7 @@ export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
             focusedBackgroundColor={COLORS.card}
             cursorColor={COLORS.accent}
             style={{ width: "100%" }}
-            onPaste={handlePaste}
+            onContentChange={handleContentChange}
           />
         </scrollbox>
         <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>

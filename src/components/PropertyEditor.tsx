@@ -220,9 +220,6 @@ export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }
 
   // Render element-specific section using registry
   const renderElementSection = (section: PropertySection) => {
-    const entry = ELEMENT_REGISTRY[node.type]
-    if (!entry?.Properties) return null
-
     // Map section name to element type that owns it
     const sectionToType: Record<string, string> = {
       border: "box", text: "text", input: "input", textarea: "textarea",
@@ -232,7 +229,18 @@ export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }
 
     // Only render if this section belongs to the current element type
     const ownerType = sectionToType[section]
-    if (ownerType !== node.type) return null
+    // Border section applies to both box and scrollbox
+    if (section === "border") {
+      if (node.type !== "box" && node.type !== "scrollbox") return null
+    } else if (ownerType !== node.type) {
+      return null
+    }
+
+    // For border section on scrollbox, use box's Properties component
+    const entry = section === "border" && node.type === "scrollbox" 
+      ? ELEMENT_REGISTRY["box"] 
+      : ELEMENT_REGISTRY[node.type]
+    if (!entry?.Properties) return null
 
     return entry.Properties({
       node, onUpdate, focusedField, setFocusedField,
