@@ -107,7 +107,16 @@ export function Builder({ width, height }: BuilderProps) {
     const all = flattenTree(tree)
     return all.filter(n => n.id !== tree.id)  // Exclude hidden root
   }, [tree])
-  const code = useMemo(() => (tree ? generateChildrenCode(tree) : ""), [tree])
+  const code = useMemo(() => {
+    if (!tree) return ""
+    log("CODE_MEMO", { 
+      treeId: tree.id, 
+      treeName: tree.name,
+      childCount: tree.children.length,
+      children: tree.children.map(c => ({ id: c.id, type: c.type, name: c.name }))
+    })
+    return generateChildrenCode(tree)
+  }, [tree])
   const treeKey = useMemo(() => (tree ? countNodes(tree) : 0), [tree])
 
   // Handle live code editing - parse code and update tree

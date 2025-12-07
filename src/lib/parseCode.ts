@@ -3,6 +3,7 @@
 
 import type { ElementNode, ElementType, SizeValue, BorderSide } from "./types"
 import { genId } from "./tree"
+import { log } from "./logger"
 
 interface ParseResult {
   success: boolean
@@ -331,9 +332,12 @@ function applyStyle(node: Partial<ElementNode>, style: Record<string, unknown>):
 function createNode(tagName: string, props: Record<string, unknown>): ElementNode {
   const type = tagName as ElementType
   
+  log("PARSE_CREATE_NODE", { tagName, propsName: props.name, propsKeys: Object.keys(props) })
+  
   const node: Partial<ElementNode> = {
     id: genId(),
     type,
+    name: props.name as string | undefined,
     children: [],
   }
   

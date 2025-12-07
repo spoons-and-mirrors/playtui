@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../theme"
+import { log } from "../lib/logger"
 import type { ElementType } from "../lib/types"
 
 export function ActionBtn({ id, label, color, enabled, onPress }: {
@@ -224,15 +225,41 @@ interface CodePanelProps {
 export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
+  const initializedRef = useRef(false)
 
-  // Sync textarea with code prop when it changes externally
+  log("CODE_PANEL_RENDER", { codeLength: code.length, codePreview: code.slice(0, 80), initialized: initializedRef.current })
+
+  // Initialize textarea with code on mount (using timeout to wait for ref)
   useEffect(() => {
-    if (!textareaRef.current) return
+    log("CODE_PANEL_INIT_EFFECT", { initialized: initializedRef.current, hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length })
+    if (initializedRef.current) return
+    const tryInit = () => {
+      log("CODE_PANEL_TRY_INIT", { hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length, codeRefPreview: codeRef.current.slice(0, 80) })
+      if (textareaRef.current) {
+        // Use codeRef.current which is always up-to-date
+        textareaRef.current.setText(codeRef.current, { history: false })
+        initializedRef.current = true
+        log("CODE_PANEL_INIT_DONE", { setText: codeRef.current.slice(0, 80) })
+      } else {
+        // Ref not ready, try again next frame
+        requestAnimationFrame(tryInit)
+      }
+    }
+    tryInit()
+  }, [])
+
+  // Keep codeRef in sync with prop
+  useEffect(() => {
+    log("CODE_PANEL_SYNC_REF", { oldLen: codeRef.current.length, newLen: code.length })
+    codeRef.current = code
+  }, [code])
+
+  // Sync textarea with code prop when it changes externally (after init)
+  useEffect(() => {
+    if (!initializedRef.current || !textareaRef.current) return
     const currentText = textareaRef.current.plainText
     // Only update if code changed externally (not from our own edits)
     if (code !== currentText) {
-      // Update ref BEFORE setText to prevent echo via onContentChange
-      codeRef.current = code
       textareaRef.current.setText(code, { history: false })
     }
   }, [code])
@@ -240,9 +267,9 @@ export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
   // Handle content changes from textarea - sync back to tree
   const handleContentChange = useCallback(() => {
     const newCode = textareaRef.current?.plainText
-    // Only sync if actually different from current code prop (avoids echo)
+    // Only sync if actually different from current code ref (avoids echo)
     if (newCode !== undefined && newCode !== codeRef.current) {
-      codeRef.current = newCode  // Update ref to prevent re-trigger
+      codeRef.current = newCode
       onCodeChange(newCode)
     }
   }, [onCodeChange])

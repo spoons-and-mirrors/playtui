@@ -1,5 +1,6 @@
 import type { ElementNode, SizeValue, BorderSide, BoxNode, ScrollboxNode } from "./types"
 import { isContainerNode } from "./types"
+import { log } from "./logger"
 
 function formatSize(val: SizeValue | undefined): string | undefined {
   if (val === undefined) return undefined
@@ -23,6 +24,13 @@ export function generateChildrenCode(node: ElementNode): string {
 export function generateCode(node: ElementNode, indent = 0): string {
   const pad = "  ".repeat(indent)
   const props: string[] = []
+
+  log("CODEGEN", { type: node.type, name: node.name, id: node.id })
+
+  // Name attribute (preserve element names for round-trip editing)
+  // Use explicit name, or generate default from type for unnamed elements
+  const name = node.name || node.type.charAt(0).toUpperCase() + node.type.slice(1)
+  props.push(`name="${name}"`)
 
   if (node.type === "box" || node.type === "scrollbox") {
     // Border properties
