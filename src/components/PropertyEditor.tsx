@@ -41,7 +41,20 @@ export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }
 
   const props = PROPERTIES.filter((p) => !p.appliesTo || p.appliesTo.includes(node.type))
   const unsectioned = props.filter((p) => !p.section)
-  const activeSections = SECTION_ORDER.filter(section => props.some(p => p.section === section))
+  
+  // Get active sections: sections with props defined in PROPERTIES + element-specific sections for this node type
+  const sectionToType: Record<string, string> = {
+    border: "box", text: "text", input: "input", textarea: "textarea",
+    select: "select", scrollbox: "scrollbox", slider: "slider",
+    asciiFont: "ascii-font", tabSelect: "tab-select"
+  }
+  const activeSections = SECTION_ORDER.filter(section => {
+    // Include if there are props for this section
+    if (props.some(p => p.section === section)) return true
+    // Include element-specific sections for matching node type
+    if (ELEMENT_SPECIFIC_SECTIONS.includes(section) && sectionToType[section] === node.type) return true
+    return false
+  })
 
   const renderProp = (prop: (typeof props)[0]) => {
     const nodeProps = node as unknown as AnyNodeProps

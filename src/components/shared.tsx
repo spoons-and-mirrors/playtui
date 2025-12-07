@@ -1,5 +1,7 @@
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { RGBA } from "@opentui/core"
+import type { TextareaRenderable } from "@opentui/core"
+import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../theme"
 import type { ElementType } from "../lib/types"
 
@@ -210,15 +212,73 @@ export function Footer({ addMode }: { addMode?: boolean }) {
   )
 }
 
-export function CodePanel({ code }: { code: string }) {
+// ============================================
+// CODE PANEL - Live bidirectional code editor
+// ============================================
+
+interface CodePanelProps {
+  code: string
+  error?: string | null
+  onCodeChange: (newCode: string) => void
+}
+
+export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
+  const textareaRef = useRef<TextareaRenderable>(null)
+  const isInitializedRef = useRef(false)
+
+  // Initialize textarea with code on mount
+  useEffect(() => {
+    if (textareaRef.current && !isInitializedRef.current) {
+      textareaRef.current.setText(code, { history: false })
+      isInitializedRef.current = true
+    }
+  }, [code])
+
+  // Sync code changes immediately (no debounce)
+  const syncToTree = useCallback(() => {
+    const newCode = textareaRef.current?.plainText
+    if (newCode !== undefined) {
+      onCodeChange(newCode)
+    }
+  }, [onCodeChange])
+
+  // Listen for keystrokes to trigger sync
+  useKeyboard((key) => {
+    // Trigger sync on any content-changing key (but not escape/modifiers alone)
+    if (key.name !== "escape" && key.name !== "o") {
+      syncToTree()
+    }
+  })
+
+  // Handle paste events
+  const handlePaste = useCallback(() => {
+    // Small delay to let paste complete before reading
+    setTimeout(syncToTree, 10)
+  }, [syncToTree])
+
   return (
     <box id="code-panel" position="absolute" left={0} top={0}
       style={{ width: "100%", height: "100%", backgroundColor: RGBA.fromInts(0, 0, 0, 200), padding: 2 }}>
-      <box id="code-panel-inner" border borderStyle="rounded" borderColor={COLORS.accent}
-        title="Generated JSX (O or Esc to close)" style={{ flexGrow: 1, backgroundColor: COLORS.card, padding: 1 }}>
-        <scrollbox id="code-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-          <text fg={COLORS.text} wrapMode="word">{code}</text>
+      <box id="code-panel-inner" border borderStyle="rounded" borderColor={error ? COLORS.danger : COLORS.accent}
+        title={error ? `Error: ${error}` : "Live Code Editor (Esc to close)"}
+        style={{ flexGrow: 1, backgroundColor: COLORS.card, padding: 1, flexDirection: "column" }}>
+        <scrollbox id="code-scroll" style={{ flexGrow: 1 }}>
+          <textarea
+            ref={textareaRef}
+            placeholder="Paste or edit JSX code here..."
+            focused
+            textColor={COLORS.text}
+            backgroundColor={COLORS.card}
+            focusedBackgroundColor={COLORS.card}
+            cursorColor={COLORS.accent}
+            style={{ width: "100%" }}
+            onPaste={handlePaste}
+          />
         </scrollbox>
+        <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
+          <text fg={COLORS.muted}>Edit code to update canvas live</text>
+          {error && <text fg={COLORS.danger}>Parse error - fix to apply</text>}
+        </box>
       </box>
     </box>
   )

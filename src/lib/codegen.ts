@@ -12,6 +12,14 @@ function formatBorderSides(sides: BorderSide[] | undefined): string | undefined 
   return `{[${sides.map(s => `"${s}"`).join(", ")}]}`
 }
 
+// Generate code for children only (hides root wrapper)
+export function generateChildrenCode(node: ElementNode): string {
+  if (node.children.length === 0) {
+    return ""
+  }
+  return node.children.map((c) => generateCode(c, 0)).join("\n")
+}
+
 export function generateCode(node: ElementNode, indent = 0): string {
   const pad = "  ".repeat(indent)
   const props: string[] = []

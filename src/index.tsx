@@ -7,7 +7,8 @@ import {
   genId, resetIdCounter,
   findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode
 } from "./lib/tree"
-import { generateCode } from "./lib/codegen"
+import { generateCode, generateChildrenCode } from "./lib/codegen"
+import { parseCode, parseCodeMultiple } from "./lib/parseCode"
 import { ElementRenderer } from "./components/ElementRenderer"
 import { ELEMENT_REGISTRY } from "./components/elements"
 import { TreeView } from "./components/TreeView"
@@ -84,6 +85,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [showCode, setShowCode] = useState(false)
+  const [codeError, setCodeError] = useState<string | null>(null)
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
@@ -101,24 +103,30 @@ export function Builder({ width, height }: BuilderProps) {
     const all = flattenTree(tree)
     return all.filter(n => n.id !== tree.id)  // Exclude hidden root
   }, [tree])
-  const code = useMemo(() => (tree ? generateCode(tree) : ""), [tree])
+  const code = useMemo(() => (tree ? generateChildrenCode(tree) : ""), [tree])
 
-  // Wrapper to update collapsed as array
-  const setCollapsed = useCallback((updater: (prev: Set<string>) => Set<string>) => {
-    const newSet = updater(collapsed)
-    setProjectCollapsed(Array.from(newSet))
-  }, [collapsed, setProjectCollapsed])
-
-  const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
-    if (!selectedId || !tree) return
-    const newTree = updateNode(tree, selectedId, updates)
-    updateTree(newTree)
-  }, [selectedId, tree, updateTree])
-
-  const handleRename = useCallback((id: string, name: string) => {
+  // Handle live code editing - parse code and update tree
+  const handleCodeChange = useCallback((newCode: string) => {
     if (!tree) return
-    const newTree = updateNode(tree, id, { name })
-    updateTree(newTree)
+    
+    // Empty code = clear all children
+    if (!newCode.trim()) {
+      updateTree({ ...tree, children: [] })
+      setCodeError(null)
+      return
+    }
+    
+    // Parse the code - can be one or multiple elements
+    const result = parseCodeMultiple(newCode)
+    if (!result.success) {
+      setCodeError(result.error || "Parse error")
+      return
+    }
+    
+    // Set parsed nodes as children of root
+    const newChildren = result.nodes || (result.node ? [result.node] : [])
+    updateTree({ ...tree, children: newChildren })
+    setCodeError(null)
   }, [tree, updateTree])
 
   // Get the parent container for adding new elements (selected container or root)
@@ -200,13 +208,30 @@ export function Builder({ width, height }: BuilderProps) {
   }, [selectedId, tree, updateTree, setProjectSelectedId])
 
   const handleToggleCollapse = useCallback((id: string) => {
-    setCollapsed((c) => {
-      const next = new Set(c)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [setCollapsed])
+    const current = project?.collapsed ?? []
+    const currentSet = new Set(current)
+    if (currentSet.has(id)) currentSet.delete(id)
+    else currentSet.add(id)
+    setProjectCollapsed(Array.from(currentSet))
+  }, [project?.collapsed, setProjectCollapsed])
+
+  const handleRename = useCallback((id: string, name: string) => {
+    if (!tree) return
+    const node = findNode(tree, id)
+    if (!node) return
+    const updated = { ...node, name } as ElementNode
+    const newTree = updateNode(tree, id, updated)
+    updateTree(newTree)
+  }, [tree, updateTree])
+
+  const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
+    if (!tree || !selectedId) return
+    const node = findNode(tree, selectedId)
+    if (!node) return
+    const updated = { ...node, ...updates } as ElementNode
+    const newTree = updateNode(tree, selectedId, updated)
+    updateTree(newTree)
+  }, [tree, selectedId, updateTree])
 
   const navigateTree = useCallback((dir: "up" | "down") => {
     const idx = flatNodes.findIndex((n) => n.id === selectedId)
@@ -248,7 +273,7 @@ export function Builder({ width, height }: BuilderProps) {
     }
 
     if (showCode) {
-      if (key.name === "escape" || key.name === "o") setShowCode(false)
+      if (key.name === "escape") setShowCode(false)
       return
     }
     if (focusedField) {
@@ -365,9 +390,9 @@ export function Builder({ width, height }: BuilderProps) {
         )}
       </box>
 
-      {showCode && <CodePanel code={code} />}
+      {showCode && <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} />}
       
-      {/* Project Modal */}
+      {/* Project Modal (for new/load/delete) */}
       {modalMode && (
         <ProjectModal
           mode={modalMode}
