@@ -42,12 +42,13 @@ export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, on
         width: node.width,
         height: node.height,
         backgroundColor: "transparent",
-        padding: 1,
       }}
     >
-      <text fg={node.color || COLORS.accent}>
-        <strong>[{fontName}] {textContent}</strong>
-      </text>
+      <ascii-font
+        text={textContent}
+        font={fontName}
+        color={node.color || COLORS.accent}
+      />
     </box>
   )
 }
