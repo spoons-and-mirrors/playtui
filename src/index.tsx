@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { useKeyboard } from "@opentui/react"
 import { RGBA } from "@opentui/core"
 import { COLORS } from "./theme"
@@ -239,15 +239,21 @@ export function Builder({ width, height }: BuilderProps) {
     updateTree(newTree)
   }, [tree, updateTree])
 
+  // Store selectedId in a ref to avoid stale closure issues
+  const selectedIdRef = useRef(selectedId)
+  useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
+
   const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
-    log("HANDLE_UPDATE", { updates, selectedId })
-    if (!tree || !selectedId) return
-    const node = findNode(tree, selectedId)
+    // Use ref to get current selectedId, avoiding stale closure race conditions
+    const currentSelectedId = selectedIdRef.current
+    log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId })
+    if (!tree || !currentSelectedId) return
+    const node = findNode(tree, currentSelectedId)
     if (!node) return
     const updated = { ...node, ...updates } as ElementNode
-    const newTree = updateNode(tree, selectedId, updated)
+    const newTree = updateNode(tree, currentSelectedId, updated)
     updateTree(newTree)
-  }, [tree, selectedId, updateTree])
+  }, [tree, updateTree])
 
   const navigateTree = useCallback((dir: "up" | "down") => {
     const idx = flatNodes.findIndex((n) => n.id === selectedId)
@@ -403,7 +409,7 @@ export function Builder({ width, height }: BuilderProps) {
           {selectedNode ? <span fg={COLORS.accent}>{selectedNode.type}</span> : "Properties"}
         </text>
         {selectedNode ? (
-          <PropertyEditor node={selectedNode} onUpdate={handleUpdate}
+          <PropertyEditor key={selectedId} node={selectedNode} onUpdate={handleUpdate}
             focusedField={focusedField} setFocusedField={setFocusedField} />
         ) : (
           <text fg={COLORS.muted}>Select an element</text>
