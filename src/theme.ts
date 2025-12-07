@@ -1,3 +1,5 @@
+import { SyntaxStyle, RGBA } from "@opentui/core"
+
 // TUI Builder Theme - Frosted Ice palette
 
 export const COLORS = {
@@ -35,4 +37,35 @@ export const COLORS = {
   // Labels
   labelPrimary: "#7ec8e8",
   labelSecondary: "#a8d8ea",
+
+  // Syntax highlighting
+  syntaxKeyword: "#c792ea",
+  syntaxString: "#c3e88d",
+  syntaxNumber: "#f78c6c",
+  syntaxComment: "#546e7a",
+  syntaxFunction: "#82aaff",
+  syntaxVariable: "#e5c07b",
+  syntaxType: "#ffcb6b",
+  syntaxOperator: "#89ddff",
+  syntaxProperty: "#80cbc4",
+  syntaxPunctuation: "#89ddff",
+  syntaxTag: "#f07178",
+  syntaxAttribute: "#ffcb6b",
 }
+
+// Syntax style for JSX/TSX code highlighting
+export const syntaxStyle = SyntaxStyle.fromStyles({
+  default: { fg: RGBA.fromHex(COLORS.text) },
+  keyword: { fg: RGBA.fromHex(COLORS.syntaxKeyword), bold: true },
+  string: { fg: RGBA.fromHex(COLORS.syntaxString) },
+  number: { fg: RGBA.fromHex(COLORS.syntaxNumber) },
+  comment: { fg: RGBA.fromHex(COLORS.syntaxComment), italic: true, dim: true },
+  function: { fg: RGBA.fromHex(COLORS.syntaxFunction) },
+  variable: { fg: RGBA.fromHex(COLORS.syntaxVariable) },
+  type: { fg: RGBA.fromHex(COLORS.syntaxType) },
+  operator: { fg: RGBA.fromHex(COLORS.syntaxOperator) },
+  property: { fg: RGBA.fromHex(COLORS.syntaxProperty) },
+  "punctuation.bracket": { fg: RGBA.fromHex(COLORS.syntaxPunctuation) },
+  "tag": { fg: RGBA.fromHex(COLORS.syntaxTag) },
+  "tag.attribute": { fg: RGBA.fromHex(COLORS.syntaxAttribute) },
+})

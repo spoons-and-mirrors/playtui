@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
-import { COLORS } from "../theme"
+import { COLORS, syntaxStyle } from "../theme"
 import { log } from "../lib/logger"
 import type { ElementType } from "../lib/types"
 
@@ -283,15 +283,21 @@ export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
         <text fg={COLORS.muted}>Esc to close</text>
       </box>
       <scrollbox id="code-scroll" style={{ flexGrow: 1, backgroundColor: COLORS.card }}>
+        <code
+          content={code}
+          filetype="tsx"
+          syntaxStyle={syntaxStyle}
+          wrapMode="word"
+        />
         <textarea
           ref={textareaRef}
           placeholder="Paste or edit JSX code here..."
           focused
-          textColor={COLORS.text}
-          backgroundColor={COLORS.card}
-          focusedBackgroundColor={COLORS.card}
+          textColor="transparent"
+          backgroundColor="transparent"
+          focusedBackgroundColor="transparent"
           cursorColor={COLORS.accent}
-          style={{ width: "100%" }}
+          style={{ width: "100%", position: "absolute", left: 0, top: 0 }}
           onContentChange={handleContentChange}
         />
       </scrollbox>
