@@ -70,3 +70,24 @@ export function countNodes(node: ElementNode): number {
 export function cloneNode(n: ElementNode): ElementNode {
   return { ...n, id: genId(), children: n.children.map(cloneNode) }
 }
+
+// Move a node up or down within its parent's children array (sibling-only movement)
+// Returns null if move is not possible (at boundary or node not found)
+export function moveNode(root: ElementNode, nodeId: string, direction: "up" | "down"): ElementNode | null {
+  const parent = findParent(root, nodeId)
+  if (!parent) return null
+  
+  const idx = parent.children.findIndex(c => c.id === nodeId)
+  if (idx === -1) return null
+  
+  const newIdx = direction === "up" ? idx - 1 : idx + 1
+  if (newIdx < 0 || newIdx >= parent.children.length) return null // at boundary
+  
+  // Swap the nodes
+  const newChildren = [...parent.children]
+  const temp = newChildren[idx]
+  newChildren[idx] = newChildren[newIdx]
+  newChildren[newIdx] = temp
+  
+  return updateNode(root, parent.id, { children: newChildren })
+}

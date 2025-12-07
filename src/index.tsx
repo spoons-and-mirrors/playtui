@@ -6,7 +6,7 @@ import type { ElementNode, ElementType } from "./lib/types"
 import { log, clearLog } from "./lib/logger"
 import {
   genId, resetIdCounter,
-  findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode, countNodes
+  findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode, countNodes, moveNode
 } from "./lib/tree"
 import { generateCode, generateChildrenCode } from "./lib/codegen"
 import { parseCode, parseCodeMultiple } from "./lib/parseCode"
@@ -221,6 +221,12 @@ export function Builder({ width, height }: BuilderProps) {
     updateTree(newTree, true, cloned.id)
   }, [selectedId, tree, updateTree])
 
+  const handleMoveNode = useCallback((direction: "up" | "down") => {
+    if (!selectedId || !tree) return
+    const newTree = moveNode(tree, selectedId, direction)
+    if (newTree) updateTree(newTree, true)
+  }, [selectedId, tree, updateTree])
+
   const handleToggleCollapse = useCallback((id: string) => {
     const current = project?.collapsed ?? []
     const currentSet = new Set(current)
@@ -320,6 +326,8 @@ export function Builder({ width, height }: BuilderProps) {
     else if (key.name === "tab") setShowCode(true)
     else if (key.name === "z" && !key.shift) undo()
     else if (key.name === "y" || (key.name === "z" && key.shift)) redo()
+    else if (key.option && key.name === "up") handleMoveNode("up")
+    else if (key.option && key.name === "down") handleMoveNode("down")
     else if (key.name === "up" || key.name === "k") navigateTree("up")
     else if (key.name === "down" || key.name === "j") navigateTree("down")
     else if (key.name === "escape") setProjectSelectedId(null)
