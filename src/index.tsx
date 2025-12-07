@@ -17,6 +17,7 @@ import { PropertyEditor } from "./components/PropertyEditor"
 import { ActionBtn, Footer, CodePanel, ElementToolbar } from "./components/shared"
 import { FileMenu, type MenuAction } from "./components/FileMenu"
 import { ProjectModal } from "./components/ProjectModal"
+import { DocsPanel } from "./components/DocsPanel"
 import { useProject, type SaveStatus } from "./hooks/useProject"
 
 // Keyboard shortcut to element type mapping
@@ -91,6 +92,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [showCode, setShowCode] = useState(false)
   const [codeError, setCodeError] = useState<string | null>(null)
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | null>(null)
+  const [showDocs, setShowDocs] = useState(false)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
@@ -300,6 +302,11 @@ export function Builder({ width, height }: BuilderProps) {
       return
     }
 
+    if (showDocs) {
+      if (key.name === "escape") setShowDocs(false)
+      return
+    }
+
     if (showCode) {
       if (key.name === "escape") setShowCode(false)
       return
@@ -350,7 +357,7 @@ export function Builder({ width, height }: BuilderProps) {
       {/* Left Panel - Tree (full height, thin right border) */}
       <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
         style={{ width: treeWidth, height: "100%", backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column" }}>
-        <box style={{ alignItems: "center", marginBottom: 1 }}>
+        <box style={{ alignItems: "center", marginBottom: 1 }} onMouseDown={() => setShowDocs(v => !v)}>
           <ascii-font text="playtui" font="tiny" color={RGBA.fromHex(COLORS.accent)} />
         </box>
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
@@ -390,9 +397,11 @@ export function Builder({ width, height }: BuilderProps) {
           </box>
         </box>
 
-        {/* Canvas or Code Panel - grows to fill middle */}
+        {/* Canvas or Code or Docs Panel - grows to fill middle */}
         {showCode ? (
           <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} />
+        ) : showDocs ? (
+          <DocsPanel />
         ) : (
           <box id="builder-canvas"
             onMouseDown={() => setFocusedField(null)} style={{ 
