@@ -8,7 +8,7 @@ export function SpacingControl({ label, values, onChange }: {
   const { all, top, right, bottom, left } = values
   const hasIndividual = top !== undefined || right !== undefined || bottom !== undefined || left !== undefined
 
-  const renderVal = (key: "all" | "top" | "right" | "bottom" | "left", v: number | undefined, char: string) => {
+  const renderVal = (key: "all" | "top" | "right" | "bottom" | "left", v: number | undefined) => {
     const display = v ?? 0
     return (
       <box
@@ -22,8 +22,7 @@ export function SpacingControl({ label, values, onChange }: {
         >
           <text fg={COLORS.warning}>‹</text>
         </box>
-        <text fg={COLORS.muted} style={{ width: 1 }}>{char}</text>
-        <text fg={COLORS.text} style={{ width: 2 }}>{display}</text>
+        <text fg={COLORS.text}>{display}</text>
         <box
           id={`spacing-${label}-${key}-inc`}
           onMouseDown={() => onChange(key, Math.min(20, display + 1))}
@@ -36,44 +35,21 @@ export function SpacingControl({ label, values, onChange }: {
   }
 
   return (
-    <box id={`spacing-ctrl-${label}`} style={{ flexDirection: "column", marginBottom: 1 }}>
-      <text fg={COLORS.muted} style={{ marginBottom: 0 }}>{label}</text>
-      <box style={{ flexDirection: "column", alignItems: "center", gap: 0, backgroundColor: COLORS.bgAlt, padding: 1 }}>
+    <box id={`spacing-ctrl-${label}`} style={{ flexDirection: "column" }}>
+      {label && <text fg={COLORS.muted}>{label}</text>}
+      <box style={{ flexDirection: "column", alignItems: "center", gap: 0, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingLeft: 1, paddingRight: 1 }}>
         {/* Top row */}
         <box style={{ flexDirection: "row", justifyContent: "center" }}>
-          {renderVal(hasIndividual ? "top" : "all", hasIndividual ? top : all, "↑")}
+          {renderVal(hasIndividual ? "top" : "all", hasIndividual ? top : all)}
         </box>
-        {/* Middle row: Left - Center - Right */}
-        <box style={{ flexDirection: "row", justifyContent: "space-between", width: 22 }}>
-          {renderVal("left", left, "←")}
-          <box
-            id={`spacing-${label}-mode`}
-            onMouseDown={() => {
-              if (hasIndividual) {
-                const v = top ?? right ?? bottom ?? left ?? 0
-                onChange("all", v)
-                onChange("top", undefined)
-                onChange("right", undefined)
-                onChange("bottom", undefined)
-                onChange("left", undefined)
-              } else {
-                const v = all ?? 0
-                onChange("top", v)
-                onChange("right", v)
-                onChange("bottom", v)
-                onChange("left", v)
-                onChange("all", undefined)
-              }
-            }}
-            style={{ backgroundColor: COLORS.card, paddingLeft: 1, paddingRight: 1 }}
-          >
-            <text fg={COLORS.accent}>{hasIndividual ? "□" : "■"}</text>
-          </box>
-          {renderVal("right", right, "→")}
+        {/* Middle row: Left - Right */}
+        <box style={{ flexDirection: "row", justifyContent: "center", gap: 2 }}>
+          {renderVal("left", left)}
+          {renderVal("right", right)}
         </box>
         {/* Bottom row */}
         <box style={{ flexDirection: "row", justifyContent: "center" }}>
-          {renderVal(hasIndividual ? "bottom" : "all", hasIndividual ? bottom : all, "↓")}
+          {renderVal(hasIndividual ? "bottom" : "all", hasIndividual ? bottom : all)}
         </box>
       </box>
     </box>

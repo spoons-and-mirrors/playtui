@@ -25,13 +25,13 @@ export const SECTION_LABELS: Record<PropertySection, string> = {
 // Section ordering for property panel - most used first
 export const SECTION_ORDER: PropertySection[] = [
   "sizing",
+  "position",
+  "margin",
+  "padding",
   "flexContainer",
   "flexItem",
-  "padding",
-  "margin",
   "background",
   "border",
-  "position",
   "overflow",
   "visibility",
   // Component-specific (handled by element Properties components via registry)
