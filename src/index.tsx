@@ -302,7 +302,7 @@ export function Builder({ width, height }: BuilderProps) {
     else if (key.name === "a") setAddMode(true)
     else if (key.name === "c" && key.shift) handleCopy()
     else if (key.name === "v" && !key.ctrl) handlePaste()
-    else if (key.name === "o") setShowCode(true)
+    else if (key.name === "tab") setShowCode(true)
     else if (key.name === "z" && !key.shift) undo()
     else if (key.name === "y" || (key.name === "z" && key.shift)) redo()
     else if (key.name === "up" || key.name === "k") navigateTree("up")
@@ -367,17 +367,21 @@ export function Builder({ width, height }: BuilderProps) {
           </box>
         </box>
 
-        {/* Canvas - grows to fill middle */}
-        <box id="builder-canvas"
-          onMouseDown={() => setFocusedField(null)} style={{ 
-            backgroundColor: COLORS.bg, 
-            flexGrow: 1,
-            justifyContent: autoLayout ? "center" : "flex-start",
-            alignItems: autoLayout ? "center" : "flex-start",
-          }}>
-          <ElementRenderer key={treeKey} node={tree} selectedId={selectedId} hoveredId={hoveredId}
-            onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
-        </box>
+        {/* Canvas or Code Panel - grows to fill middle */}
+        {showCode ? (
+          <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} />
+        ) : (
+          <box id="builder-canvas"
+            onMouseDown={() => setFocusedField(null)} style={{ 
+              backgroundColor: COLORS.bg, 
+              flexGrow: 1,
+              justifyContent: autoLayout ? "center" : "flex-start",
+              alignItems: autoLayout ? "center" : "flex-start",
+            }}>
+            <ElementRenderer key={treeKey} node={tree} selectedId={selectedId} hoveredId={hoveredId}
+              onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
+          </box>
+        )}
 
         {/* Footer - shortcuts at bottom */}
         <Footer addMode={addMode} />
@@ -397,7 +401,7 @@ export function Builder({ width, height }: BuilderProps) {
         )}
       </box>
 
-      {showCode && <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} />}
+
       
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

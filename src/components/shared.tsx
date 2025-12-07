@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { RGBA } from "@opentui/core"
 import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../theme"
@@ -175,7 +174,7 @@ const MAIN_SHORTCUTS = [
   { key: "C/V", desc: "copy/paste" },
   { key: "↑↓", desc: "nav" },
   { key: "Z/Y", desc: "undo/redo" },
-  { key: "O", desc: "code" },
+  { key: "Tab", desc: "code" },
   { key: "^Q", desc: "quit" },
 ]
 
@@ -249,28 +248,29 @@ export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
   }, [onCodeChange])
 
   return (
-    <box id="code-panel" position="absolute" left={0} top={0}
-      style={{ width: "100%", height: "100%", backgroundColor: RGBA.fromInts(0, 0, 0, 200), padding: 2 }}>
-      <box id="code-panel-inner" border borderStyle="rounded" borderColor={error ? COLORS.danger : COLORS.accent}
-        title={error ? `Error: ${error}` : "Live Code Editor (Esc to close)"}
-        style={{ flexGrow: 1, backgroundColor: COLORS.card, padding: 1, flexDirection: "column" }}>
-        <scrollbox id="code-scroll" style={{ flexGrow: 1 }}>
-          <textarea
-            ref={textareaRef}
-            placeholder="Paste or edit JSX code here..."
-            focused
-            textColor={COLORS.text}
-            backgroundColor={COLORS.card}
-            focusedBackgroundColor={COLORS.card}
-            cursorColor={COLORS.accent}
-            style={{ width: "100%" }}
-            onContentChange={handleContentChange}
-          />
-        </scrollbox>
-        <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
-          <text fg={COLORS.muted}>Edit code to update canvas live</text>
-          {error && <text fg={COLORS.danger}>Parse error - fix to apply</text>}
-        </box>
+    <box id="code-panel" style={{ flexGrow: 1, flexDirection: "column", backgroundColor: COLORS.bg }}>
+      <box id="code-panel-header" style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 1 }}>
+        <text fg={error ? COLORS.danger : COLORS.accent}>
+          {error ? `Error: ${error}` : "Code Editor"}
+        </text>
+        <text fg={COLORS.muted}>Esc to close</text>
+      </box>
+      <scrollbox id="code-scroll" style={{ flexGrow: 1, backgroundColor: COLORS.card }}>
+        <textarea
+          ref={textareaRef}
+          placeholder="Paste or edit JSX code here..."
+          focused
+          textColor={COLORS.text}
+          backgroundColor={COLORS.card}
+          focusedBackgroundColor={COLORS.card}
+          cursorColor={COLORS.accent}
+          style={{ width: "100%" }}
+          onContentChange={handleContentChange}
+        />
+      </scrollbox>
+      <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
+        <text fg={COLORS.muted}>Edit code to update canvas live</text>
+        {error && <text fg={COLORS.danger}>Parse error - fix to apply</text>}
       </box>
     </box>
   )
