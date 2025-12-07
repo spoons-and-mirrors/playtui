@@ -220,9 +220,10 @@ interface CodePanelProps {
   code: string
   error?: string | null
   onCodeChange: (newCode: string) => void
+  onClose: () => void
 }
 
-export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
+export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps) {
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
   const initializedRef = useRef(false)
@@ -299,6 +300,12 @@ export function CodePanel({ code, error, onCodeChange }: CodePanelProps) {
           cursorColor={COLORS.accent}
           style={{ width: "100%", position: "absolute", left: 0, top: 0 }}
           onContentChange={handleContentChange}
+          onKeyDown={(key) => {
+            if (key.name === "tab" || key.name === "escape") {
+              key.preventDefault()
+              onClose()
+            }
+          }}
         />
       </scrollbox>
       <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>

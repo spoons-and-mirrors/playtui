@@ -399,7 +399,7 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Canvas or Code or Docs Panel - grows to fill middle */}
         {showCode ? (
-          <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} />
+          <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} onClose={() => setShowCode(false)} />
         ) : showDocs ? (
           <DocsPanel />
         ) : (
