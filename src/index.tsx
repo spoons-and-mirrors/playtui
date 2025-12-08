@@ -373,10 +373,10 @@ export function Builder({ width, height }: BuilderProps) {
       {/* Center Area - header top, canvas middle, footer bottom */}
       <box id="builder-center" style={{ flexGrow: 1, height: "100%", flexDirection: "column", padding: 1 }}>
         {/* Header row: FileMenu, Save indicator, Code button */}
-        <box id="center-header" style={{ flexDirection: "column", gap: 0 }}>
+        <box id="center-header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
           <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <FileMenu projectName={project.name} onAction={handleFileAction} />
-            <box style={{ flexDirection: "row", gap: 2, alignItems: "center" }}>
+            <box style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
               <box 
                 id="auto-layout-toggle"
                 onMouseDown={() => setAutoLayout(!autoLayout)}
@@ -396,7 +396,7 @@ export function Builder({ width, height }: BuilderProps) {
             />
           </box>
           {/* Separator line */}
-          <box style={{ height: 1, marginTop: 1 }}>
+          <box style={{ height: 1, marginTop: 0 }}>
             <text fg={COLORS.border}>{"─".repeat(200)}</text>
           </box>
         </box>

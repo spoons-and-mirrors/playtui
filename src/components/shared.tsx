@@ -306,29 +306,28 @@ export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps
         </box>
         <text fg={COLORS.muted}>Esc to close</text>
       </box>
-      <scrollbox id="code-scroll" style={{ flexGrow: 1, backgroundColor: COLORS.card }}>
-        <textarea
-          ref={textareaRef}
-          placeholder="Paste or edit JSX code here..."
-          focused
-          textColor={COLORS.text}
-          backgroundColor={COLORS.card}
-          focusedBackgroundColor={COLORS.card}
-          cursorColor={COLORS.accent}
-          style={{ width: "100%" }}
-          onContentChange={handleContentChange}
-          onKeyDown={(key) => {
-            if (key.name === "tab" || key.name === "escape") {
-              key.preventDefault()
-              onClose()
-            }
-          }}
-        />
-      </scrollbox>
-      <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
-        <text fg={COLORS.muted}>Edit code to update canvas live</text>
-        {error && <text fg={COLORS.danger}>Parse error - fix to apply</text>}
-      </box>
+      <textarea
+        ref={textareaRef}
+        placeholder="Paste or edit JSX code here..."
+        focused
+        textColor={COLORS.text}
+        backgroundColor="transparent"
+        focusedBackgroundColor="transparent"
+        cursorColor={COLORS.accent}
+        style={{ flexGrow: 1, width: "100%" }}
+        onContentChange={handleContentChange}
+        onKeyDown={(key) => {
+          if (key.name === "tab" || key.name === "escape") {
+            key.preventDefault()
+            onClose()
+          }
+        }}
+      />
+      {error && (
+        <box style={{ marginTop: 1 }}>
+          <text fg={COLORS.danger}>Parse error - fix to apply</text>
+        </box>
+      )}
     </box>
   )
 }
