@@ -1,9 +1,10 @@
 <instructions name="SYSTEM INSTRUCTIONS" policy="END USER NON-NEGOCIABLES">
-	<section name="AGENTIC CODING GUIDELINES: TOOL USE">
 
 ## OPENTUI
 
-The TUI framework we use to build this app is called opentui, is fairly recent, and most probably NOT in your training data. BEFORE doing anything, you MUST USE the context7 tool on the sst/opentui repo to pull relevant knowledge to the task in context.
+The TUI framework used in this app is sst/opentui, is fairly recent, and most probably NOT in your training data. BEFORE doing anything, you MUST USE the context7 and/or deepwiki tool on the sst/opentui repo to pull relevant knowledge to the task in context.
+
+<section name="AGENTIC CODING GUIDELINES: TOOL USE">
 
 ## PARALLEL TOOL USAGE
 
@@ -64,9 +65,7 @@ Exhaustive tests for domain logic belong with the knowledge owner. Other layers 
 
 - AVOID using `else` all together
 - ALWAYS SPECIFY `id` IN JSX TO DISAMBIGUATE TRACEABILITY IN THE DOM
-- ALWAYS UES CONCISE variable and function names
-- BE STRATEGIC WITH CODE ORGANISATION
-
+- ALWAYS USE CONCISE SYMBOLS
 
 </section>
 </instructions>
