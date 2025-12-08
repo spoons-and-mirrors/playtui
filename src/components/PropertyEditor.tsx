@@ -278,11 +278,10 @@ export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }
 
   return (
     <scrollbox id="prop-editor-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}>
-      <box id="element-header" style={{ flexDirection: "row", gap: 1, marginBottom: 1, alignItems: "center" }}>
-        <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}>
-          <text fg={COLORS.bg}>{node.type}</text>
+      <box id="element-header" style={{ marginBottom: 1, flexDirection: "row" }}>
+        <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1, alignSelf: "flex-start" }}>
+          <text fg={COLORS.bg}><strong>{node.type}</strong></text>
         </box>
-        <text fg={COLORS.text}>{node.name || "unnamed"}</text>
       </box>
       {unsectioned.map(renderProp)}
       {activeSections.map(renderSection)}

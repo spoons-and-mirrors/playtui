@@ -14,7 +14,7 @@ import { ElementRenderer } from "./components/ElementRenderer"
 import { ELEMENT_REGISTRY } from "./components/elements"
 import { TreeView } from "./components/TreeView"
 import { PropertyEditor } from "./components/PropertyEditor"
-import { ActionBtn, Footer, CodePanel, ElementToolbar } from "./components/shared"
+import { ActionBtn, Footer, CodePanel, ElementToolbar } from "./components/ui"
 import { FileMenu, type MenuAction } from "./components/FileMenu"
 import { ProjectModal } from "./components/ProjectModal"
 import { DocsPanel } from "./components/DocsPanel"
@@ -39,7 +39,7 @@ interface BuilderProps {
 }
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
-  if (status === "idle") return null
+  if (status === "idle") return <text> </text>
   
   const text = status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Error saving"
   const color = status === "error" ? COLORS.danger : COLORS.muted
@@ -303,7 +303,7 @@ export function Builder({ width, height }: BuilderProps) {
     }
 
     if (showDocs) {
-      if (key.name === "escape") setShowDocs(false)
+      if (key.name === "escape" || (key.name === "d" && key.shift)) setShowDocs(false)
       return
     }
 
@@ -325,7 +325,8 @@ export function Builder({ width, height }: BuilderProps) {
     }
 
     // Main shortcuts
-    if (key.name === "delete" || key.name === "backspace") handleDelete()
+    if (key.name === "delete") handleDelete()
+    else if (key.name === "d" && key.shift) setShowDocs(!showDocs)
     else if (key.name === "d") handleDuplicate()
     else if (key.name === "a") setAddMode(true)
     else if (key.name === "c" && key.shift) handleCopy()
@@ -359,7 +360,8 @@ export function Builder({ width, height }: BuilderProps) {
         style={{ width: treeWidth, height: "100%", backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column" }}>
         <box style={{ alignItems: "center", marginBottom: 1, flexDirection: "column" }} onMouseDown={() => setShowDocs(v => !v)}>
           <ascii-font text="PLAYTUI" font="tiny" color={RGBA.fromHex("#4da8da")} />
-          <box style={{ width: 25, height: 1, flexDirection: "column", alignItems: "flex-end" }}>
+          <box style={{ width: 25, height: 1, flexDirection: "row", justifyContent: "space-between" }}>
+            <SaveIndicator status={saveStatus} />
             <text fg="#d8dce5"><strong>opentui builder</strong></text>
           </box>
           <box border={["bottom"]} borderStyle="single" borderColor="#2a3545" style={{ width: 25, height: 0, flexDirection: "column" }} />
@@ -378,22 +380,25 @@ export function Builder({ width, height }: BuilderProps) {
             <FileMenu projectName={project.name} onAction={handleFileAction} />
             <box style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
               <box 
-                id="auto-layout-toggle"
-                onMouseDown={() => setAutoLayout(!autoLayout)}
-                style={{ backgroundColor: autoLayout ? COLORS.accent : COLORS.card, paddingLeft: 1, paddingRight: 1 }}
+                id="editor-mode-label"
+                style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}
               >
-                <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞</text>
+                <text fg={COLORS.bg}><strong>{showCode ? "Code" : "Editor"}</strong></text>
               </box>
-              <SaveIndicator status={saveStatus} />
             </box>
           </box>
           {/* Element toolbar - second line, left aligned */}
-          <box style={{ flexDirection: "row", justifyContent: "flex-start", marginTop: 1 }}>
+          <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
             <ElementToolbar 
               expanded={addMode} 
               onToggle={() => setAddMode(!addMode)} 
               onAddElement={handleAddElement} 
             />
+            {showCode ? (
+              <text fg={COLORS.muted}>TAB/Esc: Editor</text>
+            ) : (
+              <text fg={COLORS.muted}>TAB: Code</text>
+            )}
           </box>
           {/* Separator line */}
           <box style={{ height: 1, marginTop: 0 }}>
@@ -420,15 +425,13 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Footer - shortcuts at bottom */}
-        <Footer addMode={addMode} />
+        {!showCode && <Footer autoLayout={autoLayout} onToggleAutoLayout={() => setAutoLayout(!autoLayout)} />}
       </box>
 
       {/* Right Panel - Properties (full height, thin left border) */}
       <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
         style={{ width: sidebarWidth, height: "100%", flexDirection: "column", backgroundColor: COLORS.card, padding: 1 }}>
-        <text fg={COLORS.muted} style={{ marginBottom: 1 }}>
-          {selectedNode ? <span fg={COLORS.accent}>{selectedNode.type}</span> : "Properties"}
-        </text>
+{!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
         {selectedNode ? (
           <PropertyEditor key={selectedId} node={selectedNode} onUpdate={handleUpdate}
             focusedField={focusedField} setFocusedField={setFocusedField} />
