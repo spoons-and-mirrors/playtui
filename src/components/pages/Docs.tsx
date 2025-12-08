@@ -57,7 +57,7 @@ export function DocsPanel() {
         flexGrow: 1,
         backgroundColor: COLORS.bg,
         flexDirection: "column",
-        paddingTop: 2,
+        paddingTop: 1,
         paddingBottom: 2,
         paddingLeft: 2,
         paddingRight: 0,
@@ -109,7 +109,7 @@ export function DocsPanel() {
             case "text":
               return (
                 <box key={idx}>
-                  <text fg={COLORS.muted}>{line.content}</text>
+                  <text fg={COLORS.text}>{line.content}</text>
                 </box>
               )
             case "empty":

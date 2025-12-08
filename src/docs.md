@@ -1,4 +1,4 @@
-**Native TUI design tool based on sst/opentui**
+Native TUI design tool based on sst/opentui
 
 ## Navigation
 
