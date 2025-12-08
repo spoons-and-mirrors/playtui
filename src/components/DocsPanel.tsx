@@ -115,10 +115,6 @@ export function DocsPanel() {
           }
         })}
       </scrollbox>
-      
-      <box style={{ marginTop: 1 }}>
-        <text fg={COLORS.muted}>Press Escape or click title again to close</text>
-      </box>
     </box>
   )
 }

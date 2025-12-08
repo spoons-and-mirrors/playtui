@@ -53,7 +53,8 @@ A visual TUI builder for OpenTUI applications.
 | Key | Action |
 |-----|--------|
 | Tab | Toggle code view |
-| Click title | Show this help |
+| Click title | Show docs |
+| Shift + D | Show docs |
 
 ## Tips
 
@@ -61,7 +62,3 @@ A visual TUI builder for OpenTUI applications.
 - Double-click tree items to rename
 - Use property panel on right to edit styles
 - Auto-layout button (⊞) toggles flex positioning
-
----
-
-*Press Escape or click title again to close*

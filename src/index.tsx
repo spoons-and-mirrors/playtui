@@ -383,7 +383,7 @@ export function Builder({ width, height }: BuilderProps) {
                 id="editor-mode-label"
                 style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}
               >
-                <text fg={COLORS.bg}><strong>{showCode ? "Code" : "Editor"}</strong></text>
+                <text fg={COLORS.bg}><strong>{showCode ? "Code" : showDocs ? "Docs" : "Editor"}</strong></text>
               </box>
             </box>
           </box>
@@ -394,10 +394,12 @@ export function Builder({ width, height }: BuilderProps) {
               onToggle={() => setAddMode(!addMode)} 
               onAddElement={handleAddElement} 
             />
-            {showCode ? (
-              <text fg={COLORS.muted}>TAB/Esc: Editor</text>
-            ) : (
-              <text fg={COLORS.muted}>TAB: Code</text>
+            {!showDocs && (
+              showCode ? (
+                <text fg={COLORS.muted}>TAB/Esc: Editor</text>
+              ) : (
+                <text fg={COLORS.muted}>TAB: Code</text>
+              )
             )}
           </box>
           {/* Separator line */}
@@ -425,7 +427,7 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Footer - shortcuts at bottom */}
-        {!showCode && <Footer autoLayout={autoLayout} onToggleAutoLayout={() => setAutoLayout(!autoLayout)} />}
+        {!showCode && !showDocs && <Footer autoLayout={autoLayout} onToggleAutoLayout={() => setAutoLayout(!autoLayout)} />}
       </box>
 
       {/* Right Panel - Properties (full height, thin left border) */}
