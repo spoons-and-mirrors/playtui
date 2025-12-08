@@ -357,8 +357,12 @@ export function Builder({ width, height }: BuilderProps) {
       {/* Left Panel - Tree (full height, thin right border) */}
       <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
         style={{ width: treeWidth, height: "100%", backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column" }}>
-        <box style={{ alignItems: "center", marginBottom: 1 }} onMouseDown={() => setShowDocs(v => !v)}>
-          <ascii-font text="playtui" font="tiny" color={RGBA.fromHex(COLORS.accent)} />
+        <box style={{ alignItems: "center", marginBottom: 1, flexDirection: "column" }} onMouseDown={() => setShowDocs(v => !v)}>
+          <ascii-font text="PLAYTUI" font="tiny" color={RGBA.fromHex("#4da8da")} />
+          <box style={{ width: 25, height: 1, flexDirection: "column", alignItems: "flex-end" }}>
+            <text fg="#d8dce5"><strong>opentui builder</strong></text>
+          </box>
+          <box border={["bottom"]} borderStyle="single" borderColor="#2a3545" style={{ width: 25, height: 0, flexDirection: "column" }} />
         </box>
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
           <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={collapsed}
