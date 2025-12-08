@@ -2,20 +2,45 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import type { TextareaRenderable } from "@opentui/core"
 import { COLORS } from "../../theme"
 import { log } from "../../lib/logger"
+import type { ElementNode } from "../../lib/types"
+import { parseCodeMultiple } from "../../lib/parseCode"
 
 interface CodePanelProps {
   code: string
-  error?: string | null
-  onCodeChange: (newCode: string) => void
+  tree: ElementNode
+  updateTree: (tree: ElementNode) => void
   onClose: () => void
 }
 
-export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps) {
+export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
   const initializedRef = useRef(false)
+  const [error, setError] = useState<string | null>(null)
 
   log("CODE_PANEL_RENDER", { codeLength: code.length, codePreview: code.slice(0, 80), initialized: initializedRef.current })
+
+  // Handle live code editing - parse code and update tree
+  const handleCodeChange = useCallback((newCode: string) => {
+    // Empty code = clear all children
+    if (!newCode.trim()) {
+      updateTree({ ...tree, children: [] })
+      setError(null)
+      return
+    }
+
+    // Parse the code - can be one or multiple elements
+    const result = parseCodeMultiple(newCode)
+    if (!result.success) {
+      setError(result.error || "Parse error")
+      return
+    }
+
+    // Set parsed nodes as children of root
+    const newChildren = result.nodes || (result.node ? [result.node] : [])
+    updateTree({ ...tree, children: newChildren })
+    setError(null)
+  }, [tree, updateTree])
 
   useEffect(() => {
     log("CODE_PANEL_INIT_EFFECT", { initialized: initializedRef.current, hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length })
@@ -54,9 +79,9 @@ export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps
     const newCode = textareaRef.current?.plainText
     if (newCode !== undefined && newCode !== codeRef.current) {
       codeRef.current = newCode
-      onCodeChange(newCode)
+      handleCodeChange(newCode)
     }
-  }, [onCodeChange])
+  }, [handleCodeChange])
 
   const [copied, setCopied] = useState(false)
   const copyToClipboard = useCallback(() => {

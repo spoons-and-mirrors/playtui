@@ -1,6 +1,4 @@
-# PLAYTUI Documentation
-
-A visual TUI builder for OpenTUI applications.
+**Native TUI design tool based on sst/opentui**
 
 ## Navigation
 

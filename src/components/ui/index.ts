@@ -1,4 +1,9 @@
 export { ActionBtn } from "./ActionBtn"
-export { ElementToolbar } from "./ElementToolbar"
-export { Footer } from "./Footer"
-export { CodePanel } from "./CodePanel"
+export { Footer, type ViewMode } from "./Footer"
+export { ProjectModal } from "./ProjectModal"
+
+// Re-export panels for convenience
+export { CodePanel } from "../pages/Code"
+export { DocsPanel } from "../pages/Docs"
+export { EditorPanel } from "../pages/Editor"
+export { Header, type MenuAction } from "./Header"

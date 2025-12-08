@@ -1,10 +1,10 @@
-import { COLORS } from "../theme"
+import { COLORS } from "../../theme"
 import { readFileSync } from "fs"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const docsContent = readFileSync(join(__dirname, "../docs.md"), "utf-8")
+const docsContent = readFileSync(join(__dirname, "../../docs.md"), "utf-8")
 
 interface DocLine {
   type: "heading" | "subheading" | "text" | "table-header" | "table-row" | "list" | "divider" | "empty"
@@ -57,7 +57,10 @@ export function DocsPanel() {
         flexGrow: 1,
         backgroundColor: COLORS.bg,
         flexDirection: "column",
-        padding: 2,
+        paddingTop: 2,
+        paddingBottom: 2,
+        paddingLeft: 2,
+        paddingRight: 0,
       }}
     >
       <scrollbox
@@ -65,6 +68,7 @@ export function DocsPanel() {
         style={{
           flexGrow: 1,
           contentOptions: { flexDirection: "column", gap: 0 },
+          scrollbarOptions: { showArrows: false, trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" } },
         }}
       >
         {parsedDocs.map((line, idx) => {

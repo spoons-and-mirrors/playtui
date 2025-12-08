@@ -21,7 +21,7 @@ import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./ta
 import type { ElementType, ElementNode } from "../../lib/types"
 
 // Renderer props shared by all element renderers
-export interface ElementRendererProps {
+export interface RendererProps {
   node: ElementNode
   isSelected: boolean
   isHovered: boolean
@@ -42,7 +42,7 @@ export interface ElementPropertiesProps {
 
 // Registry entry type
 export interface ElementRegistryEntry {
-  Renderer: (props: ElementRendererProps) => React.ReactNode
+  Renderer: (props: RendererProps) => React.ReactNode
   Properties: ((props: ElementPropertiesProps) => React.ReactNode) | null
   defaults: Partial<ElementNode>
   hasChildren: boolean

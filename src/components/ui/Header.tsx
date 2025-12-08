@@ -1,0 +1,207 @@
+import { useState } from "react"
+import { COLORS } from "../../theme"
+import type { ElementType } from "../../lib/types"
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export type MenuAction = "new" | "load" | "delete"
+
+interface HeaderProps {
+  projectName: string
+  addMode: boolean
+  onFileAction: (action: MenuAction) => void
+  onToggleAddMode: () => void
+  onAddElement: (type: ElementType) => void
+}
+
+// ============================================================================
+// Element Options
+// ============================================================================
+
+interface ElementOption {
+  type: ElementType
+  icon: string
+  label: string
+  shortcut: string
+}
+
+const ELEMENT_OPTIONS: ElementOption[] = [
+  { type: "box", icon: "□", label: "Box", shortcut: "B" },
+  { type: "text", icon: "T", label: "Text", shortcut: "T" },
+  { type: "scrollbox", icon: "⊟", label: "Scroll", shortcut: "S" },
+  { type: "input", icon: "▭", label: "Input", shortcut: "I" },
+  { type: "textarea", icon: "▤", label: "Textarea", shortcut: "X" },
+  { type: "select", icon: "▼", label: "Select", shortcut: "E" },
+  { type: "slider", icon: "═", label: "Slider", shortcut: "L" },
+  { type: "ascii-font", icon: "A", label: "ASCII", shortcut: "F" },
+  { type: "tab-select", icon: "⊞", label: "Tabs", shortcut: "W" },
+]
+
+// ============================================================================
+// File Menu
+// ============================================================================
+
+const FILE_MENU_ITEMS: { id: MenuAction; label: string }[] = [
+  { id: "new", label: "New Project" },
+  { id: "load", label: "Load Project" },
+  { id: "delete", label: "Delete Project" },
+]
+
+function FileMenu({ projectName, onAction }: { projectName: string; onAction: (action: MenuAction) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+
+  const handleSelect = (action: MenuAction) => {
+    setIsOpen(false)
+    onAction(action)
+  }
+
+  return (
+    <box id="file-menu" style={{ flexDirection: "column" }}>
+      <box style={{ flexDirection: "row" }}>
+        <box
+          id="file-menu-btn"
+          onMouseDown={() => setIsOpen(!isOpen)}
+          onMouseOver={() => setHoveredItem("file-btn")}
+          onMouseOut={() => setHoveredItem(null)}
+          style={{
+            backgroundColor: isOpen || hoveredItem === "file-btn" ? COLORS.cardHover : COLORS.card,
+            paddingLeft: 1,
+            paddingRight: 1,
+          }}
+        >
+          <text fg={COLORS.accent}>File {isOpen ? "▴" : "▾"}</text>
+        </box>
+        <box style={{ paddingLeft: 2 }}>
+          <text fg={COLORS.muted}>{projectName}</text>
+        </box>
+      </box>
+
+      {isOpen && (
+        <box
+          id="file-menu-dropdown"
+          border
+          borderStyle="rounded"
+          borderColor={COLORS.border}
+          style={{ backgroundColor: COLORS.card, flexDirection: "column", width: 18 }}
+        >
+          {FILE_MENU_ITEMS.map((item) => (
+            <box
+              key={item.id}
+              id={`file-menu-${item.id}`}
+              onMouseDown={() => handleSelect(item.id)}
+              onMouseOver={() => setHoveredItem(item.id)}
+              onMouseOut={() => setHoveredItem(null)}
+              style={{
+                backgroundColor: hoveredItem === item.id ? COLORS.cardHover : "transparent",
+                paddingLeft: 1,
+                paddingRight: 1,
+              }}
+            >
+              <text fg={item.id === "delete" ? COLORS.danger : COLORS.text}>{item.label}</text>
+            </box>
+          ))}
+        </box>
+      )}
+    </box>
+  )
+}
+
+// ============================================================================
+// Element Toolbar
+// ============================================================================
+
+function ElementToolbarBtn({ option, onPress }: { option: ElementOption; onPress: () => void }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <box
+      id={`add-${option.type}`}
+      onMouseDown={onPress}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+      style={{
+        backgroundColor: hovered ? COLORS.bgAlt : "transparent",
+        paddingLeft: 1,
+        paddingRight: 1,
+        flexDirection: "row",
+      }}
+    >
+      <text fg={hovered ? COLORS.accent : COLORS.text}>{option.icon}</text>
+      {hovered && (
+        <text fg={COLORS.muted} style={{ marginLeft: 1 }}>
+          {option.label} [{option.shortcut}]
+        </text>
+      )}
+    </box>
+  )
+}
+
+function ElementToolbar({
+  expanded,
+  onToggle,
+  onAddElement,
+}: {
+  expanded: boolean
+  onToggle: () => void
+  onAddElement: (type: ElementType) => void
+}) {
+  return (
+    <box id="element-toolbar" style={{ flexDirection: "row", gap: 0 }}>
+      <box
+        id="element-toggle"
+        onMouseDown={onToggle}
+        style={{
+          backgroundColor: expanded ? COLORS.accent : COLORS.card,
+          paddingLeft: 1,
+          paddingRight: 1,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <text fg={expanded ? COLORS.bg : COLORS.accent}>＋</text>
+        <text fg={expanded ? COLORS.bg : COLORS.text} style={{ marginLeft: 1 }}>Add</text>
+      </box>
+      {expanded && (
+        <box style={{ flexDirection: "row", gap: 0, backgroundColor: COLORS.card, paddingLeft: 1 }}>
+          {ELEMENT_OPTIONS.map((opt) => (
+            <ElementToolbarBtn key={opt.type} option={opt} onPress={() => onAddElement(opt.type)} />
+          ))}
+        </box>
+      )}
+    </box>
+  )
+}
+
+// ============================================================================
+// Header (Main Export)
+// ============================================================================
+
+export function Header({
+  projectName,
+  addMode,
+  onFileAction,
+  onToggleAddMode,
+  onAddElement,
+}: HeaderProps) {
+  return (
+    <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
+      {/* Row 1: File menu */}
+      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <FileMenu projectName={projectName} onAction={onFileAction} />
+      </box>
+
+      {/* Row 2: Element toolbar */}
+      <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
+        <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddElement={onAddElement} />
+      </box>
+
+      {/* Separator line */}
+      <box style={{ height: 1, marginTop: 0 }}>
+        <text fg={COLORS.border}>{"─".repeat(200)}</text>
+      </box>
+    </box>
+  )
+}

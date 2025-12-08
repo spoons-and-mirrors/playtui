@@ -1,15 +1,15 @@
 import { useState } from "react"
-import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode } from "../lib/types"
-import { isContainerNode } from "../lib/types"
-import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../lib/constants"
+import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode } from "../../lib/types"
+import { isContainerNode } from "../../lib/types"
+import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
   NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
   SectionHeader, BorderSidesProp, SpacingControl, ColorPropWithHex, 
   PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
   OverflowPicker, DimensionsControl
-} from "./controls"
-import { ELEMENT_REGISTRY } from "./elements"
-import { COLORS } from "../theme"
+} from "../controls"
+import { ELEMENT_REGISTRY } from "../elements"
+import { COLORS } from "../../theme"
 
 // Sections that are element-specific and handled by registry Properties components
 const ELEMENT_SPECIFIC_SECTIONS: PropertySection[] = [
@@ -19,14 +19,14 @@ const ELEMENT_SPECIFIC_SECTIONS: PropertySection[] = [
 // Helper type for dynamic property access
 type AnyNodeProps = Record<string, unknown>
 
-interface PropertyEditorProps {
+interface PropertyPaneProps {
   node: ElementNode
   onUpdate: (updates: Partial<ElementNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
 }
 
-export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }: PropertyEditorProps) {
+export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     SECTION_ORDER.forEach(section => {
@@ -277,7 +277,7 @@ export function PropertyEditor({ node, onUpdate, focusedField, setFocusedField }
   }
 
   return (
-    <scrollbox id="prop-editor-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}>
+    <scrollbox id="prop-pane-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}>
       <box id="element-header" style={{ marginBottom: 1, flexDirection: "row" }}>
         <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1, alignSelf: "flex-start" }}>
           <text fg={COLORS.bg}><strong>{node.type}</strong></text>
