@@ -2,7 +2,7 @@ import type { ElementNode } from "../lib/types"
 import { ELEMENT_REGISTRY } from "./elements"
 import { log } from "../lib/logger"
 
-interface RendererProps {
+export interface RendererProps {
   node: ElementNode
   selectedId: string | null
   hoveredId: string | null

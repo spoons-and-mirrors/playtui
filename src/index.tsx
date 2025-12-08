@@ -6,6 +6,8 @@ import { resetIdCounter, findNode, countNodes } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
 import { TreeView } from "./components/pages/Tree"
 import { PropertyPane } from "./components/pages/Properties"
+import { LibraryPage } from "./components/pages/Library"
+import { AnimatePage } from "./components/pages/Animate"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header } from "./components/ui"
 import { useProject } from "./hooks/useProject"
@@ -18,6 +20,7 @@ interface BuilderProps {
 }
 
 export function Builder({ width, height }: BuilderProps) {
+  const projectHook = useProject()
   const {
     project,
     isLoading,
@@ -32,7 +35,12 @@ export function Builder({ width, height }: BuilderProps) {
     setCollapsed: setProjectCollapsed,
     undo,
     redo,
-  } = useProject()
+    // Animation methods
+    setCurrentFrame,
+    duplicateFrame,
+    deleteFrame,
+    setFps,
+  } = projectHook
 
   // Clear debug log on startup
   useEffect(() => { clearLog() }, [])
@@ -44,6 +52,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   // Derive state from project
   const tree = project?.tree ?? null
@@ -94,6 +103,12 @@ export function Builder({ width, height }: BuilderProps) {
     onMoveNode: handleMoveNode,
     onNavigateTree: navigateTree,
     onAddElement: handleAddElement,
+    // Animation Actions
+    onAnimNextFrame: () => project?.animation && setCurrentFrame(Math.min(project.animation.frames.length - 1, project.animation.currentFrameIndex + 1)),
+    onAnimPrevFrame: () => project?.animation && setCurrentFrame(Math.max(0, project.animation.currentFrameIndex - 1)),
+    onAnimPlayToggle: () => setIsPlaying(p => !p),
+    onAnimDuplicateFrame: duplicateFrame,
+    onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -129,10 +144,37 @@ export function Builder({ width, height }: BuilderProps) {
   const sidebarWidth = 40
 
   // Loading state
-  if (isLoading || !project || !tree) {
+  if (isLoading) { // Allow project to be null if we are in library mode?
+                   // But useProject loads the last project by default.
     return (
       <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
         <text fg={COLORS.muted}>Loading...</text>
+      </box>
+    )
+  }
+  
+  // Library Mode - Full Screen (hides tree and sidebar)
+  if (mode === "library") {
+    return (
+      <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
+        <LibraryPage 
+          projectHook={projectHook} 
+          onLoadProject={() => setMode("editor")} 
+          width={width}
+          height={height - 3}
+        />
+        <Footer mode={mode} onModeChange={setMode} />
+      </box>
+    )
+  }
+
+  // Ensure project is loaded for other modes
+  if (!project || !tree) {
+    // Should generally not happen if isLoading handled, but safe guard
+    return (
+       <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
+        <text fg={COLORS.muted}>No project loaded.</text>
+        <Footer mode={mode} onModeChange={setMode} />
       </box>
     )
   }
@@ -164,6 +206,12 @@ export function Builder({ width, height }: BuilderProps) {
           <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setMode("editor")} />
         ) : mode === "docs" ? (
           <DocsPanel />
+        ) : mode === "animate" ? (
+           <AnimatePage 
+             projectHook={projectHook} 
+             isPlaying={isPlaying}
+             onTogglePlay={() => setIsPlaying(p => !p)}
+           />
         ) : (
           <EditorPanel
             tree={tree}
@@ -193,6 +241,7 @@ export function Builder({ width, height }: BuilderProps) {
           <text fg={COLORS.muted}>Select an element</text>
         )}
       </box>
+
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

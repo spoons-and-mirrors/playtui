@@ -46,6 +46,16 @@ Native TUI design tool based on sst/opentui
 | z | Undo |
 | y / Shift + Z | Redo |
 
+## Animation (Animate Mode)
+
+| Key | Action |
+|-----|--------|
+| e | Previous frame |
+| r | Next frame |
+| f | New frame (duplicate current) |
+| x | Delete frame |
+| Space | Play / Pause |
+
 ## Views
 
 | Key | Action |

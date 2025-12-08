@@ -25,6 +25,7 @@ interface EditorPanelProps {
   onHover: (id: string | null) => void
   onBackgroundClick: () => void
   onToggleAutoLayout: () => void
+  hideCenterButton?: boolean
 }
 
 export function EditorPanel({
@@ -37,6 +38,7 @@ export function EditorPanel({
   onHover,
   onBackgroundClick,
   onToggleAutoLayout,
+  hideCenterButton = false,
 }: EditorPanelProps) {
   return (
     <box
@@ -48,18 +50,20 @@ export function EditorPanel({
       }}
     >
       {/* Header row with Center toggle */}
-      <box style={{ flexDirection: "row", justifyContent: "flex-end", flexShrink: 0 }}>
-        <box
-          id="auto-layout-toggle"
-          onMouseDown={onToggleAutoLayout}
-          style={{
-            backgroundColor: autoLayout ? COLORS.accent : COLORS.card,
-            paddingLeft: 1,
-            paddingRight: 1,
-          }}
-        >
-          <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞ Center</text>
-        </box>
+      <box style={{ flexDirection: "row", justifyContent: "flex-end", flexShrink: 0, height: 1 }}>
+        {!hideCenterButton && (
+          <box
+            id="auto-layout-toggle"
+            onMouseDown={onToggleAutoLayout}
+            style={{
+              backgroundColor: autoLayout ? COLORS.accent : COLORS.card,
+              paddingLeft: 1,
+              paddingRight: 1,
+            }}
+          >
+            <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞ Center</text>
+          </box>
+        )}
       </box>
 
       {/* Canvas area */}

@@ -40,16 +40,16 @@ const ELEMENT_OPTIONS: ElementOption[] = [
 ]
 
 // ============================================================================
-// File Menu
+// Project Menu
 // ============================================================================
 
 const FILE_MENU_ITEMS: { id: MenuAction; label: string }[] = [
-  { id: "new", label: "New Project" },
-  { id: "load", label: "Load Project" },
-  { id: "delete", label: "Delete Project" },
+  { id: "new", label: "New" },
+  { id: "load", label: "Load" },
+  { id: "delete", label: "Delete" },
 ]
 
-function FileMenu({ projectName, onAction }: { projectName: string; onAction: (action: MenuAction) => void }) {
+function FileMenu({ onAction }: { onAction: (action: MenuAction) => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
 
@@ -59,55 +59,61 @@ function FileMenu({ projectName, onAction }: { projectName: string; onAction: (a
   }
 
   return (
-    <box id="file-menu" style={{ flexDirection: "column" }}>
-      <box style={{ flexDirection: "row" }}>
-        <box
-          id="file-menu-btn"
-          onMouseDown={() => setIsOpen(!isOpen)}
-          onMouseOver={() => setHoveredItem("file-btn")}
-          onMouseOut={() => setHoveredItem(null)}
-          style={{
-            backgroundColor: isOpen || hoveredItem === "file-btn" ? COLORS.cardHover : COLORS.card,
-            paddingLeft: 1,
-            paddingRight: 1,
-          }}
-        >
-          <text fg={COLORS.accent}>File {isOpen ? "▴" : "▾"}</text>
-        </box>
-        <box style={{ paddingLeft: 2 }}>
-          <text fg={COLORS.muted}>{projectName}</text>
-        </box>
-      </box>
+    <box id="file-menu" style={{ flexDirection: "row", alignItems: "center" }}>
+      <box
+        id="file-menu-btn"
+        onMouseDown={() => setIsOpen(!isOpen)}
+        onMouseOver={() => setHoveredItem("file-btn")}
+        onMouseOut={() => setHoveredItem(null)}
+        style={{
+          backgroundColor: isOpen || hoveredItem === "file-btn" ? COLORS.cardHover : COLORS.card,
+          paddingLeft: 1,
+          paddingRight: 1,
+        }}
+      >
+         <text id="file-menu-label" fg={COLORS.accent}>
+           {isOpen ? <strong>Project ▸</strong> : "Project ▸"}
+         </text>
+       </box>
 
       {isOpen && (
-        <box
-          id="file-menu-dropdown"
-          border
-          borderStyle="rounded"
-          borderColor={COLORS.border}
-          style={{ backgroundColor: COLORS.card, flexDirection: "column", width: 18 }}
-        >
-          {FILE_MENU_ITEMS.map((item) => (
-            <box
-              key={item.id}
-              id={`file-menu-${item.id}`}
-              onMouseDown={() => handleSelect(item.id)}
-              onMouseOver={() => setHoveredItem(item.id)}
-              onMouseOut={() => setHoveredItem(null)}
-              style={{
-                backgroundColor: hoveredItem === item.id ? COLORS.cardHover : "transparent",
-                paddingLeft: 1,
-                paddingRight: 1,
-              }}
-            >
-              <text fg={item.id === "delete" ? COLORS.danger : COLORS.text}>{item.label}</text>
-            </box>
-          ))}
+        <box id="file-menu-inline" style={{ flexDirection: "row", marginLeft: 1 }}>
+          {FILE_MENU_ITEMS.map((item) => {
+            const isHovered = hoveredItem === item.id
+            const isDelete = item.id === "delete"
+
+            return (
+              <box
+                key={item.id}
+                id={`file-menu-${item.id}`}
+                onMouseDown={() => handleSelect(item.id)}
+                onMouseOver={() => setHoveredItem(item.id)}
+                onMouseOut={() => setHoveredItem(null)}
+                border={["left"]}
+                borderStyle="heavy"
+                borderColor={isDelete ? COLORS.danger : COLORS.accentBright}
+                style={{
+                  flexDirection: "row",
+                  backgroundColor: COLORS.cardHover,
+                  paddingLeft: 1,
+                  paddingRight: 1,
+                  marginLeft: 1,
+                }}
+              >
+                <text id={`file-menu-label-${item.id}`} fg={isDelete ? COLORS.danger : COLORS.text}>
+                  {isHovered ? <strong>{item.label}</strong> : item.label}
+                </text>
+              </box>
+            )
+          })}
         </box>
       )}
     </box>
   )
 }
+
+
+
 
 // ============================================================================
 // Element Toolbar
@@ -190,7 +196,10 @@ export function Header({
     <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
       {/* Row 1: File menu */}
       <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <FileMenu projectName={projectName} onAction={onFileAction} />
+        <FileMenu onAction={onFileAction} />
+        <box id="header-project-name" style={{ marginLeft: 2 }}>
+          <text id="header-project-name-text" fg={COLORS.muted}>{projectName}</text>
+        </box>
       </box>
 
       {/* Row 2: Element toolbar */}

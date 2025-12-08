@@ -1,6 +1,6 @@
 import { COLORS } from "../../theme"
 
-export type ViewMode = "editor" | "code" | "docs"
+export type ViewMode = "editor" | "code" | "animate" | "library" | "docs"
 
 interface ModeTabProps {
   fKey: string
@@ -14,26 +14,17 @@ function ModeTab({ fKey, label, isActive, onPress }: ModeTabProps) {
     <box
       id={`mode-tab-${fKey.toLowerCase()}`}
       onMouseDown={onPress}
-      style={{ flexDirection: "row", marginRight: 2 }}
+      style={{ 
+        flexDirection: "row", 
+        marginRight: 1,
+      }}
     >
-      <box
-        style={{
-          backgroundColor: isActive ? COLORS.accent : COLORS.card,
-          paddingLeft: 1,
-          paddingRight: 1,
-        }}
-      >
+      <box backgroundColor={isActive ? COLORS.accentBright : COLORS.card} paddingLeft={1} paddingRight={1}>
         <text fg={isActive ? COLORS.bg : COLORS.muted}>
           {isActive ? <strong>{fKey}</strong> : fKey}
         </text>
       </box>
-      <box
-        style={{
-          backgroundColor: isActive ? COLORS.accentBright : COLORS.bgAlt,
-          paddingLeft: 1,
-          paddingRight: 1,
-        }}
-      >
+      <box backgroundColor={isActive ? COLORS.accent : COLORS.card} paddingLeft={1} paddingRight={1}>
         <text fg={isActive ? COLORS.bg : COLORS.muted}>
           {isActive ? <strong>{label}</strong> : label}
         </text>
@@ -57,12 +48,14 @@ export function Footer({ mode, onModeChange }: FooterProps) {
         alignItems: "center",
         height: 1,
         flexShrink: 0,
+        marginTop: 1,
       }}
     >
       <ModeTab fKey="F1" label="Editor" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
       <ModeTab fKey="F2" label="Code" isActive={mode === "code"} onPress={() => onModeChange("code")} />
-      <ModeTab fKey="F3" label="—" isActive={false} onPress={() => {}} />
-      <ModeTab fKey="F4" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
+      <ModeTab fKey="F3" label="Animate" isActive={mode === "animate"} onPress={() => onModeChange("animate")} />
+      <ModeTab fKey="F4" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
+      <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
     </box>
   )
 }

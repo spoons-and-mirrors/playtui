@@ -39,6 +39,13 @@ interface UseBuilderKeyboardParams {
   onMoveNode: (direction: "up" | "down") => void
   onNavigateTree: (direction: "up" | "down") => void
   onAddElement: (type: ElementType) => void
+
+  // Animation actions
+  onAnimNextFrame?: () => void
+  onAnimPrevFrame?: () => void
+  onAnimPlayToggle?: () => void
+  onAnimDuplicateFrame?: () => void
+  onAnimDeleteFrame?: () => void
 }
 
 export function useBuilderKeyboard({
@@ -60,14 +67,20 @@ export function useBuilderKeyboard({
   onMoveNode,
   onNavigateTree,
   onAddElement,
+  onAnimNextFrame,
+  onAnimPrevFrame,
+  onAnimPlayToggle,
+  onAnimDuplicateFrame,
+  onAnimDeleteFrame,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // F-key mode switching (always available except in modal)
     if (!modalMode) {
       if (key.name === "f1") { setMode("editor"); return }
       if (key.name === "f2") { setMode("code"); return }
-      // F3 reserved for future use
-      if (key.name === "f4") { setMode("docs"); return }
+      if (key.name === "f3") { setMode("animate"); return }
+      if (key.name === "f4") { setMode("library"); return }
+      if (key.name === "f5") { setMode("docs"); return }
     }
 
     // Close modal on escape
@@ -76,10 +89,22 @@ export function useBuilderKeyboard({
       return
     }
 
-    // Escape from docs/code mode
-    if (mode === "docs" || mode === "code") {
-      if (key.name === "escape") setMode("editor")
+    // Non-editor modes (no editor shortcuts)
+    if (mode === "docs" || mode === "code" || mode === "library") {
+      if (key.name === "escape") { setSelectedId(null); return }
       return
+    }
+
+    // Animate mode - frame shortcuts, then fall through to editor shortcuts
+    if (mode === "animate") {
+      if (key.name === "space" && onAnimPlayToggle) { onAnimPlayToggle(); return }
+      if (!focusedField && !addMode) {
+        if (key.name === "e" && onAnimPrevFrame) { onAnimPrevFrame(); return }
+        if (key.name === "r" && onAnimNextFrame) { onAnimNextFrame(); return }
+        if (key.name === "f" && onAnimDuplicateFrame) { onAnimDuplicateFrame(); return }
+        if (key.name === "x" && onAnimDeleteFrame) { onAnimDeleteFrame(); return }
+      }
+      // Fall through to editor shortcuts below
     }
 
     if (focusedField) {

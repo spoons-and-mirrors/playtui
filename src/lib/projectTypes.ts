@@ -12,6 +12,13 @@ export interface Project {
   tree: ElementNode
   selectedId: string | null
   collapsed: string[] // Collapsed node IDs in tree view
+  
+  // Animation state
+  animation: {
+    fps: number
+    frames: ElementNode[] // Array of root trees, one per frame
+    currentFrameIndex: number
+  }
 
   // Full undo history (persisted, no limit)
   history: HistoryEntry[]
@@ -42,14 +49,20 @@ export function createDefaultTree(): ElementNode {
 
 export function createNewProject(name: string): Project {
   const now = new Date().toISOString()
+  const defaultTree = createDefaultTree()
   return {
     name,
     version: 1,
     createdAt: now,
     updatedAt: now,
-    tree: createDefaultTree(),
+    tree: defaultTree,
     selectedId: null,
     collapsed: [],
+    animation: {
+      fps: 12,
+      frames: [defaultTree],
+      currentFrameIndex: 0
+    },
     history: [],
     future: [],
   }
