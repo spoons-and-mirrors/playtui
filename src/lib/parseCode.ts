@@ -200,6 +200,11 @@ const ELEMENT_TYPES: Set<string> = new Set([
   "select", "slider", "ascii-font", "tab-select"
 ])
 
+// Inline formatting tags that should be treated as text content, not elements
+const INLINE_FORMATTING_TAGS: Set<string> = new Set([
+  "strong", "em", "u", "span", "br"
+])
+
 // Tokenize JSX string
 function tokenize(jsx: string): Token[] {
   const tokens: Token[] = []
@@ -544,6 +549,10 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
   
   if (token.type === "tagSelfClose") {
     if (!token.name || !ELEMENT_TYPES.has(token.name)) {
+      // Skip inline formatting tags silently
+      if (token.name && INLINE_FORMATTING_TAGS.has(token.name)) {
+        return { node: null, nextIndex: index + 1 }
+      }
       return { node: null, nextIndex: index + 1, error: `Unknown element type: ${token.name}` }
     }
     const node = createNode(token.name, token.props || {})
@@ -551,6 +560,19 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
   }
   
   if (token.type === "tagOpen") {
+    // Skip inline formatting tags - consume until matching close tag
+    if (token.name && INLINE_FORMATTING_TAGS.has(token.name)) {
+      let i = index + 1
+      let depth = 1
+      while (i < tokens.length && depth > 0) {
+        const t = tokens[i]
+        if (t.type === "tagOpen" && t.name === token.name) depth++
+        if (t.type === "tagClose" && t.name === token.name) depth--
+        i++
+      }
+      return { node: null, nextIndex: i }
+    }
+    
     if (!token.name || !ELEMENT_TYPES.has(token.name)) {
       return { node: null, nextIndex: index + 1, error: `Unknown element type: ${token.name}` }
     }

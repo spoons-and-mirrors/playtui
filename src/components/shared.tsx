@@ -240,6 +240,11 @@ export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps
         // Use codeRef.current which is always up-to-date
         textareaRef.current.setText(codeRef.current, { history: false })
         initializedRef.current = true
+        // Force multiple re-renders to ensure full content is visible
+        setTimeout(() => {
+          textareaRef.current?.setText(codeRef.current, { history: false })
+          textareaRef.current?.requestRender()
+        }, 0)
         log("CODE_PANEL_INIT_DONE", { setText: codeRef.current.slice(0, 80) })
       } else {
         // Ref not ready, try again next frame

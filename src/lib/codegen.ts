@@ -257,6 +257,9 @@ export function generateCode(node: ElementNode, indent = 0): string {
   // ASCII-font element
   if (node.type === "ascii-font") {
     const asciiProps: string[] = []
+    // Include name for round-trip editing
+    const name = node.name || "AsciiFont"
+    asciiProps.push(`name="${name}"`)
     if (node.text) asciiProps.push(`text="${node.text}"`)
     if (node.font) asciiProps.push(`font="${node.font}"`)
     if (node.color) asciiProps.push(`color="${node.color}"`)
