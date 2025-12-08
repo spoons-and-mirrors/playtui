@@ -1,4 +1,5 @@
 import { RGBA } from "@opentui/core"
+import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
 import type { SaveStatus } from "../../hooks/useProject"
 
@@ -6,10 +7,31 @@ import type { SaveStatus } from "../../hooks/useProject"
 // Save Indicator
 // ============================================================================
 
+const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
+
 function SaveIndicator({ status }: { status: SaveStatus }) {
+  const [frame, setFrame] = useState(0)
+
+  useEffect(() => {
+    if (status === "saving") {
+      const timer = setInterval(() => {
+        setFrame((f) => (f + 1) % SPINNER_FRAMES.length)
+      }, 100)
+      return () => clearInterval(timer)
+    }
+  }, [status])
+
   if (status === "idle") return <text> </text>
 
-  const text = status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Error saving"
+  let text = ""
+  if (status === "saving") {
+    text = `${SPINNER_FRAMES[frame]}`
+  } else if (status === "saved") {
+    text = "●"
+  } else {
+    text = "Error saving"
+  }
+
   const color = status === "error" ? COLORS.danger : COLORS.muted
 
   return <text fg={color}>{text}</text>
