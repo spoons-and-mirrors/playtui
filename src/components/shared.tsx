@@ -275,30 +275,42 @@ export function CodePanel({ code, error, onCodeChange, onClose }: CodePanelProps
     }
   }, [onCodeChange])
 
+  // Copy code to clipboard using system clipboard tools
+  const [copied, setCopied] = useState(false)
+  const copyToClipboard = useCallback(() => {
+    const proc = Bun.spawn(["xclip", "-selection", "clipboard"], {
+      stdin: "pipe",
+    })
+    proc.stdin.write(code)
+    proc.stdin.end()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1000)
+  }, [code])
+
   return (
     <box id="code-panel" style={{ flexGrow: 1, flexDirection: "column", backgroundColor: COLORS.bg }}>
       <box id="code-panel-header" style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 1 }}>
-        <text fg={error ? COLORS.danger : COLORS.accent}>
-          {error ? `Error: ${error}` : "Code Editor"}
-        </text>
+        <box style={{ flexDirection: "row" }}>
+          <text fg={error ? COLORS.danger : COLORS.accent}>
+            {error ? `Error: ${error}` : "Code Editor"}
+          </text>
+          <text fg={COLORS.muted}> | </text>
+          <box onMouseDown={copyToClipboard} backgroundColor={copied ? COLORS.success : COLORS.card} style={{ paddingLeft: 1, paddingRight: 1 }}>
+            <text fg={copied ? COLORS.bg : COLORS.accent}>{copied ? "✓ Copied" : "⎘ Copy"}</text>
+          </box>
+        </box>
         <text fg={COLORS.muted}>Esc to close</text>
       </box>
       <scrollbox id="code-scroll" style={{ flexGrow: 1, backgroundColor: COLORS.card }}>
-        <code
-          content={code}
-          filetype="tsx"
-          syntaxStyle={syntaxStyle}
-          wrapMode="word"
-        />
         <textarea
           ref={textareaRef}
           placeholder="Paste or edit JSX code here..."
           focused
-          textColor="transparent"
-          backgroundColor="transparent"
-          focusedBackgroundColor="transparent"
+          textColor={COLORS.text}
+          backgroundColor={COLORS.card}
+          focusedBackgroundColor={COLORS.card}
           cursorColor={COLORS.accent}
-          style={{ width: "100%", position: "absolute", left: 0, top: 0 }}
+          style={{ width: "100%" }}
           onContentChange={handleContentChange}
           onKeyDown={(key) => {
             if (key.name === "tab" || key.name === "escape") {
