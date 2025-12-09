@@ -257,7 +257,7 @@ export function DimensionsControl({
   onChange 
 }: DimensionsControlProps) {
   return (
-    <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, padding: 1 }}>
+    <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingBottom: 1 }}>
       {/* Width */}
       <DimensionRow 
         id="dim-w" 
