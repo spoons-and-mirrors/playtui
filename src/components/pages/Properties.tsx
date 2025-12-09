@@ -7,7 +7,7 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorPropWithHex, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-   OverflowPicker, DimensionsControl
+   OverflowPicker, DimensionsControl, PaletteProp
 } from "../controls"
 import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
@@ -26,9 +26,14 @@ interface PropertyPaneProps {
   onUpdate: (updates: Partial<ElementNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
+  // Palette support
+  palettes?: Array<{ id: string; name: string; swatches: Array<{ id: string; color: string }> }>
+  activePaletteIndex?: number
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
 }
 
-export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: PropertyPaneProps) {
+export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     SECTION_ORDER.forEach(section => {
@@ -310,7 +315,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
 
     return entry.Properties({
       node, onUpdate, focusedField, setFocusedField,
-      collapsed: collapsed[section], onToggle: () => toggleSection(section)
+      collapsed: collapsed[section], onToggle: () => toggleSection(section),
+      palettes, activePaletteIndex, onUpdateSwatch, onChangePalette
     })
   }
 
@@ -354,17 +360,37 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
         if (focusedField === "name") setFocusedField(null)
       }}
     >
-      <box id="element-header" style={{ marginBottom: 1, flexDirection: "column", gap: 1, paddingRight: 1 }}>
-        <box id="element-type-row" style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <box id="element-type" style={{ flexDirection: "row" }}>
-            <text fg={COLORS.muted}>Type </text>
-            <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}>
-              <text fg={COLORS.bg}><strong>{node.type}</strong></text>
-            </box>
+      <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, paddingBottom: 0, flexDirection: "column", gap: 0 }}>
+        {/* Row 1: Type badge + Palette (centered) + Visibility */}
+        <box style={{ flexDirection: "row", alignItems: "flex-start", paddingRight: 1 }}>
+          {/* Type badge */}
+          <box id="element-type" style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}>
+            <text fg={COLORS.bg}><strong>{node.type}</strong></text>
           </box>
+          
+          {/* Palette - centered with flexGrow */}
+          <box style={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
+            {palettes && palettes.length > 0 && (
+              <PaletteProp
+                palettes={palettes}
+                activePaletteIndex={activePaletteIndex ?? 0}
+                selectedColor={node.type === "text" ? (node as TextNode).fg : (node as BoxNode).backgroundColor}
+                onSelectColor={(color) => {
+                  if (node.type === "text") {
+                    onUpdate({ fg: color } as Partial<ElementNode>)
+                  } else if (node.type === "box" || node.type === "scrollbox") {
+                    onUpdate({ backgroundColor: color } as Partial<ElementNode>)
+                  }
+                }}
+                onUpdateSwatch={onUpdateSwatch}
+                onChangePalette={onChangePalette}
+              />
+            )}
+          </box>
+          
+          {/* Visibility toggle */}
           <box
             id="visibility-toggle"
-            style={{ flexDirection: "row", paddingLeft: 2, paddingRight: 2 }}
             onMouseDown={() => onUpdate({ visible: !node.visible } as Partial<ElementNode>)}
           >
             <text fg={node.visible !== false ? COLORS.accent : COLORS.danger} selectable={false}>
@@ -372,8 +398,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
             </text>
           </box>
         </box>
+        
+        {/* Row 2: Name */}
         <box id="element-name" style={{ flexDirection: "row" }} onMouseDown={(e) => e.stopPropagation()}>
-          <text fg={COLORS.muted}>Name </text>
           {focusedField === "name" ? (
             <input
               id="name-input"
@@ -402,6 +429,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
           )}
         </box>
       </box>
+      
       {unsectioned.map(renderProp)}
       {activeSections.map(renderSection)}
     </scrollbox>

@@ -2,6 +2,19 @@
 
 import type { ElementNode, HistoryEntry } from "./types"
 
+// Color swatch - reusable color variable
+export interface ColorSwatch {
+  id: string
+  color: string // hex color value (#RRGGBB or #RRGGBBAA)
+}
+
+// Color palette - group of swatches
+export interface ColorPalette {
+  id: string
+  name: string
+  swatches: ColorSwatch[]
+}
+
 export interface Project {
   name: string
   version: 1 // Schema version for future migrations
@@ -12,6 +25,10 @@ export interface Project {
   tree: ElementNode
   selectedId: string | null
   collapsed: string[] // Collapsed node IDs in tree view
+  
+  // Color palettes - groups of reusable color swatches
+  palettes: ColorPalette[]
+  activePaletteIndex: number
   
   // Animation state
   animation: {
@@ -47,6 +64,46 @@ export function createDefaultTree(): ElementNode {
   }
 }
 
+// Default palettes
+const DEFAULT_PALETTES: ColorPalette[] = [
+  {
+    id: "palette-1",
+    name: "Ocean",
+    swatches: [
+      { id: "swatch-1-1", color: "#4a90a4" },
+      { id: "swatch-1-2", color: "#5ba0b4" },
+      { id: "swatch-1-3", color: "#6bb0c4" },
+      { id: "swatch-1-4", color: "#7bc0d4" },
+      { id: "swatch-1-5", color: "#f6b7a8" },
+      { id: "swatch-1-6", color: "#ffcc00" },
+    ],
+  },
+  {
+    id: "palette-2",
+    name: "Forest",
+    swatches: [
+      { id: "swatch-2-1", color: "#2d5a27" },
+      { id: "swatch-2-2", color: "#4a7c43" },
+      { id: "swatch-2-3", color: "#6b9e64" },
+      { id: "swatch-2-4", color: "#8bc085" },
+      { id: "swatch-2-5", color: "#d4a373" },
+      { id: "swatch-2-6", color: "#faedcd" },
+    ],
+  },
+  {
+    id: "palette-3",
+    name: "Sunset",
+    swatches: [
+      { id: "swatch-3-1", color: "#ff6b6b" },
+      { id: "swatch-3-2", color: "#ffa06b" },
+      { id: "swatch-3-3", color: "#ffd56b" },
+      { id: "swatch-3-4", color: "#c9b1ff" },
+      { id: "swatch-3-5", color: "#a06bff" },
+      { id: "swatch-3-6", color: "#6b8bff" },
+    ],
+  },
+]
+
 export function createNewProject(name: string): Project {
   const now = new Date().toISOString()
   const defaultTree = createDefaultTree()
@@ -58,6 +115,8 @@ export function createNewProject(name: string): Project {
     tree: defaultTree,
     selectedId: null,
     collapsed: [],
+    palettes: DEFAULT_PALETTES,
+    activePaletteIndex: 0,
     animation: {
       fps: 12,
       frames: [defaultTree],

@@ -19,6 +19,7 @@ import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
 import { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
 import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
 import type { ElementType, ElementNode } from "../../lib/types"
+import type { ColorPalette } from "../../lib/projectTypes"
 
 // Renderer props shared by all element renderers
 export interface RendererProps {
@@ -41,6 +42,11 @@ export interface ElementPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  // Palette support (optional - not all elements need it)
+  palettes?: ColorPalette[]
+  activePaletteIndex?: number
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
 }
 
 // Registry entry type

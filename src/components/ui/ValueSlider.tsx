@@ -49,6 +49,9 @@ export function ValueSlider({ id, label, value, onChange, resetTo = 0 }: ValueSl
     setDragging(false)
   }
 
+  const isZero = value === 0
+  const textColor = dragging ? COLORS.accentBright : (isZero ? COLORS.muted : COLORS.accent)
+
   return (
     <box
       id={`${id}-slider`}
@@ -59,7 +62,7 @@ export function ValueSlider({ id, label, value, onChange, resetTo = 0 }: ValueSl
       onMouseDrag={handleValueDrag}
       onMouseDragEnd={handleValueDragEnd}
     >
-      <text fg={dragging ? COLORS.accentBright : COLORS.accent} selectable={false}>
+      <text fg={textColor} selectable={false}>
         <strong>{label.toLowerCase()}:{value}</strong>
       </text>
     </box>

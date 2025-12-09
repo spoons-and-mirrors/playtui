@@ -41,6 +41,11 @@ export function Builder({ width, height }: BuilderProps) {
     duplicateFrame,
     deleteFrame,
     setFps,
+    // Palette methods
+    palettes,
+    activePaletteIndex,
+    updateSwatch,
+    setActivePalette,
   } = projectHook
 
   // Clear debug log on startup
@@ -293,7 +298,9 @@ export function Builder({ width, height }: BuilderProps) {
         {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
         {selectedNode ? (
           <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
-            focusedField={focusedField} setFocusedField={setFocusedField} />
+            focusedField={focusedField} setFocusedField={setFocusedField}
+            palettes={palettes} activePaletteIndex={activePaletteIndex}
+            onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
         ) : (
           <text fg={COLORS.muted}>Select an element</text>
         )}

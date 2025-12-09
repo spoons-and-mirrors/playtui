@@ -1,7 +1,7 @@
 // Project state management hook with auto-save
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import type { Project, ProjectMeta } from "../lib/projectTypes"
+import type { Project, ProjectMeta, ColorPalette } from "../lib/projectTypes"
 import { createNewProject } from "../lib/projectTypes"
 import type { ElementNode, HistoryEntry } from "../lib/types"
 import { syncIdCounter } from "../lib/tree"
@@ -42,6 +42,12 @@ export interface UseProjectReturn {
   duplicateFrame: () => void
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
+  
+  // Palettes
+  palettes: ColorPalette[]
+  activePaletteIndex: number
+  updateSwatch: (id: string, color: string) => void
+  setActivePalette: (index: number) => void
 }
 
 const AUTO_SAVE_DELAY = 1500 // ms
@@ -123,7 +129,7 @@ export function useProject(): UseProjectReturn {
         // Load most recent project
         const loaded = await storage.loadProject(list[0].fileName)
         if (loaded) {
-          const migrated = ensureAnimationData(loaded)
+          const migrated = ensureProjectData(loaded)
           syncIdCounter(migrated.tree)
           setProject(migrated)
         } else {
@@ -178,7 +184,7 @@ export function useProject(): UseProjectReturn {
     async (fileName: string): Promise<boolean> => {
       const loaded = await storage.loadProject(fileName)
       if (loaded) {
-        const migrated = ensureAnimationData(loaded)
+        const migrated = ensureProjectData(loaded)
         syncIdCounter(migrated.tree)
         setProject(migrated)
         setError(null)
@@ -353,8 +359,27 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
-  // Ensure project has animation data on load
-  const ensureAnimationData = (proj: Project): Project => {
+  // Ensure project has required data on load (handles older project files)
+  const ensureProjectData = (proj: Project): Project => {
+    // Migration: convert old swatches to palettes
+    const legacyProject = proj as Project & { swatches?: Array<{ id: string; color: string }> }
+    if (legacyProject.swatches && !proj.palettes) {
+      return {
+        ...proj,
+        palettes: [{
+          id: "palette-migrated",
+          name: "Migrated",
+          swatches: legacyProject.swatches
+        }],
+        activePaletteIndex: 0,
+        animation: proj.animation ?? {
+          fps: 12,
+          frames: [proj.tree],
+          currentFrameIndex: 0
+        },
+      }
+    }
+    // Animation data migration (for older projects before animation feature)
     if (!proj.animation) {
       return {
         ...proj,
@@ -362,16 +387,11 @@ export function useProject(): UseProjectReturn {
           fps: 12,
           frames: [proj.tree],
           currentFrameIndex: 0
-        }
+        },
       }
     }
     return proj
   }
-
-  // Update loadProject and init to use ensureAnimationData
-  // We'll wrap the setProject calls in useEffect and loadProjectFn
-
-  // ... (rest of file)
 
   // Update selected ID
   const setSelectedId = useCallback(
@@ -447,6 +467,37 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
+  // Update a swatch color in the active palette
+  const updateSwatch = useCallback((id: string, color: string) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      const palettes = prev.palettes.map((palette, idx) => {
+        if (idx !== prev.activePaletteIndex) return palette
+        return {
+          ...palette,
+          swatches: palette.swatches.map(s => 
+            s.id === id ? { ...s, color } : s
+          )
+        }
+      })
+      return { ...prev, palettes }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Change the active palette
+  const setActivePalette = useCallback((index: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      return { ...prev, activePaletteIndex: index }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Get palettes and active index with fallback
+  const palettes = project?.palettes ?? []
+  const activePaletteIndex = project?.activePaletteIndex ?? 0
+
   return {
     project,
     isLoading,
@@ -468,6 +519,11 @@ export function useProject(): UseProjectReturn {
     setCurrentFrame,
     duplicateFrame,
     deleteFrame,
-    setFps
+    setFps,
+    // Palette methods
+    palettes,
+    activePaletteIndex,
+    updateSwatch,
+    setActivePalette,
   }
 }
