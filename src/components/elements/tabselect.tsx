@@ -1,21 +1,21 @@
 import type { ElementNode, TabSelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  StringProp, NumberProp, ToggleProp, ColorPropWithHex, SectionHeader
+  ToggleProp, NumberProp, StringProp, ColorPropWithHex, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
-// TAB-SELECT DEFAULTS
+// TABSELECT DEFAULTS
 // =============================================================================
 
 export const TABSELECT_DEFAULTS: Partial<TabSelectNode> = {
-  width: 40,
-  options: ["Tab 1", "Tab 2", "Tab 3"],
-  tabWidth: 12,
+  options: ["Tab 1", "Tab 2"],
+  tabWidth: 15,
 }
 
 // =============================================================================
-// TAB-SELECT RENDERER
+// TABSELECT RENDERER
 // =============================================================================
 
 interface TabSelectRendererProps {
@@ -24,47 +24,49 @@ interface TabSelectRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TabSelectRendererProps) {
+export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TabSelectRendererProps) {
   const node = genericNode as TabSelectNode
-  const options = node.options || ["Tab 1", "Tab 2", "Tab 3"]
-  const tabW = node.tabWidth || 12
-  const bgColor = node.backgroundColor || COLORS.bgAlt
-  const selBgColor = node.selectedBackgroundColor || "transparent"
-  const textColor = node.textColor || COLORS.text
-  const selTextColor = node.selectedTextColor || COLORS.accent
-
+  const options = node.options || ["Tab 1", "Tab 2"]
+  
   return (
-    <box
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      visible={node.visible !== false}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
       style={{
-        width: node.width || options.length * tabW,
-        height: 3,
-        flexDirection: "row",
-        backgroundColor: bgColor,
+        width: node.width,
+        height: node.height || 3,
+        margin: node.margin,
+        marginTop: node.marginTop,
+        marginRight: node.marginRight,
+        marginBottom: node.marginBottom,
+        marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.top,
+        left: node.left,
+        right: node.right,
+        bottom: node.bottom,
+        zIndex: node.zIndex,
+        backgroundColor: "transparent",
       }}
     >
-      {options.slice(0, 5).map((opt, i) => (
-        <box
-          key={i}
-          border={node.showUnderline !== false ? ["bottom"] : undefined}
-          borderColor={i === 0 ? selTextColor : COLORS.border}
-          style={{
-            width: tabW,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: i === 0 ? selBgColor : "transparent",
-          }}
-        >
-          <text fg={i === 0 ? selTextColor : textColor}>{opt}</text>
-        </box>
-      ))}
-    </box>
+      <tab-select
+        options={options.map(o => ({ name: o, description: "" }))}
+        tabWidth={node.tabWidth || 15}
+        focused={false} // Editor view is not interactive
+        backgroundColor={node.backgroundColor || COLORS.bgAlt}
+        textColor={node.textColor || COLORS.text}
+        selectedBackgroundColor={node.selectedBackgroundColor || "transparent"}
+        selectedTextColor={node.selectedTextColor || COLORS.accent}
+        showUnderline={node.showUnderline !== false}
+      />
+    </DraggableWrapper>
   )
 }
 

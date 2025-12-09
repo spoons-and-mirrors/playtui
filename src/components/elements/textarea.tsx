@@ -3,6 +3,7 @@ import { COLORS } from "../../theme"
 import {
   ToggleProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // TEXTAREA DEFAULTS
@@ -26,17 +27,19 @@ interface TextareaRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TextareaRendererProps) {
+export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
   const node = genericNode as TextareaNode
   return (
-    <box
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      visible={node.visible !== false}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
       style={{
         width: node.width,
         height: node.height || 4,
@@ -47,6 +50,12 @@ export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onS
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.top,
+        left: node.left,
+        right: node.right,
+        bottom: node.bottom,
+        zIndex: node.zIndex,
         backgroundColor: node.backgroundColor || COLORS.input,
         padding: 1,
       }}
@@ -54,7 +63,7 @@ export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onS
       <text fg={node.placeholderColor || COLORS.muted} wrapMode="word">
         {node.initialValue || node.placeholder || "Multi-line input..."}
       </text>
-    </box>
+    </DraggableWrapper>
   )
 }
 

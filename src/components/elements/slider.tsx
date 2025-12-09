@@ -3,6 +3,7 @@ import { COLORS } from "../../theme"
 import {
   NumberProp, SelectProp, ColorPropWithHex, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SLIDER DEFAULTS
@@ -27,9 +28,10 @@ interface SliderRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: SliderRendererProps) {
+export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SliderRendererProps) {
   const node = genericNode as SliderNode
   const isHorizontal = node.orientation !== "vertical"
   const val = node.value ?? 50
@@ -40,18 +42,25 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
   const thumbChar = "●"
 
   return (
-    <box
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      visible={node.visible !== false}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
       style={{
         width: isHorizontal ? (node.width || 20) : 3,
         height: isHorizontal ? 3 : (node.height || 10),
         backgroundColor: node.backgroundColor || COLORS.bgAlt,
         alignItems: "center",
         justifyContent: "center",
+        position: node.position,
+        top: node.top,
+        left: node.left,
+        right: node.right,
+        bottom: node.bottom,
+        zIndex: node.zIndex,
       }}
     >
       <text fg={node.foregroundColor || COLORS.accent}>
@@ -60,7 +69,7 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
           : `${thumbChar} ${pct}%`
         }
       </text>
-    </box>
+    </DraggableWrapper>
   )
 }
 

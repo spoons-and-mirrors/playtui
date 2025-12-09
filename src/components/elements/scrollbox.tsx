@@ -3,6 +3,7 @@ import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorPropWithHex, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SCROLLBOX DEFAULTS
@@ -28,10 +29,11 @@ interface ScrollboxRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
   children?: React.ReactNode
 }
 
-export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, children }: ScrollboxRendererProps) {
+export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
   const node = genericNode as ScrollboxNode
   const hasBorder = node.border === true
   const borderValue = hasBorder
@@ -43,13 +45,32 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     return val
   }
 
-  const boxStyle = {
+  // Split positioning styles from box styles
+  const positionStyle = {
+    position: node.position,
+    top: node.top,
+    right: node.right,
+    bottom: node.bottom,
+    left: node.left,
+    zIndex: node.zIndex,
+    margin: node.margin,
+    marginTop: node.marginTop,
+    marginRight: node.marginRight,
+    marginBottom: node.marginBottom,
+    marginLeft: node.marginLeft,
     width: parseSize(node.width),
     height: parseSize(node.height),
     minWidth: node.minWidth,
     maxWidth: node.maxWidth,
     minHeight: node.minHeight,
     maxHeight: node.maxHeight,
+    flexGrow: node.flexGrow,
+    flexShrink: node.flexShrink,
+    flexBasis: node.flexBasis,
+    alignSelf: node.alignSelf,
+  }
+
+  const scrollboxStyle = {
     flexDirection: node.flexDirection || "column",
     flexWrap: node.flexWrap,
     justifyContent: node.justifyContent,
@@ -57,26 +78,11 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     gap: node.gap,
     rowGap: node.rowGap,
     columnGap: node.columnGap,
-    flexGrow: node.flexGrow,
-    flexShrink: node.flexShrink,
-    flexBasis: node.flexBasis,
-    alignSelf: node.alignSelf,
     padding: node.padding,
     paddingTop: node.paddingTop,
     paddingRight: node.paddingRight,
     paddingBottom: node.paddingBottom,
     paddingLeft: node.paddingLeft,
-    margin: node.margin,
-    marginTop: node.marginTop,
-    marginRight: node.marginRight,
-    marginBottom: node.marginBottom,
-    marginLeft: node.marginLeft,
-    position: node.position,
-    top: node.top,
-    right: node.right,
-    bottom: node.bottom,
-    left: node.left,
-    zIndex: node.zIndex,
     overflow: node.overflow,
     backgroundColor: node.backgroundColor || "transparent",
   } as const
@@ -91,30 +97,38 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
   } : undefined
 
   return (
-    <scrollbox
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      border={borderValue}
-      borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={node.borderColor}
-      visible={node.visible !== false}
-      title={node.title}
-      titleAlignment={node.titleAlignment}
-      stickyScroll={node.stickyScroll}
-      stickyStart={node.stickyStart}
-      scrollX={node.scrollX}
-      scrollY={node.scrollY}
-      viewportCulling={node.viewportCulling}
-      style={{
-        ...boxStyle,
-        contentOptions: { flexDirection: node.flexDirection || "column", gap: node.gap },
-        scrollbarOptions,
-      }}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
+      style={positionStyle}
     >
-      {children}
-    </scrollbox>
+      <scrollbox
+        border={borderValue}
+        borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
+        borderColor={node.borderColor}
+        visible={node.visible !== false}
+        title={node.title}
+        titleAlignment={node.titleAlignment}
+        stickyScroll={node.stickyScroll}
+        stickyStart={node.stickyStart}
+        scrollX={node.scrollX}
+        scrollY={node.scrollY}
+        viewportCulling={node.viewportCulling}
+        style={{
+          ...scrollboxStyle,
+          width: "100%", // Fill wrapper
+          height: "100%", // Fill wrapper
+          contentOptions: { flexDirection: node.flexDirection || "column", gap: node.gap },
+          scrollbarOptions,
+        }}
+      >
+        {children}
+      </scrollbox>
+    </DraggableWrapper>
   )
 }
 

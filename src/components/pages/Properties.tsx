@@ -173,9 +173,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
 
   // Render position section with visual control
   const renderPositionSection = () => {
-    if (!isContainerNode(node)) return null
-    const container = node as BoxNode | ScrollboxNode
-    
+    // Position applies to all elements now
     const isCollapsed = collapsed["position"]
     const positionProp = props.find(p => p.key === "position")
     const zIndexProp = props.find(p => p.key === "zIndex")
@@ -186,8 +184,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
             {positionProp && renderProp(positionProp)}
-            {container.position === "absolute" && (
-              <PositionControl values={{ top: container.top, right: container.right, bottom: container.bottom, left: container.left }}
+            {node.position === "absolute" && (
+              <PositionControl values={{ top: node.top, right: node.right, bottom: node.bottom, left: node.left }}
                 onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} />
             )}
             {zIndexProp && renderProp(zIndexProp)}

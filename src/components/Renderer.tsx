@@ -2,15 +2,22 @@ import type { ElementNode } from "../lib/types"
 import { ELEMENT_REGISTRY } from "./elements"
 import { log } from "../lib/logger"
 
+export interface DragEvent {
+  nodeId: string
+  x: number
+  y: number
+}
+
 export interface RendererProps {
   node: ElementNode
   selectedId: string | null
   hoveredId: string | null
   onSelect: (id: string) => void
   onHover: (id: string | null) => void
+  onDragStart?: (event: DragEvent) => void
 }
 
-export function Renderer({ node, selectedId, hoveredId, onSelect, onHover }: RendererProps) {
+export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDragStart }: RendererProps) {
   const isSelected = node.id === selectedId
   const isHovered = node.id === hoveredId && !isSelected
   const isRoot = node.id === "root"
@@ -22,7 +29,7 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover }: Ren
     return (
       <>
         {node.children.map((child) => (
-          <Renderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} />
+          <Renderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} onDragStart={onDragStart} />
         ))}
       </>
     )
@@ -43,6 +50,7 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover }: Ren
           hoveredId={hoveredId}
           onSelect={onSelect}
           onHover={onHover}
+          onDragStart={onDragStart}
         />
       ))
     : undefined
@@ -53,6 +61,7 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover }: Ren
     isHovered,
     onSelect: () => onSelect(node.id),
     onHover: (h: boolean) => onHover(h ? node.id : null),
+    onDragStart: onDragStart ? (x: number, y: number) => onDragStart({ nodeId: node.id, x, y }) : undefined,
     children,
   })
 }

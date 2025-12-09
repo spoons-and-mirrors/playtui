@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
 import type { ElementNode } from "./lib/types"
 import { clearLog } from "./lib/logger"
-import { resetIdCounter, findNode, countNodes } from "./lib/tree"
+import { resetIdCounter, findNode, countNodes, updateNode } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
 import { TreeView } from "./components/pages/Tree"
 import { PropertyPane } from "./components/pages/Properties"
@@ -13,6 +13,7 @@ import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPa
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
+import type { DragEvent } from "./components/Renderer"
 
 interface BuilderProps {
   width: number
@@ -54,16 +55,18 @@ export function Builder({ width, height }: BuilderProps) {
   const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Derive state from project
+  // Track dragging state for absolute positioned elements
+  const dragStartRef = useRef<{ nodeId: string; mouseX: number; mouseY: number; nodeTop: number; nodeLeft: number } | null>(null)
+
+  // Extract commonly used values from project
   const tree = project?.tree ?? null
   const selectedId = project?.selectedId ?? null
-  const collapsed = useMemo(() => new Set(project?.collapsed ?? []), [project?.collapsed])
-
-  const selectedNode = selectedId && tree ? findNode(tree, selectedId) : null
+  const collapsed = project?.collapsed ?? []
+  const animation = project?.animation
+  const treeKey = project?.history?.length ?? 0
+  const selectedNode = tree && selectedId ? findNode(tree, selectedId) : null
   const code = useMemo(() => tree ? generateChildrenCode(tree) : "", [tree])
-  const treeKey = useMemo(() => (tree ? countNodes(tree) : 0), [tree])
 
-  // Use builder actions hook
   const {
     handleAddElement,
     handleCopy,
@@ -140,6 +143,52 @@ export function Builder({ width, height }: BuilderProps) {
     await refreshProjects()
   }, [deleteProject, refreshProjects])
 
+  // Handle drag for absolute positioned elements
+  const handleDragStart = useCallback((event: DragEvent) => {
+    if (!tree) return
+    const node = findNode(tree, event.nodeId)
+    if (!node || !("position" in node) || node.position !== "absolute") return
+    
+    // Store initial mouse position and node position
+    dragStartRef.current = {
+      nodeId: event.nodeId,
+      mouseX: event.x,
+      mouseY: event.y,
+      nodeTop: (node as any).top ?? 0,
+      nodeLeft: (node as any).left ?? 0,
+    }
+  }, [tree])
+
+  const handleDragMove = useCallback((event: DragEvent) => {
+    if (!tree || !dragStartRef.current) return
+    if (dragStartRef.current.nodeId !== event.nodeId) return
+    
+    // Calculate delta from initial mouse position
+    const deltaX = event.x - dragStartRef.current.mouseX
+    const deltaY = event.y - dragStartRef.current.mouseY
+    
+    // Calculate new position
+    const newTop = Math.max(0, dragStartRef.current.nodeTop + deltaY)
+    const newLeft = Math.max(0, dragStartRef.current.nodeLeft + deltaX)
+    
+    const node = findNode(tree, event.nodeId)
+    if (!node) return
+    
+    // Update node position (without adding to history during drag)
+    const updated = { ...node, top: newTop, left: newLeft } as ElementNode
+    const newTree = updateNode(tree, event.nodeId, updated)
+    updateTree(newTree, false) // false = don't add to history
+  }, [tree, updateTree])
+
+  const handleDragEnd = useCallback((nodeId: string) => {
+    // Reset drag start position
+    dragStartRef.current = null
+    // Add final state to history
+    if (tree) {
+      updateTree(tree, true) // true = add to history
+    }
+  }, [tree, updateTree])
+
   const treeWidth = 30
   const sidebarWidth = 40
 
@@ -186,7 +235,7 @@ export function Builder({ width, height }: BuilderProps) {
         style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
         <Title saveStatus={saveStatus} onLogoClick={() => setMode(mode === "docs" ? "editor" : "docs")} />
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={collapsed}
+          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
             onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
         </scrollbox>
       </box>
@@ -223,6 +272,9 @@ export function Builder({ width, height }: BuilderProps) {
             onHover={setHoveredId}
             onBackgroundClick={() => setFocusedField(null)}
             onToggleAutoLayout={() => setAutoLayout(!autoLayout)}
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
           />
         )}
 

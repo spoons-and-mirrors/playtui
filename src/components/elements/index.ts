@@ -8,6 +8,7 @@ export { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_PROPERTY_KEYS, SCROLL
 export { SliderRenderer, SliderProperties, SLIDER_PROPERTY_KEYS, SLIDER_DEFAULTS } from "./slider"
 export { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_PROPERTY_KEYS, ASCIIFONT_DEFAULTS } from "./asciifont"
 export { TabSelectRenderer, TabSelectProperties, TABSELECT_PROPERTY_KEYS, TABSELECT_DEFAULTS } from "./tabselect"
+export { DraggableWrapper } from "./DraggableWrapper"
 
 import { BoxRenderer, BoxBorderProperties, BOX_DEFAULTS } from "./box"
 import { TextRenderer, TextProperties, TEXT_DEFAULTS } from "./text"
@@ -27,6 +28,9 @@ export interface RendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
+  onDragMove?: (x: number, y: number) => void
+  onDragEnd?: () => void
   children?: React.ReactNode
 }
 

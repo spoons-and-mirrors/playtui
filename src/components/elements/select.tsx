@@ -3,6 +3,7 @@ import { COLORS } from "../../theme"
 import {
   ToggleProp, NumberProp, StringProp, ColorPropWithHex, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SELECT DEFAULTS
@@ -24,9 +25,10 @@ interface SelectRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: SelectRendererProps) {
+export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SelectRendererProps) {
   const node = genericNode as SelectNode
   const options = node.options || ["Option 1", "Option 2"]
   const bgColor = node.backgroundColor || COLORS.bgAlt
@@ -35,12 +37,13 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
   const selTextColor = node.selectedTextColor || COLORS.bg
 
   return (
-    <box
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      visible={node.visible !== false}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
       style={{
         width: node.width,
         height: node.height || options.length + 2,
@@ -49,6 +52,12 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.top,
+        left: node.left,
+        right: node.right,
+        bottom: node.bottom,
+        zIndex: node.zIndex,
         backgroundColor: bgColor,
         flexDirection: "column",
         gap: node.itemSpacing,
@@ -64,7 +73,7 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
       {node.showScrollIndicator && options.length > 5 && (
         <text fg={COLORS.muted} style={{ paddingLeft: 1 }}>  ↓ more...</text>
       )}
-    </box>
+    </DraggableWrapper>
   )
 }
 

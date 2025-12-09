@@ -3,6 +3,7 @@ import { COLORS } from "../../theme"
 import {
   SelectProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
 } from "../controls"
+import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // INPUT DEFAULTS
@@ -24,17 +25,19 @@ interface InputRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: InputRendererProps) {
+export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
   const node = genericNode as InputNode
   return (
-    <box
-      id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
-      visible={node.visible !== false}
+    <DraggableWrapper
+      node={node}
+      isSelected={isSelected}
+      isHovered={isHovered}
+      onSelect={onSelect}
+      onHover={onHover}
+      onDragStart={onDragStart}
       style={{
         width: node.width,
         height: node.height || 1,
@@ -43,13 +46,19 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.top,
+        left: node.left,
+        right: node.right,
+        bottom: node.bottom,
+        zIndex: node.zIndex,
         backgroundColor: node.backgroundColor || COLORS.input,
       }}
     >
       <text fg={node.placeholderColor || COLORS.muted}>
         {node.placeholder || "Input..."}
       </text>
-    </box>
+    </DraggableWrapper>
   )
 }
 
