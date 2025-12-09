@@ -114,12 +114,6 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
         cursorColor={COLORS.accent}
         style={{ flexGrow: 1, width: "100%" }}
         onContentChange={handleContentChange}
-        onKeyDown={(key) => {
-          if (key.name === "tab" || key.name === "escape") {
-            key.preventDefault()
-            onClose()
-          }
-        }}
       />
       {error && (
         <box style={{ marginTop: 1 }}>

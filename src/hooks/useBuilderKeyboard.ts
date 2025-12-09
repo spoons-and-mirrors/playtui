@@ -46,6 +46,9 @@ interface UseBuilderKeyboardParams {
   onAnimPlayToggle?: () => void
   onAnimDuplicateFrame?: () => void
   onAnimDeleteFrame?: () => void
+
+  // Panel visibility
+  onTogglePanels?: () => void
 }
 
 export function useBuilderKeyboard({
@@ -72,13 +75,20 @@ export function useBuilderKeyboard({
   onAnimPlayToggle,
   onAnimDuplicateFrame,
   onAnimDeleteFrame,
+  onTogglePanels,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
+    // Toggle panels - TAB key (always available, even in modal)
+    if (key.name === "tab" && onTogglePanels) {
+      onTogglePanels()
+      return
+    }
+
     // F-key mode switching (always available except in modal)
     if (!modalMode) {
       if (key.name === "f1") { setMode("editor"); return }
-      if (key.name === "f2") { setMode("code"); return }
-      if (key.name === "f3") { setMode("play"); return }
+      if (key.name === "f2") { setMode("play"); return }
+      if (key.name === "f3") { setMode("code"); return }
       if (key.name === "f4") { setMode("library"); return }
       if (key.name === "f5") { setMode("docs"); return }
     }
@@ -90,8 +100,13 @@ export function useBuilderKeyboard({
     }
 
     // Non-editor modes (no editor shortcuts)
-    if (mode === "docs" || mode === "code" || mode === "library") {
+    if (mode === "docs" || mode === "library") {
       if (key.name === "escape") { setSelectedId(null); return }
+      return
+    }
+
+    // Code mode - allow TAB for panel toggle, but no other editor shortcuts
+    if (mode === "code") {
       return
     }
 

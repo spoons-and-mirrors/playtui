@@ -59,6 +59,19 @@ export function Builder({ width, height }: BuilderProps) {
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [panelsHiddenPerMode, setPanelsHiddenPerMode] = useState<Record<string, boolean>>({
+    editor: false,
+    play: false,
+    code: true,
+  })
+
+  // Derive panelsHidden from current mode
+  const panelsHidden = panelsHiddenPerMode[mode] ?? false
+
+  // Toggle panels for current mode
+  const togglePanels = useCallback(() => {
+    setPanelsHiddenPerMode(prev => ({ ...prev, [mode]: !prev[mode] }))
+  }, [mode])
 
   // Track dragging state for absolute positioned elements
   const dragStartRef = useRef<{
@@ -123,6 +136,7 @@ export function Builder({ width, height }: BuilderProps) {
     onAnimPlayToggle: () => setIsPlaying(p => !p),
     onAnimDuplicateFrame: duplicateFrame,
     onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
+    onTogglePanels: togglePanels,
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -213,15 +227,19 @@ export function Builder({ width, height }: BuilderProps) {
   }
   
   // Library Mode - Full Screen (hides tree and sidebar)
-  if (mode === "library") {
+  if (mode === "library" || mode === "docs") {
     return (
       <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
-        <LibraryPage 
-          projectHook={projectHook} 
-          onLoadProject={() => setMode("editor")} 
-          width={width}
-          height={height - 3}
-        />
+        {mode === "library" ? (
+          <LibraryPage 
+            projectHook={projectHook} 
+            onLoadProject={() => setMode("editor")} 
+            width={width}
+            height={height - 3}
+          />
+        ) : (
+          <DocsPanel />
+        )}
         <Footer mode={mode} onModeChange={setMode} />
       </box>
     )
@@ -241,17 +259,19 @@ export function Builder({ width, height }: BuilderProps) {
   return (
     <box id="builder" style={{ width, height, flexDirection: "row" }}>
       {/* Left Panel - Tree */}
-      <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
-        style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
-        <Title saveStatus={saveStatus} onLogoClick={() => setMode(mode === "docs" ? "editor" : "docs")} />
-        <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
-            onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
-        </scrollbox>
-      </box>
+      {!panelsHidden && (
+        <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
+          style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
+          <Title saveStatus={saveStatus} onLogoClick={() => setMode("docs")} />
+          <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
+            <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
+              onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
+          </scrollbox>
+        </box>
+      )}
 
       {/* Center Area - header top, canvas middle, footer bottom */}
-      <box id="builder-center" style={{ width: width - treeWidth - sidebarWidth, height, flexDirection: "column", padding: 1 }}>
+      <box id="builder-center" style={{ width: panelsHidden ? width : width - treeWidth - sidebarWidth, height, flexDirection: "column", padding: 1 }}>
         <Header
           projectName={project.name}
           addMode={addMode}
@@ -260,11 +280,9 @@ export function Builder({ width, height }: BuilderProps) {
           onAddElement={handleAddElement}
         />
 
-        {/* Canvas or Code or Docs Panel - grows to fill middle */}
+        {/* Canvas or Code Panel - grows to fill middle */}
         {mode === "code" ? (
           <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setMode("editor")} />
-        ) : mode === "docs" ? (
-          <DocsPanel />
         ) : mode === "play" ? (
            <PlayPage 
              projectHook={projectHook} 
@@ -293,18 +311,20 @@ export function Builder({ width, height }: BuilderProps) {
       </box>
 
       {/* Right Panel - Properties */}
-      <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
-        style={{ width: sidebarWidth, height, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
-        {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
-        {selectedNode ? (
-          <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
-            focusedField={focusedField} setFocusedField={setFocusedField}
-            palettes={palettes} activePaletteIndex={activePaletteIndex}
-            onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
-        ) : (
-          <text fg={COLORS.muted}>Select an element</text>
-        )}
-      </box>
+      {!panelsHidden && (
+        <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
+          style={{ width: sidebarWidth, height, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
+          {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
+          {selectedNode ? (
+            <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
+              focusedField={focusedField} setFocusedField={setFocusedField}
+              palettes={palettes} activePaletteIndex={activePaletteIndex}
+              onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
+          ) : (
+            <text fg={COLORS.muted}>Select an element</text>
+          )}
+        </box>
+      )}
 
 
       {/* Project Modal (for new/load/delete) */}
