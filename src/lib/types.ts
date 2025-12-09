@@ -89,10 +89,8 @@ export interface BaseNode {
 
   // === POSITIONING ===
   position?: Position
-  top?: number
-  right?: number
-  bottom?: number
-  left?: number
+  x?: number
+  y?: number
   zIndex?: number
 }
 

@@ -105,11 +105,9 @@ export const PROPERTIES: PropertyDef[] = [
 
   // === POSITIONING === (all elements can be positioned)
   { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position" },
-  { key: "top", label: "Top", type: "number", min: -100, max: 100, section: "position" },
-  { key: "right", label: "Right", type: "number", min: -100, max: 100, section: "position" },
-  { key: "bottom", label: "Bottom", type: "number", min: -100, max: 100, section: "position" },
-  { key: "left", label: "Left", type: "number", min: -100, max: 100, section: "position" },
-  { key: "zIndex", label: "Z-Index", type: "number", min: -100, max: 100, section: "position" },
+  { key: "x", label: "X", type: "number", min: -100, max: 200, section: "position" },
+  { key: "y", label: "Y", type: "number", min: -100, max: 200, section: "position" },
+  { key: "zIndex", label: "Z", type: "number", min: -100, max: 100, section: "position" },
 
   // === OVERFLOW === (container elements only)
   { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow", appliesTo: ["box", "scrollbox"] },

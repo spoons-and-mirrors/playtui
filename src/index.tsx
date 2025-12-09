@@ -56,7 +56,13 @@ export function Builder({ width, height }: BuilderProps) {
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Track dragging state for absolute positioned elements
-  const dragStartRef = useRef<{ nodeId: string; mouseX: number; mouseY: number; nodeTop: number; nodeLeft: number } | null>(null)
+  const dragStartRef = useRef<{
+    nodeId: string
+    mouseX: number
+    mouseY: number
+    nodeX: number
+    nodeY: number
+  } | null>(null)
 
   // Extract commonly used values from project
   const tree = project?.tree ?? null
@@ -154,8 +160,8 @@ export function Builder({ width, height }: BuilderProps) {
       nodeId: event.nodeId,
       mouseX: event.x,
       mouseY: event.y,
-      nodeTop: (node as any).top ?? 0,
-      nodeLeft: (node as any).left ?? 0,
+      nodeX: (node as any).x ?? 0,
+      nodeY: (node as any).y ?? 0,
     }
   }, [tree])
 
@@ -167,15 +173,14 @@ export function Builder({ width, height }: BuilderProps) {
     const deltaX = event.x - dragStartRef.current.mouseX
     const deltaY = event.y - dragStartRef.current.mouseY
     
-    // Calculate new position
-    const newTop = Math.max(0, dragStartRef.current.nodeTop + deltaY)
-    const newLeft = Math.max(0, dragStartRef.current.nodeLeft + deltaX)
-    
     const node = findNode(tree, event.nodeId)
     if (!node) return
+
+    const newX = dragStartRef.current.nodeX + deltaX
+    const newY = dragStartRef.current.nodeY + deltaY
     
     // Update node position (without adding to history during drag)
-    const updated = { ...node, top: newTop, left: newLeft } as ElementNode
+    const updated = { ...node, x: newX, y: newY } as ElementNode
     const newTree = updateNode(tree, event.nodeId, updated)
     updateTree(newTree, false) // false = don't add to history
   }, [tree, updateTree])

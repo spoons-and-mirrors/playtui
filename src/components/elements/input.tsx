@@ -39,20 +39,15 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
       onHover={onHover}
       onDragStart={onDragStart}
       style={{
-        width: node.width,
-        height: node.height || 1,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
         position: node.position,
-        top: node.top,
-        left: node.left,
-        right: node.right,
-        bottom: node.bottom,
+        top: node.y,
+        left: node.x,
         zIndex: node.zIndex,
-        backgroundColor: node.backgroundColor || COLORS.input,
       }}
     >
       <text fg={node.placeholderColor || COLORS.muted}>

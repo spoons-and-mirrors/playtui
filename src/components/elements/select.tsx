@@ -45,22 +45,15 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
       onHover={onHover}
       onDragStart={onDragStart}
       style={{
-        width: node.width,
-        height: node.height || options.length + 2,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
         position: node.position,
-        top: node.top,
-        left: node.left,
-        right: node.right,
-        bottom: node.bottom,
+        top: node.y,
+        left: node.x,
         zIndex: node.zIndex,
-        backgroundColor: bgColor,
-        flexDirection: "column",
-        gap: node.itemSpacing,
       }}
     >
       {options.slice(0, 5).map((opt, i) => (

@@ -40,20 +40,15 @@ export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, on
       onHover={onHover}
       onDragStart={onDragStart}
       style={{
-        width: node.width,
-        height: node.height || 3,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
         position: node.position,
-        top: node.top,
-        left: node.left,
-        right: node.right,
-        bottom: node.bottom,
+        top: node.y,
+        left: node.x,
         zIndex: node.zIndex,
-        backgroundColor: "transparent",
       }}
     >
       <tab-select

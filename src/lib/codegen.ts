@@ -89,12 +89,10 @@ export function generateCode(node: ElementNode, indent = 0): string {
     if (container.paddingBottom) styleProps.push(`paddingBottom: ${container.paddingBottom}`)
     if (container.paddingLeft) styleProps.push(`paddingLeft: ${container.paddingLeft}`)
 
-    // Positioning
+    // Positioning - our x/y map to OpenTUI's left/top
     if (container.position) styleProps.push(`position: "${container.position}"`)
-    if (container.top !== undefined) styleProps.push(`top: ${container.top}`)
-    if (container.right !== undefined) styleProps.push(`right: ${container.right}`)
-    if (container.bottom !== undefined) styleProps.push(`bottom: ${container.bottom}`)
-    if (container.left !== undefined) styleProps.push(`left: ${container.left}`)
+    if (container.x !== undefined) styleProps.push(`left: ${container.x}`)
+    if (container.y !== undefined) styleProps.push(`top: ${container.y}`)
     if (container.zIndex !== undefined) styleProps.push(`zIndex: ${container.zIndex}`)
 
     // Overflow

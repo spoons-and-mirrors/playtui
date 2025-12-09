@@ -50,10 +50,8 @@ export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, on
     marginBottom: node.marginBottom,
     marginLeft: node.marginLeft,
     position: node.position,
-    top: node.top,
-    left: node.left,
-    right: node.right,
-    bottom: node.bottom,
+    top: node.y,
+    left: node.x,
     zIndex: node.zIndex,
   }
 

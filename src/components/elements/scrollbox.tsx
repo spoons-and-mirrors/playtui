@@ -47,27 +47,15 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
 
   // Split positioning styles from box styles
   const positionStyle = {
-    position: node.position,
-    top: node.top,
-    right: node.right,
-    bottom: node.bottom,
-    left: node.left,
-    zIndex: node.zIndex,
     margin: node.margin,
     marginTop: node.marginTop,
     marginRight: node.marginRight,
     marginBottom: node.marginBottom,
     marginLeft: node.marginLeft,
-    width: parseSize(node.width),
-    height: parseSize(node.height),
-    minWidth: node.minWidth,
-    maxWidth: node.maxWidth,
-    minHeight: node.minHeight,
-    maxHeight: node.maxHeight,
-    flexGrow: node.flexGrow,
-    flexShrink: node.flexShrink,
-    flexBasis: node.flexBasis,
-    alignSelf: node.alignSelf,
+    position: node.position,
+    top: node.y,
+    left: node.x,
+    zIndex: node.zIndex,
   }
 
   const scrollboxStyle = {

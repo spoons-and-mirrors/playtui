@@ -66,7 +66,11 @@ export function EditorPanel({
   const handleCanvasDrag = (e: MouseEvent) => {
     if (!draggingNodeId.current || !onDragMove) return
     e.stopPropagation()
-    onDragMove({ nodeId: draggingNodeId.current, x: e.x, y: e.y })
+    onDragMove({
+      nodeId: draggingNodeId.current,
+      x: e.x,
+      y: e.y,
+    })
   }
 
   // Canvas-level drag end handler

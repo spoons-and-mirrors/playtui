@@ -50,16 +50,14 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
       onHover={onHover}
       onDragStart={onDragStart}
       style={{
-        width: isHorizontal ? (node.width || 20) : 3,
-        height: isHorizontal ? 3 : (node.height || 10),
-        backgroundColor: node.backgroundColor || COLORS.bgAlt,
-        alignItems: "center",
-        justifyContent: "center",
+        margin: node.margin,
+        marginTop: node.marginTop,
+        marginRight: node.marginRight,
+        marginBottom: node.marginBottom,
+        marginLeft: node.marginLeft,
         position: node.position,
-        top: node.top,
-        left: node.left,
-        right: node.right,
-        bottom: node.bottom,
+        top: node.y,
+        left: node.x,
         zIndex: node.zIndex,
       }}
     >

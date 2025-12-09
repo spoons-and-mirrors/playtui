@@ -175,20 +175,53 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
   const renderPositionSection = () => {
     // Position applies to all elements now
     const isCollapsed = collapsed["position"]
-    const positionProp = props.find(p => p.key === "position")
-    const zIndexProp = props.find(p => p.key === "zIndex")
 
     return (
       <box key="position" id="section-position" style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS["position"]} collapsed={isCollapsed} onToggle={() => toggleSection("position")} />
+        {/* Header with inline Rel/Abs tabs */}
+        <box id="position-header" flexDirection="row" alignItems="center">
+          <SectionHeader title={SECTION_LABELS["position"]} collapsed={isCollapsed} onToggle={() => toggleSection("position")} />
+          {/* Rel/Abs tabs inline with title */}
+          <box id="pos-mode-tabs" flexDirection="row" marginLeft={1}>
+            <box
+              id="pos-tab-rel"
+              border={["left"]}
+              borderStyle="heavy"
+              borderColor={node.position !== "absolute" ? COLORS.accentBright : COLORS.muted}
+              backgroundColor={COLORS.cardHover}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={() => onUpdate({ position: "relative" } as Partial<ElementNode>)}
+            >
+              <text fg={node.position !== "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
+                {node.position !== "absolute" ? <strong>Rel</strong> : "Rel"}
+              </text>
+            </box>
+            <box
+              id="pos-tab-abs"
+              border={["left"]}
+              borderStyle="heavy"
+              borderColor={node.position === "absolute" ? COLORS.accentBright : COLORS.muted}
+              backgroundColor={COLORS.cardHover}
+              paddingLeft={1}
+              paddingRight={1}
+              marginLeft={1}
+              onMouseDown={() => onUpdate({ position: "absolute" } as Partial<ElementNode>)}
+            >
+              <text fg={node.position === "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
+                {node.position === "absolute" ? <strong>Abs</strong> : "Abs"}
+              </text>
+            </box>
+          </box>
+        </box>
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            {positionProp && renderProp(positionProp)}
-            {node.position === "absolute" && (
-              <PositionControl values={{ top: node.top, right: node.right, bottom: node.bottom, left: node.left }}
-                onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} />
-            )}
-            {zIndexProp && renderProp(zIndexProp)}
+            <PositionControl
+              x={node.x}
+              y={node.y}
+              zIndex={node.zIndex}
+              onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)}
+            />
           </box>
         )}
       </box>

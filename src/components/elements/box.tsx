@@ -91,10 +91,8 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
 
     // Positioning
     position: node.position,
-    top: node.top,
-    right: node.right,
-    bottom: node.bottom,
-    left: node.left,
+    top: node.y,
+    left: node.x,
     zIndex: node.zIndex,
 
     // Overflow
