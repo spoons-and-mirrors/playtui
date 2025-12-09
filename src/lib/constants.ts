@@ -61,9 +61,6 @@ export const EXPANDED_BY_DEFAULT: PropertySection[] = [
 // =============================================================================
 
 export const PROPERTIES: PropertyDef[] = [
-  // === IDENTITY ===
-  { key: "name", label: "Name", type: "string" },
-
   // === SIZING === (common to most elements)
   { key: "width", label: "Width", type: "size", section: "sizing" },
   { key: "height", label: "Height", type: "size", section: "sizing" },
@@ -111,9 +108,6 @@ export const PROPERTIES: PropertyDef[] = [
 
   // === OVERFLOW === (container elements only)
   { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow", appliesTo: ["box", "scrollbox"] },
-
-  // === VISIBILITY === (common to many elements)
-  { key: "visible", label: "Visible", type: "toggle", section: "visibility", appliesTo: ["box", "text", "scrollbox", "input"] },
 
   // === BACKGROUND === (elements with background color)
   { key: "backgroundColor", label: "BG Color", type: "color", section: "background", appliesTo: ["box", "scrollbox", "input"] },

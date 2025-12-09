@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
+import type { InputRenderable } from "@opentui/core"
 import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
@@ -34,6 +35,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     })
     return initial
   })
+  const lastNameClickRef = useRef<number>(0)
 
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
@@ -218,11 +220,11 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
 
     return (
       <box key="position" id="section-position" style={{ flexDirection: "column" }}>
-        {/* Header with inline Rel/Abs tabs */}
-        <box id="position-header" flexDirection="row" alignItems="center">
+        {/* Header with right-aligned Rel/Abs tabs */}
+        <box id="position-header" flexDirection="row" alignItems="center" justifyContent="space-between">
           <SectionHeader title={SECTION_LABELS["position"]} collapsed={isCollapsed} onToggle={() => toggleSection("position")} />
-          {/* Rel/Abs tabs inline with title */}
-          <box id="pos-mode-tabs" flexDirection="row" marginLeft={1}>
+          {/* Rel/Abs tabs right-aligned */}
+          <box id="pos-mode-tabs" flexDirection="row" gap={1}>
             <box
               id="pos-tab-rel"
               border={["left"]}
@@ -245,7 +247,6 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
               backgroundColor={COLORS.cardHover}
               paddingLeft={1}
               paddingRight={1}
-              marginLeft={1}
               onMouseDown={() => onUpdate({ position: "absolute" } as Partial<ElementNode>)}
             >
               <text fg={node.position === "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
@@ -349,10 +350,62 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
   }
 
   return (
-    <scrollbox id="prop-pane-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}>
-      <box id="element-header" style={{ marginBottom: 1, flexDirection: "row" }}>
-        <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1, alignSelf: "flex-start" }}>
-          <text fg={COLORS.bg}><strong>{node.type}</strong></text>
+    <scrollbox 
+      id="prop-pane-scroll" 
+      style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}
+      scrollbarOptions={{
+        trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
+      }}
+      onMouseDown={() => {
+        if (focusedField === "name") setFocusedField(null)
+      }}
+    >
+      <box id="element-header" style={{ marginBottom: 1, flexDirection: "column", gap: 1, paddingRight: 1 }}>
+        <box id="element-type-row" style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <box id="element-type" style={{ flexDirection: "row" }}>
+            <text fg={COLORS.muted}>Type </text>
+            <box style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}>
+              <text fg={COLORS.bg}><strong>{node.type}</strong></text>
+            </box>
+          </box>
+          <box
+            id="visibility-toggle"
+            style={{ flexDirection: "row" }}
+            onMouseDown={() => onUpdate({ visible: !node.visible } as Partial<ElementNode>)}
+          >
+            <text fg={node.visible !== false ? COLORS.accent : COLORS.danger} selectable={false}>
+              {node.visible !== false ? "⬢" : "⬡"}
+            </text>
+          </box>
+        </box>
+        <box id="element-name" style={{ flexDirection: "row" }} onMouseDown={(e) => e.stopPropagation()}>
+          <text fg={COLORS.muted}>Name </text>
+          {focusedField === "name" ? (
+            <input
+              id="name-input"
+              value={node.name || ""}
+              focused
+              width={(node.name?.length || 1) + 2}
+              backgroundColor={COLORS.cardHover}
+              textColor={COLORS.text}
+              onInput={(v) => onUpdate({ name: v } as Partial<ElementNode>)}
+              onSubmit={() => setFocusedField(null)}
+            />
+          ) : (
+            <box
+              id="name-display"
+              style={{ backgroundColor: COLORS.cardHover, paddingLeft: 1, paddingRight: 1 }}
+              onMouseDown={() => {
+                const now = Date.now()
+                if (now - lastNameClickRef.current < 400) {
+                  setFocusedField("name")
+                }
+                lastNameClickRef.current = now
+              }}
+            >
+              <text fg={COLORS.text}>{node.name || ""}</text>
+            </box>
+          )}
         </box>
       </box>
       {unsectioned.map(renderProp)}
