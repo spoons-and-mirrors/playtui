@@ -106,44 +106,38 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     )
   }
 
-  // Render padding section with visual SpacingControl
+  // Render padding section - non-collapsible, all inline
   const renderPaddingSection = () => {
-    const section: "padding" = "padding"
-    const isCollapsed = collapsed[section]
-    const handleChange = (key: "all" | "top" | "right" | "bottom" | "left", val: number | undefined) => {
-      const prefix = section
-      if (key === "all") onUpdate({ [prefix]: val } as Partial<ElementNode>)
-      if (key !== "all") onUpdate({ [`${prefix}${key.charAt(0).toUpperCase()}${key.slice(1)}`]: val } as Partial<ElementNode>)
-    }
-
     if (!isContainerNode(node)) return null
     const container = node as BoxNode | ScrollboxNode
 
     const values = {
-      all: container.padding,
-      top: container.paddingTop,
-      right: container.paddingRight,
-      bottom: container.paddingBottom,
-      left: container.paddingLeft,
+      top: container.paddingTop ?? 0,
+      right: container.paddingRight ?? 0,
+      bottom: container.paddingBottom ?? 0,
+      left: container.paddingLeft ?? 0,
+    }
+
+    const handleChange = (key: "top" | "right" | "bottom" | "left", val: number) => {
+      const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
+      onUpdate({ [propKey]: val } as Partial<ElementNode>)
     }
 
     return (
-      <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
-        {!isCollapsed && (
-          <box style={{ paddingLeft: 1 }}>
-            <SpacingControl label="" values={values} onChange={handleChange} />
-          </box>
-        )}
+      <box key="padding" id="section-padding" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
+        <text fg={COLORS.text}><strong>Padding</strong></text>
+        <box id="padding-sliders" flexDirection="row" gap={1}>
+          <ValueSlider id="padding-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
+          <ValueSlider id="padding-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
+          <ValueSlider id="padding-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
+          <ValueSlider id="padding-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
+        </box>
       </box>
     )
   }
 
-  // Render margin section with MarginControl (TRBL layout)
+  // Render margin section - non-collapsible, all inline
   const renderMarginSection = () => {
-    const section: "margin" = "margin"
-    const isCollapsed = collapsed[section]
-
     const values = {
       top: node.marginTop ?? 0,
       right: node.marginRight ?? 0,
@@ -159,48 +153,36 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     }
 
     return (
-      <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
-        {/* Header with inline margin value sliders */}
-        <box id="margin-header" flexDirection="row" alignItems="center" justifyContent="space-between">
-          <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
-          {/* Inline margin sliders right-aligned */}
-          <box id="margin-inline-sliders" flexDirection="row" gap={1}>
-            <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
-            <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
-            <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
-            <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
-          </box>
+      <box key="margin" id="section-margin" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
+        <text fg={COLORS.text}><strong>Margin</strong></text>
+        <box id="margin-sliders" flexDirection="row" gap={1}>
+          <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
+          <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
+          <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
+          <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
         </box>
-        {!isCollapsed && (
-          <box style={{ paddingLeft: 1 }}>
-            <MarginControl values={values} onChange={handleChange} />
-          </box>
-        )}
       </box>
     )
   }
 
 
-  // Render dimensions section with DimensionsControl
+  // Render dimensions section - non-collapsible
   const renderDimensionsSection = () => {
-    const isCollapsed = collapsed["dimensions"]
     return (
-      <box key="dimensions" id="section-dimensions" style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS["dimensions"]} collapsed={isCollapsed} onToggle={() => toggleSection("dimensions")} />
-        {!isCollapsed && (
-          <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            <DimensionsControl 
-              width={node.width} 
-              height={node.height}
-              flexGrow={node.flexGrow}
-              minWidth={node.minWidth}
-              maxWidth={node.maxWidth}
-              minHeight={node.minHeight}
-              maxHeight={node.maxHeight}
-              onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} 
-            />
-          </box>
-        )}
+      <box key="dimensions" id="section-dimensions" style={{ flexDirection: "column", marginTop: 1 }}>
+        <text fg={COLORS.text}><strong>Dimensions</strong></text>
+        <box style={{ flexDirection: "column", gap: 0 }}>
+          <DimensionsControl 
+            width={node.width} 
+            height={node.height}
+            flexGrow={node.flexGrow}
+            minWidth={node.minWidth}
+            maxWidth={node.maxWidth}
+            minHeight={node.minHeight}
+            maxHeight={node.maxHeight}
+            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} 
+          />
+        </box>
       </box>
     )
   }
@@ -232,18 +214,15 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     )
   }
 
-  // Render position section - non-collapsible, all inline
+  // Render position section - non-collapsible
   const renderPositionSection = () => {
     return (
-      <box key="position" id="section-position" style={{ flexDirection: "column", marginTop: 1 }}>
-        {/* Title row */}
-        <text fg={COLORS.text}><strong>Position</strong></text>
-        {/* All controls inline: Rel, Abs, x, y, z */}
-        <box id="position-controls" flexDirection="row" alignItems="center" gap={1} marginTop={1}>
-          {/* Rel tab */}
+      <box key="position" id="section-position" flexDirection="column">
+        {/* Rel/Abs tabs on top line, right-aligned */}
+        <box id="pos-mode-tabs" flexDirection="row" gap={1} justifyContent="flex-end" marginBottom={1}>
           <box
             id="pos-tab-rel"
-            border={["left"]}
+            border={["right"]}
             borderStyle="heavy"
             borderColor={node.position !== "absolute" ? COLORS.accent : "transparent"}
             backgroundColor={COLORS.bg}
@@ -255,10 +234,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
               {node.position !== "absolute" ? <strong>Rel</strong> : "Rel"}
             </text>
           </box>
-          {/* Abs tab */}
           <box
             id="pos-tab-abs"
-            border={["left"]}
+            border={["right"]}
             borderStyle="heavy"
             borderColor={node.position === "absolute" ? COLORS.accent : "transparent"}
             backgroundColor={COLORS.bg}
@@ -270,10 +248,15 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
               {node.position === "absolute" ? <strong>Abs</strong> : "Abs"}
             </text>
           </box>
-          {/* x, y, z sliders */}
-          <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>)} />
-          <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>)} />
-          <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>)} />
+        </box>
+        {/* Position title left, x y z right */}
+        <box id="pos-row" flexDirection="row" alignItems="center" justifyContent="space-between">
+          <text fg={COLORS.text}><strong>Position</strong></text>
+          <box id="pos-xyz" flexDirection="row" gap={1}>
+            <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>)} />
+            <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>)} />
+            <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>)} />
+          </box>
         </box>
       </box>
     )
@@ -380,7 +363,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
           </box>
           <box
             id="visibility-toggle"
-            style={{ flexDirection: "row" }}
+            style={{ flexDirection: "row", paddingLeft: 2, paddingRight: 2 }}
             onMouseDown={() => onUpdate({ visible: !node.visible } as Partial<ElementNode>)}
           >
             <text fg={node.visible !== false ? COLORS.accent : COLORS.danger} selectable={false}>

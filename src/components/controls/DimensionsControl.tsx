@@ -97,78 +97,81 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
   }
 
   return (
-    <box id={id} flexDirection="column" gap={0}>
-      {/* Row 1: Label + Mode selector */}
-      <box id={`${id}-modes`} flexDirection="row" gap={0}>
-        <box paddingRight={1}>
-          <text fg={COLORS.text} selectable={false}><strong>{label}</strong></text>
+    <box id={id} flexDirection="column" gap={1}>
+      {/* Row 1: Label + Mode selector left, Value counter right */}
+      <box id={`${id}-modes`} flexDirection="row" justifyContent="space-between">
+        <box id={`${id}-mode-btns`} flexDirection="row" gap={0}>
+          <box paddingRight={1}>
+            <text fg={COLORS.text} selectable={false}><strong>{label}</strong></text>
+          </box>
+          <ModeButton id={`${id}-hug`} label="hug" active={mode === "hug"} onClick={() => setMode("hug")} />
+          <ModeButton id={`${id}-fill`} label="fill" active={mode === "fill"} onClick={() => setMode("fill")} />
+          <ModeButton id={`${id}-fixed`} label="px" active={mode === "fixed"} onClick={() => setMode("fixed")} />
+          <ModeButton id={`${id}-pct`} label="%" active={mode === "percent"} onClick={() => setMode("percent")} />
         </box>
-        <ModeButton id={`${id}-hug`} label="hug" active={mode === "hug"} onClick={() => setMode("hug")} />
-        <ModeButton id={`${id}-fill`} label="fill" active={mode === "fill"} onClick={() => setMode("fill")} />
-        <ModeButton id={`${id}-fixed`} label="px" active={mode === "fixed"} onClick={() => setMode("fixed")} />
-        <ModeButton id={`${id}-pct`} label="%" active={mode === "percent"} onClick={() => setMode("percent")} />
+        {/* Value counter right-aligned */}
+        {canAdjust && (
+          <box id={`${id}-value-ctrl`} flexDirection="row">
+            <box
+              id={`${id}-dec`}
+              backgroundColor={COLORS.bg}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={() => { setPressing("dec"); adjust(-1) }}
+              onMouseUp={() => setPressing(null)}
+              onMouseOut={() => setPressing(null)}
+            >
+              <text fg={COLORS.accent} selectable={false}>-</text>
+            </box>
+            <box
+              id={`${id}-value`}
+              backgroundColor={pressing || dragging ? COLORS.accent : COLORS.muted}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={handleValueMouseDown}
+              onMouseDrag={handleValueDrag}
+              onMouseDragEnd={handleValueDragEnd}
+            >
+              <text fg={COLORS.bg} selectable={false}>
+                <strong>{numVal}{isPercent ? "%" : ""}</strong>
+              </text>
+            </box>
+            <box
+              id={`${id}-inc`}
+              backgroundColor={COLORS.bg}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={() => { setPressing("inc"); adjust(1) }}
+              onMouseUp={() => setPressing(null)}
+              onMouseOut={() => setPressing(null)}
+            >
+              <text fg={COLORS.accent} selectable={false}>+</text>
+            </box>
+          </box>
+        )}
       </box>
 
-      {/* Row 2: Value adjuster (only for fixed/percent) */}
+      {/* Row 2: Bounds toggles left-aligned (only for fixed/percent) */}
       {canAdjust && (
-        <box id={`${id}-value-row`} flexDirection="row" marginTop={0}>
-          <box
-            id={`${id}-dec`}
-            backgroundColor={COLORS.bg}
-            paddingLeft={1}
-            paddingRight={1}
-            onMouseDown={() => { setPressing("dec"); adjust(-1) }}
-            onMouseUp={() => setPressing(null)}
-            onMouseOut={() => setPressing(null)}
-          >
-            <text fg={COLORS.accent} selectable={false}>-</text>
-          </box>
-          <box
-            id={`${id}-value`}
-            backgroundColor={pressing || dragging ? COLORS.accent : COLORS.muted}
-            paddingLeft={1}
-            paddingRight={1}
-            onMouseDown={handleValueMouseDown}
-            onMouseDrag={handleValueDrag}
-            onMouseDragEnd={handleValueDragEnd}
-          >
-            <text fg={COLORS.bg} selectable={false}>
-              <strong>{numVal}{isPercent ? "%" : ""}</strong>
-            </text>
-          </box>
-          <box
-            id={`${id}-inc`}
-            backgroundColor={COLORS.bg}
-            paddingLeft={1}
-            paddingRight={1}
-            onMouseDown={() => { setPressing("inc"); adjust(1) }}
-            onMouseUp={() => setPressing(null)}
-            onMouseOut={() => setPressing(null)}
-          >
-            <text fg={COLORS.accent} selectable={false}>+</text>
-          </box>
+        <box id={`${id}-bounds`} flexDirection="row" gap={1}>
+          <BoundToggle 
+            id={`${id}-min`} 
+            label="min" 
+            value={minValue} 
+            enabled={hasMin}
+            onToggle={() => onMinChange(hasMin ? undefined : 0)}
+            onChange={onMinChange}
+          />
+          <BoundToggle 
+            id={`${id}-max`} 
+            label="max" 
+            value={maxValue} 
+            enabled={hasMax}
+            onToggle={() => onMaxChange(hasMax ? undefined : 0)}
+            onChange={onMaxChange}
+          />
         </box>
       )}
-
-      {/* Row 3: Bounds toggles */}
-      <box id={`${id}-bounds`} flexDirection="row" gap={1} marginTop={0}>
-        <BoundToggle 
-          id={`${id}-min`} 
-          label="min" 
-          value={minValue} 
-          enabled={hasMin}
-          onToggle={() => onMinChange(hasMin ? undefined : 0)}
-          onChange={onMinChange}
-        />
-        <BoundToggle 
-          id={`${id}-max`} 
-          label="max" 
-          value={maxValue} 
-          enabled={hasMax}
-          onToggle={() => onMaxChange(hasMax ? undefined : 0)}
-          onChange={onMaxChange}
-        />
-      </box>
     </box>
   )
 }
