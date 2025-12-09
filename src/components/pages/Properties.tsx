@@ -180,7 +180,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
             maxWidth={node.maxWidth}
             minHeight={node.minHeight}
             maxHeight={node.maxHeight}
-            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} 
+            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)}
+            onBatchUpdate={(updates) => onUpdate(updates as Partial<ElementNode>)}
           />
         </box>
       </box>

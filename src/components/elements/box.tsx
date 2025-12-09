@@ -42,9 +42,6 @@ const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
 export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: BoxRendererProps) {
   const node = genericNode as BoxNode
   const hasBorder = node.border === true
-  const borderValue = hasBorder
-    ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
-    : undefined
   
   // Only enable dragging for absolute positioned elements
   const isDraggable = node.position === "absolute"
@@ -111,20 +108,25 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     }
   }
 
+  // Border props - only include when border is enabled
+  const borderProps = hasBorder ? {
+    border: node.borderSides && node.borderSides.length > 0 ? node.borderSides : true,
+    borderStyle: node.borderStyle || "single",
+    borderColor: node.borderColor,
+    focusedBorderColor: node.focusedBorderColor,
+  } : {}
+
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={borderValue}
-      borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={node.borderColor}
-      focusedBorderColor={node.focusedBorderColor}
+      {...borderProps}
       shouldFill={node.shouldFill}
       visible={node.visible !== false}
-      title={node.title}
-      titleAlignment={node.titleAlignment}
+      title={hasBorder ? node.title : undefined}
+      titleAlignment={hasBorder ? node.titleAlignment : undefined}
       style={boxStyle}
     >
       {children}

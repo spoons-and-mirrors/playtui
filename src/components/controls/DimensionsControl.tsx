@@ -33,7 +33,7 @@ function ModeButton({ id, label, active, onClick }: { id: string; label: string;
       paddingRight={1}
       onMouseDown={onClick}
     >
-      <text fg={active ? COLORS.bg : COLORS.muted} selectable={false}>{label}</text>
+      <text fg={active ? COLORS.bg : COLORS.muted} selectable={false} onMouseDown={onClick}>{label}</text>
     </box>
   )
 }
@@ -121,7 +121,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
               onMouseUp={() => setPressing(null)}
               onMouseOut={() => setPressing(null)}
             >
-              <text fg={COLORS.accent} selectable={false}>-</text>
+              <text fg={COLORS.accent} selectable={false} onMouseDown={() => { setPressing("dec"); adjust(-1) }}>-</text>
             </box>
             <box
               id={`${id}-value`}
@@ -132,7 +132,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
               onMouseDrag={handleValueDrag}
               onMouseDragEnd={handleValueDragEnd}
             >
-              <text fg={COLORS.bg} selectable={false}>
+              <text fg={COLORS.bg} selectable={false} onMouseDown={handleValueMouseDown}>
                 <strong>{numVal}{isPercent ? "%" : ""}</strong>
               </text>
             </box>
@@ -145,7 +145,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
               onMouseUp={() => setPressing(null)}
               onMouseOut={() => setPressing(null)}
             >
-              <text fg={COLORS.accent} selectable={false}>+</text>
+              <text fg={COLORS.accent} selectable={false} onMouseDown={() => { setPressing("inc"); adjust(1) }}>+</text>
             </box>
           </box>
         )}
@@ -249,12 +249,14 @@ export interface DimensionsControlProps {
   minHeight?: number
   maxHeight?: number
   onChange: (key: string, val: SizeValue | number | undefined) => void
+  onBatchUpdate?: (updates: Record<string, SizeValue | number | undefined>) => void
 }
 
 export function DimensionsControl({ 
   width, height, flexGrow,
   minWidth, maxWidth, minHeight, maxHeight,
-  onChange 
+  onChange,
+  onBatchUpdate
 }: DimensionsControlProps) {
   return (
     <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingBottom: 1 }}>
@@ -265,8 +267,12 @@ export function DimensionsControl({
         value={width} 
         flexGrow={flexGrow}
         onChange={(v, fg) => {
-          onChange("width", v)
-          if (fg !== undefined) onChange("flexGrow", fg)
+          if (onBatchUpdate && fg !== undefined) {
+            onBatchUpdate({ width: v, flexGrow: fg })
+          } else {
+            onChange("width", v)
+            if (fg !== undefined) onChange("flexGrow", fg)
+          }
         }}
         minValue={minWidth}
         maxValue={maxWidth}
@@ -280,8 +286,12 @@ export function DimensionsControl({
         value={height}
         flexGrow={flexGrow}
         onChange={(v, fg) => {
-          onChange("height", v)
-          if (fg !== undefined) onChange("flexGrow", fg)
+          if (onBatchUpdate && fg !== undefined) {
+            onBatchUpdate({ height: v, flexGrow: fg })
+          } else {
+            onChange("height", v)
+            if (fg !== undefined) onChange("flexGrow", fg)
+          }
         }}
         minValue={minHeight}
         maxValue={maxHeight}
