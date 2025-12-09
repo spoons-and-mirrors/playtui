@@ -59,18 +59,25 @@ export function Builder({ width, height }: BuilderProps) {
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [panelsHiddenPerMode, setPanelsHiddenPerMode] = useState<Record<string, boolean>>({
-    editor: false,
-    play: false,
-    code: true,
+  
+  // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
+  const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
+    editor: 0,
+    play: 0,
+    code: 1,
   })
 
-  // Derive panelsHidden from current mode
-  const panelsHidden = panelsHiddenPerMode[mode] ?? false
+  // Derive panel visibility from current mode's state
+  const panelState = panelStatePerMode[mode] ?? 0
+  const showTree = panelState === 0 || panelState === 2      // both or tree-only
+  const showProperties = panelState === 0 || panelState === 3 // both or props-only
 
-  // Toggle panels for current mode
+  // Cycle through 4 states for current mode
   const togglePanels = useCallback(() => {
-    setPanelsHiddenPerMode(prev => ({ ...prev, [mode]: !prev[mode] }))
+    setPanelStatePerMode(prev => ({
+      ...prev,
+      [mode]: ((prev[mode] ?? 0) + 1) % 4
+    }))
   }, [mode])
 
   // Track dragging state for absolute positioned elements
@@ -214,7 +221,7 @@ export function Builder({ width, height }: BuilderProps) {
   }, [tree, updateTree])
 
   const treeWidth = 30
-  const sidebarWidth = 40
+  const sidebarWidth = 35
 
   // Loading state
   if (isLoading) { // Allow project to be null if we are in library mode?
@@ -240,7 +247,7 @@ export function Builder({ width, height }: BuilderProps) {
         ) : (
           <DocsPanel />
         )}
-        <Footer mode={mode} onModeChange={setMode} />
+        <Footer mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -251,7 +258,7 @@ export function Builder({ width, height }: BuilderProps) {
     return (
        <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
         <text fg={COLORS.muted}>No project loaded.</text>
-        <Footer mode={mode} onModeChange={setMode} />
+        <Footer mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -259,7 +266,7 @@ export function Builder({ width, height }: BuilderProps) {
   return (
     <box id="builder" style={{ width, height, flexDirection: "row" }}>
       {/* Left Panel - Tree */}
-      {!panelsHidden && (
+      {showTree && (
         <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
           style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
           <Title saveStatus={saveStatus} onLogoClick={() => setMode("docs")} />
@@ -271,7 +278,7 @@ export function Builder({ width, height }: BuilderProps) {
       )}
 
       {/* Center Area - header top, canvas middle, footer bottom */}
-      <box id="builder-center" style={{ width: panelsHidden ? width : width - treeWidth - sidebarWidth, height, flexDirection: "column", padding: 1 }}>
+      <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), height, flexDirection: "column", padding: 1 }}>
         <Header
           projectName={project.name}
           addMode={addMode}
@@ -307,11 +314,11 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Footer - mode tabs centered */}
-        <Footer mode={mode} onModeChange={setMode} />
+        <Footer mode={mode} width={width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0)} onModeChange={setMode} />
       </box>
 
       {/* Right Panel - Properties */}
-      {!panelsHidden && (
+      {showProperties && (
         <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
           style={{ width: sidebarWidth, height, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
           {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
