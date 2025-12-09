@@ -232,58 +232,49 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     )
   }
 
-  // Render position section with visual control
+  // Render position section - non-collapsible, all inline
   const renderPositionSection = () => {
-    // Position applies to all elements now
-    const isCollapsed = collapsed["position"]
-
     return (
-      <box key="position" id="section-position" style={{ flexDirection: "column" }}>
-        {/* Header with right-aligned Rel/Abs tabs */}
-        <box id="position-header" flexDirection="row" alignItems="center" justifyContent="space-between">
-          <SectionHeader title={SECTION_LABELS["position"]} collapsed={isCollapsed} onToggle={() => toggleSection("position")} />
-          {/* Rel/Abs tabs right-aligned */}
-          <box id="pos-mode-tabs" flexDirection="row" gap={1}>
-            <box
-              id="pos-tab-rel"
-              border={["left"]}
-              borderStyle="heavy"
-              borderColor={node.position !== "absolute" ? COLORS.accentBright : COLORS.muted}
-              backgroundColor={COLORS.cardHover}
-              paddingLeft={1}
-              paddingRight={1}
-              onMouseDown={() => onUpdate({ position: "relative" } as Partial<ElementNode>)}
-            >
-              <text fg={node.position !== "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
-                {node.position !== "absolute" ? <strong>Rel</strong> : "Rel"}
-              </text>
-            </box>
-            <box
-              id="pos-tab-abs"
-              border={["left"]}
-              borderStyle="heavy"
-              borderColor={node.position === "absolute" ? COLORS.accentBright : COLORS.muted}
-              backgroundColor={COLORS.cardHover}
-              paddingLeft={1}
-              paddingRight={1}
-              onMouseDown={() => onUpdate({ position: "absolute" } as Partial<ElementNode>)}
-            >
-              <text fg={node.position === "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
-                {node.position === "absolute" ? <strong>Abs</strong> : "Abs"}
-              </text>
-            </box>
+      <box key="position" id="section-position" style={{ flexDirection: "column", marginTop: 1 }}>
+        {/* Title row */}
+        <text fg={COLORS.text}><strong>Position</strong></text>
+        {/* All controls inline: Rel, Abs, x, y, z */}
+        <box id="position-controls" flexDirection="row" alignItems="center" gap={1} marginTop={1}>
+          {/* Rel tab */}
+          <box
+            id="pos-tab-rel"
+            border={["left"]}
+            borderStyle="heavy"
+            borderColor={node.position !== "absolute" ? COLORS.accent : "transparent"}
+            backgroundColor={COLORS.bg}
+            paddingLeft={1}
+            paddingRight={1}
+            onMouseDown={() => onUpdate({ position: "relative" } as Partial<ElementNode>)}
+          >
+            <text fg={node.position !== "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
+              {node.position !== "absolute" ? <strong>Rel</strong> : "Rel"}
+            </text>
           </box>
+          {/* Abs tab */}
+          <box
+            id="pos-tab-abs"
+            border={["left"]}
+            borderStyle="heavy"
+            borderColor={node.position === "absolute" ? COLORS.accent : "transparent"}
+            backgroundColor={COLORS.bg}
+            paddingLeft={1}
+            paddingRight={1}
+            onMouseDown={() => onUpdate({ position: "absolute" } as Partial<ElementNode>)}
+          >
+            <text fg={node.position === "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
+              {node.position === "absolute" ? <strong>Abs</strong> : "Abs"}
+            </text>
+          </box>
+          {/* x, y, z sliders */}
+          <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>)} />
+          <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>)} />
+          <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>)} />
         </box>
-        {!isCollapsed && (
-          <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            <PositionControl
-              x={node.x}
-              y={node.y}
-              zIndex={node.zIndex}
-              onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)}
-            />
-          </box>
-        )}
       </box>
     )
   }
