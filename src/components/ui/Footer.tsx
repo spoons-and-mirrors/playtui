@@ -1,6 +1,6 @@
 import { COLORS } from "../../theme"
 
-export type ViewMode = "editor" | "code" | "animate" | "library" | "docs"
+export type ViewMode = "editor" | "code" | "play" | "library" | "docs"
 
 interface ModeTabProps {
   fKey: string
@@ -53,7 +53,7 @@ export function Footer({ mode, onModeChange }: FooterProps) {
     >
       <ModeTab fKey="F1" label="Editor" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
       <ModeTab fKey="F2" label="Code" isActive={mode === "code"} onPress={() => onModeChange("code")} />
-      <ModeTab fKey="F3" label="Animate" isActive={mode === "animate"} onPress={() => onModeChange("animate")} />
+      <ModeTab fKey="F3" label="Play" isActive={mode === "play"} onPress={() => onModeChange("play")} />
       <ModeTab fKey="F4" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
       <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
     </box>

@@ -3,13 +3,13 @@ import { FilmStrip } from "./FilmStrip"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
 
-interface AnimatePanelProps {
+interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
   onTogglePlay: () => void
 }
 
-export function AnimatePanel({ projectHook, isPlaying, onTogglePlay }: AnimatePanelProps) {
+export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 

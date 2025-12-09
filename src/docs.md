@@ -46,7 +46,7 @@ Native TUI design tool based on sst/opentui
 | z | Undo |
 | y / Shift + Z | Redo |
 
-## Animation (Animate Mode)
+## Animation (Play Mode)
 
 | Key | Action |
 |-----|--------|

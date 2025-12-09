@@ -78,7 +78,7 @@ export function useBuilderKeyboard({
     if (!modalMode) {
       if (key.name === "f1") { setMode("editor"); return }
       if (key.name === "f2") { setMode("code"); return }
-      if (key.name === "f3") { setMode("animate"); return }
+      if (key.name === "f3") { setMode("play"); return }
       if (key.name === "f4") { setMode("library"); return }
       if (key.name === "f5") { setMode("docs"); return }
     }
@@ -95,8 +95,8 @@ export function useBuilderKeyboard({
       return
     }
 
-    // Animate mode - frame shortcuts, then fall through to editor shortcuts
-    if (mode === "animate") {
+    // Play mode - frame shortcuts, then fall through to editor shortcuts
+    if (mode === "play") {
       if (key.name === "space" && onAnimPlayToggle) { onAnimPlayToggle(); return }
       if (!focusedField && !addMode) {
         if (key.name === "e" && onAnimPrevFrame) { onAnimPrevFrame(); return }

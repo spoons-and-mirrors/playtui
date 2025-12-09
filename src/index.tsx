@@ -7,7 +7,7 @@ import { generateChildrenCode } from "./lib/codegen"
 import { TreeView } from "./components/pages/Tree"
 import { PropertyPane } from "./components/pages/Properties"
 import { LibraryPage } from "./components/pages/Library"
-import { AnimatePage } from "./components/pages/Animate"
+import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header } from "./components/ui"
 import { useProject } from "./hooks/useProject"
@@ -260,8 +260,8 @@ export function Builder({ width, height }: BuilderProps) {
           <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setMode("editor")} />
         ) : mode === "docs" ? (
           <DocsPanel />
-        ) : mode === "animate" ? (
-           <AnimatePage 
+        ) : mode === "play" ? (
+           <PlayPage 
              projectHook={projectHook} 
              isPlaying={isPlaying}
              onTogglePlay={() => setIsPlaying(p => !p)}
