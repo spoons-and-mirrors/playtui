@@ -165,6 +165,13 @@ export interface TextNode extends BaseNode {
   strikethrough?: boolean
   selectable?: boolean
   wrapMode?: WrapMode
+  
+  // === SPACING - PADDING ===
+  padding?: number
+  paddingTop?: number
+  paddingRight?: number
+  paddingBottom?: number
+  paddingLeft?: number
 }
 
 export interface InputNode extends BaseNode {

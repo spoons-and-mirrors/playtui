@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import type { InputRenderable } from "@opentui/core"
-import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode } from "../../lib/types"
+import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
@@ -108,8 +108,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
 
   // Render padding section - non-collapsible, all inline
   const renderPaddingSection = () => {
-    if (!isContainerNode(node)) return null
-    const container = node as BoxNode | ScrollboxNode
+    if (!isContainerNode(node) && node.type !== "text") return null
+    const container = node as BoxNode | ScrollboxNode | TextNode
 
     const values = {
       top: container.paddingTop ?? 0,

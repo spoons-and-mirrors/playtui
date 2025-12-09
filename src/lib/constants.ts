@@ -86,12 +86,12 @@ export const PROPERTIES: PropertyDef[] = [
   { key: "flexBasis", label: "Basis", type: "size", section: "flexItem", appliesTo: ["box", "scrollbox", "input"] },
   { key: "alignSelf", label: "Align Self", type: "select", options: ["auto", "flex-start", "center", "flex-end", "stretch"], section: "flexItem", appliesTo: ["box", "scrollbox", "input"] },
 
-  // === PADDING === (container elements only)
-  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
+  // === PADDING === (container elements and text)
+  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
 
   // === MARGIN === (common to many elements)
   { key: "margin", label: "All", type: "number", min: 0, max: 20, section: "margin", appliesTo: ["box", "scrollbox", "text", "input"] },
