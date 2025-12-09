@@ -3,10 +3,10 @@ import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode }
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
-  NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
-  SectionHeader, BorderSidesProp, SpacingControl, ColorPropWithHex, 
-  PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-  OverflowPicker, DimensionsControl
+   NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
+   SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorPropWithHex, 
+   PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
+   OverflowPicker, DimensionsControl
 } from "../controls"
 import { ELEMENT_REGISTRY } from "../elements"
 import { COLORS } from "../../theme"
@@ -103,30 +103,70 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     )
   }
 
-  // Render spacing sections (padding/margin) with visual SpacingControl
-  const renderSpacingSection = (section: "padding" | "margin") => {
+  // Render padding section with visual SpacingControl
+  const renderPaddingSection = () => {
+    const section: "padding" = "padding"
     const isCollapsed = collapsed[section]
     const handleChange = (key: "all" | "top" | "right" | "bottom" | "left", val: number | undefined) => {
       const prefix = section
       if (key === "all") onUpdate({ [prefix]: val } as Partial<ElementNode>)
-      else onUpdate({ [`${prefix}${key.charAt(0).toUpperCase()}${key.slice(1)}`]: val } as Partial<ElementNode>)
+      if (key !== "all") onUpdate({ [`${prefix}${key.charAt(0).toUpperCase()}${key.slice(1)}`]: val } as Partial<ElementNode>)
     }
-    
-    // Padding only applies to container nodes
-    if (section === "padding" && !isContainerNode(node)) return null
+
+    if (!isContainerNode(node)) return null
     const container = node as BoxNode | ScrollboxNode
-    
-    const values = section === "padding"
-      ? { all: container.padding, top: container.paddingTop, right: container.paddingRight, bottom: container.paddingBottom, left: container.paddingLeft }
-      : { all: node.margin, top: node.marginTop, right: node.marginRight, bottom: node.marginBottom, left: node.marginLeft }
+
+    const values = {
+      all: container.padding,
+      top: container.paddingTop,
+      right: container.paddingRight,
+      bottom: container.paddingBottom,
+      left: container.paddingLeft,
+    }
 
     return (
       <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
         <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
-        {!isCollapsed && <box style={{ paddingLeft: 1 }}><SpacingControl label="" values={values} onChange={handleChange} /></box>}
+        {!isCollapsed && (
+          <box style={{ paddingLeft: 1 }}>
+            <SpacingControl label="" values={values} onChange={handleChange} />
+          </box>
+        )}
       </box>
     )
   }
+
+  // Render margin section with MarginControl (TRBL layout)
+  const renderMarginSection = () => {
+    const section: "margin" = "margin"
+    const isCollapsed = collapsed[section]
+
+    const values = {
+      top: node.marginTop,
+      right: node.marginRight,
+      bottom: node.marginBottom,
+      left: node.marginLeft,
+    }
+
+    const handleChange = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
+      if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>)
+      if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>)
+      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>)
+      if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>)
+    }
+
+    return (
+      <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
+        <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
+        {!isCollapsed && (
+          <box style={{ paddingLeft: 1 }}>
+            <MarginControl values={values} onChange={handleChange} />
+          </box>
+        )}
+      </box>
+    )
+  }
+
 
   // Render sizing section with DimensionsControl
   const renderSizingSection = () => {
@@ -287,7 +327,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     }
     // Custom visual sections
     if (section === "sizing") return renderSizingSection()
-    if (section === "padding" || section === "margin") return renderSpacingSection(section)
+    if (section === "padding") return renderPaddingSection()
+    if (section === "margin") return renderMarginSection()
     if (section === "flexContainer") return renderFlexContainerSection()
     if (section === "position") return renderPositionSection()
     if (section === "overflow") return renderOverflowSection()
