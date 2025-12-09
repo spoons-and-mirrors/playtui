@@ -170,16 +170,24 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
   }
 
 
-  // Render sizing section with DimensionsControl
-  const renderSizingSection = () => {
-    const isCollapsed = collapsed["sizing"]
+  // Render dimensions section with DimensionsControl
+  const renderDimensionsSection = () => {
+    const isCollapsed = collapsed["dimensions"]
     return (
-      <box key="sizing" id="section-sizing" style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS["sizing"]} collapsed={isCollapsed} onToggle={() => toggleSection("sizing")} />
+      <box key="dimensions" id="section-dimensions" style={{ flexDirection: "column" }}>
+        <SectionHeader title={SECTION_LABELS["dimensions"]} collapsed={isCollapsed} onToggle={() => toggleSection("dimensions")} />
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            <DimensionsControl width={node.width} height={node.height} minWidth={node.minWidth} maxWidth={node.maxWidth}
-              minHeight={node.minHeight} maxHeight={node.maxHeight} onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} />
+            <DimensionsControl 
+              width={node.width} 
+              height={node.height}
+              flexGrow={node.flexGrow}
+              minWidth={node.minWidth}
+              maxWidth={node.maxWidth}
+              minHeight={node.minHeight}
+              maxHeight={node.maxHeight}
+              onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} 
+            />
           </box>
         )}
       </box>
@@ -327,7 +335,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
       return renderElementSection(section)
     }
     // Custom visual sections
-    if (section === "sizing") return renderSizingSection()
+    if (section === "dimensions") return renderDimensionsSection()
     if (section === "padding") return renderPaddingSection()
     if (section === "margin") return renderMarginSection()
     if (section === "flexContainer") return renderFlexContainerSection()

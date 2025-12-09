@@ -321,7 +321,7 @@ export interface PropertyDef {
 }
 
 export type PropertySection =
-  | "sizing"
+  | "dimensions"
   | "flexContainer"
   | "flexItem"
   | "padding"

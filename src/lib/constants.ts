@@ -2,7 +2,7 @@ import { COLORS } from "../theme"
 import type { PropertyDef, PropertySection } from "./types"
 
 export const SECTION_LABELS: Record<PropertySection, string> = {
-  sizing: "◫ Size",
+  dimensions: "◫ Dimensions",
   flexContainer: "⬓ Layout",
   flexItem: "◧ Flex Item",
   padding: "⊞ Padding",
@@ -24,7 +24,7 @@ export const SECTION_LABELS: Record<PropertySection, string> = {
 
 // Section ordering for property panel - most used first
 export const SECTION_ORDER: PropertySection[] = [
-  "sizing",
+  "dimensions",
   "position",
   "margin",
   "padding",
@@ -47,7 +47,7 @@ export const SECTION_ORDER: PropertySection[] = [
 
 // Sections that start expanded by default
 export const EXPANDED_BY_DEFAULT: PropertySection[] = [
-  "sizing",
+  "dimensions",
   "flexContainer",
   "background",
   "border",
@@ -61,14 +61,14 @@ export const EXPANDED_BY_DEFAULT: PropertySection[] = [
 // =============================================================================
 
 export const PROPERTIES: PropertyDef[] = [
-  // === SIZING === (common to most elements)
-  { key: "width", label: "Width", type: "size", section: "sizing" },
-  { key: "height", label: "Height", type: "size", section: "sizing" },
-  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "sizing", appliesTo: ["box", "scrollbox"] },
+  // === DIMENSIONS === (common to most elements)
+  { key: "width", label: "Width", type: "size", section: "dimensions" },
+  { key: "height", label: "Height", type: "size", section: "dimensions" },
+  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "dimensions", appliesTo: ["box", "scrollbox"] },
 
   // === FLEX CONTAINER === (container elements only)
   { key: "flexDirection", label: "Direction", type: "select", options: ["row", "column"], section: "flexContainer", appliesTo: ["box", "scrollbox"] },
