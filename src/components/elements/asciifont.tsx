@@ -123,8 +123,3 @@ export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of ascii-font-specific property keys
-export const ASCIIFONT_PROPERTY_KEYS = [
-  "text", "font", "color"
-] as const

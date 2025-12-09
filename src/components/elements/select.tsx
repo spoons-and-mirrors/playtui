@@ -1,9 +1,9 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, SelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, NumberProp, StringProp, ColorPropWithHex, SectionHeader
 } from "../controls"
-import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SELECT DEFAULTS
@@ -35,15 +35,23 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
   const selBgColor = node.selectedBackgroundColor || COLORS.accent
   const textColor = node.textColor || COLORS.text
   const selTextColor = node.selectedTextColor || COLORS.bg
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
 
   return (
-    <DraggableWrapper
-      node={node}
-      isSelected={isSelected}
-      isHovered={isHovered}
-      onSelect={onSelect}
-      onHover={onHover}
-      onDragStart={onDragStart}
+    <box
+      id={`render-${node.id}`}
+      onMouseDown={handleMouseDown}
+      onMouseOver={() => onHover(true)}
+      onMouseOut={() => onHover(false)}
+      visible={node.visible !== false}
       style={{
         margin: node.margin,
         marginTop: node.marginTop,
@@ -66,7 +74,7 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
       {node.showScrollIndicator && options.length > 5 && (
         <text fg={COLORS.muted} style={{ paddingLeft: 1 }}>  ↓ more...</text>
       )}
-    </DraggableWrapper>
+    </box>
   )
 }
 
@@ -222,10 +230,3 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
     </box>
   )
 }
-
-// List of select-specific property keys
-export const SELECT_PROPERTY_KEYS = [
-  "options", "showScrollIndicator", "showDescription", "wrapSelection",
-  "itemSpacing", "fastScrollStep", "backgroundColor", "textColor",
-  "selectedBackgroundColor", "selectedTextColor", "descriptionColor", "selectedDescriptionColor"
-] as const

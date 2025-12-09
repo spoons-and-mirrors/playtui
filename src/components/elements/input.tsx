@@ -1,9 +1,9 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, InputNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   SelectProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
 } from "../controls"
-import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // INPUT DEFAULTS
@@ -30,14 +30,23 @@ interface InputRendererProps {
 
 export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
   const node = genericNode as InputNode
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
-    <DraggableWrapper
-      node={node}
-      isSelected={isSelected}
-      isHovered={isHovered}
-      onSelect={onSelect}
-      onHover={onHover}
-      onDragStart={onDragStart}
+    <box
+      id={`render-${node.id}`}
+      onMouseDown={handleMouseDown}
+      onMouseOver={() => onHover(true)}
+      onMouseOut={() => onHover(false)}
+      visible={node.visible !== false}
       style={{
         margin: node.margin,
         marginTop: node.marginTop,
@@ -53,7 +62,7 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
       <text fg={node.placeholderColor || COLORS.muted}>
         {node.placeholder || "Input..."}
       </text>
-    </DraggableWrapper>
+    </box>
   )
 }
 
@@ -183,10 +192,3 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
     </box>
   )
 }
-
-// List of input-specific property keys
-export const INPUT_PROPERTY_KEYS = [
-  "placeholder", "placeholderColor", "maxLength",
-  "textColor", "focusedTextColor", "backgroundColor", "focusedBackgroundColor",
-  "cursorColor", "cursorStyle"
-] as const

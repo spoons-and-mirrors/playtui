@@ -1,9 +1,9 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, ScrollboxNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorPropWithHex, SectionHeader
 } from "../controls"
-import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SCROLLBOX DEFAULTS
@@ -84,14 +84,23 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     },
   } : undefined
 
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
-    <DraggableWrapper
-      node={node}
-      isSelected={isSelected}
-      isHovered={isHovered}
-      onSelect={onSelect}
-      onHover={onHover}
-      onDragStart={onDragStart}
+    <box
+      id={`render-${node.id}`}
+      onMouseDown={handleMouseDown}
+      onMouseOver={() => onHover(true)}
+      onMouseOut={() => onHover(false)}
+      visible={node.visible !== false}
       style={positionStyle}
     >
       <scrollbox
@@ -116,7 +125,7 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
       >
         {children}
       </scrollbox>
-    </DraggableWrapper>
+    </box>
   )
 }
 
@@ -218,9 +227,3 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of scrollbox-specific property keys
-export const SCROLLBOX_PROPERTY_KEYS = [
-  "stickyScroll", "stickyStart", "scrollX", "scrollY", "viewportCulling",
-  "showScrollArrows", "scrollbarForeground", "scrollbarBackground"
-] as const

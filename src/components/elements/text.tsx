@@ -208,8 +208,3 @@ function TextStyleToggle({
     </box>
   )
 }
-
-// List of text-specific property keys
-export const TEXT_PROPERTY_KEYS = [
-  "content", "fg", "bg", "wrapMode", "bold", "italic", "underline", "dim", "strikethrough", "selectable"
-] as const

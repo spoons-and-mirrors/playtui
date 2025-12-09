@@ -229,9 +229,3 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of box-specific property keys for filtering
-export const BOX_PROPERTY_KEYS = [
-  "border", "borderSides", "borderStyle", "borderColor", "focusedBorderColor",
-  "shouldFill", "title", "titleAlignment", "backgroundColor", "visible"
-] as const

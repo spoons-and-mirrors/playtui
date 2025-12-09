@@ -1,9 +1,9 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextareaNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
 } from "../controls"
-import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // TEXTAREA DEFAULTS
@@ -32,14 +32,23 @@ interface TextareaRendererProps {
 
 export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
   const node = genericNode as TextareaNode
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
-    <DraggableWrapper
-      node={node}
-      isSelected={isSelected}
-      isHovered={isHovered}
-      onSelect={onSelect}
-      onHover={onHover}
-      onDragStart={onDragStart}
+    <box
+      id={`render-${node.id}`}
+      onMouseDown={handleMouseDown}
+      onMouseOver={() => onHover(true)}
+      onMouseOut={() => onHover(false)}
+      visible={node.visible !== false}
       style={{
         margin: node.margin,
         marginTop: node.marginTop,
@@ -55,7 +64,7 @@ export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onS
       <text fg={node.placeholderColor || COLORS.muted} wrapMode="word">
         {node.initialValue || node.placeholder || "Multi-line input..."}
       </text>
-    </DraggableWrapper>
+    </box>
   )
 }
 
@@ -132,8 +141,3 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
     </box>
   )
 }
-
-// List of textarea-specific property keys
-export const TEXTAREA_PROPERTY_KEYS = [
-  "initialValue", "blinking", "showCursor", "scrollMargin", "tabIndicatorColor"
-] as const

@@ -1,9 +1,9 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, SliderNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   NumberProp, SelectProp, ColorPropWithHex, SectionHeader
 } from "../controls"
-import { DraggableWrapper } from "./DraggableWrapper"
 
 // =============================================================================
 // SLIDER DEFAULTS
@@ -40,15 +40,23 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
   const pct = Math.round(((val - min) / (max - min)) * 100)
   const trackChar = isHorizontal ? "─" : "│"
   const thumbChar = "●"
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
 
   return (
-    <DraggableWrapper
-      node={node}
-      isSelected={isSelected}
-      isHovered={isHovered}
-      onSelect={onSelect}
-      onHover={onHover}
-      onDragStart={onDragStart}
+    <box
+      id={`render-${node.id}`}
+      onMouseDown={handleMouseDown}
+      onMouseOver={() => onHover(true)}
+      onMouseOut={() => onHover(false)}
+      visible={node.visible !== false}
       style={{
         margin: node.margin,
         marginTop: node.marginTop,
@@ -67,7 +75,7 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
           : `${thumbChar} ${pct}%`
         }
       </text>
-    </DraggableWrapper>
+    </box>
   )
 }
 
@@ -174,9 +182,3 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
     </box>
   )
 }
-
-// List of slider-specific property keys
-export const SLIDER_PROPERTY_KEYS = [
-  "orientation", "value", "min", "max", "viewPortSize",
-  "backgroundColor", "foregroundColor"
-] as const
