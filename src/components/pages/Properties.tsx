@@ -9,6 +9,7 @@ import {
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
    OverflowPicker, DimensionsControl
 } from "../controls"
+import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
 import { COLORS } from "../../theme"
 
@@ -144,10 +145,10 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
     const isCollapsed = collapsed[section]
 
     const values = {
-      top: node.marginTop,
-      right: node.marginRight,
-      bottom: node.marginBottom,
-      left: node.marginLeft,
+      top: node.marginTop ?? 0,
+      right: node.marginRight ?? 0,
+      bottom: node.marginBottom ?? 0,
+      left: node.marginLeft ?? 0,
     }
 
     const handleChange = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
@@ -159,7 +160,17 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField }: 
 
     return (
       <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
+        {/* Header with inline margin value sliders */}
+        <box id="margin-header" flexDirection="row" alignItems="center" justifyContent="space-between">
+          <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
+          {/* Inline margin sliders right-aligned */}
+          <box id="margin-inline-sliders" flexDirection="row" gap={1}>
+            <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
+            <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
+            <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
+            <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
+          </box>
+        </box>
         {!isCollapsed && (
           <box style={{ paddingLeft: 1 }}>
             <MarginControl values={values} onChange={handleChange} />

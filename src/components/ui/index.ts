@@ -1,6 +1,7 @@
 export { ActionBtn } from "./ActionBtn"
 export { Footer, type ViewMode } from "./Footer"
 export { ProjectModal } from "./ProjectModal"
+export { ValueSlider } from "./ValueSlider"
 
 // Re-export panels for convenience
 export { CodePanel } from "../pages/Code"
