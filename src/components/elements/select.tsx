@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, SelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -24,34 +25,43 @@ interface SelectRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: SelectRendererProps) {
+export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SelectRendererProps) {
   const node = genericNode as SelectNode
   const options = node.options || ["Option 1", "Option 2"]
   const bgColor = node.backgroundColor || COLORS.bgAlt
   const selBgColor = node.selectedBackgroundColor || COLORS.accent
   const textColor = node.textColor || COLORS.text
   const selTextColor = node.selectedTextColor || COLORS.bg
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
 
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
       style={{
-        width: node.width,
-        height: node.height || options.length + 2,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
-        backgroundColor: bgColor,
-        flexDirection: "column",
-        gap: node.itemSpacing,
+        position: node.position,
+        top: node.y,
+        left: node.x,
+        zIndex: node.zIndex,
       }}
     >
       {options.slice(0, 5).map((opt, i) => (
@@ -220,10 +230,3 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
     </box>
   )
 }
-
-// List of select-specific property keys
-export const SELECT_PROPERTY_KEYS = [
-  "options", "showScrollIndicator", "showDescription", "wrapSelection",
-  "itemSpacing", "fastScrollStep", "backgroundColor", "textColor",
-  "selectedBackgroundColor", "selectedTextColor", "descriptionColor", "selectedDescriptionColor"
-] as const

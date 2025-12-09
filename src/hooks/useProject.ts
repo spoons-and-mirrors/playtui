@@ -36,6 +36,12 @@ export interface UseProjectReturn {
   redo: () => void
   canUndo: boolean
   canRedo: boolean
+
+  // Animation
+  setCurrentFrame: (index: number) => void
+  duplicateFrame: () => void
+  deleteFrame: (index: number) => void
+  setFps: (fps: number) => void
 }
 
 const AUTO_SAVE_DELAY = 1500 // ms
@@ -117,8 +123,9 @@ export function useProject(): UseProjectReturn {
         // Load most recent project
         const loaded = await storage.loadProject(list[0].fileName)
         if (loaded) {
-          syncIdCounter(loaded.tree)  // Sync ID counter to avoid collisions
-          setProject(loaded)
+          const migrated = ensureAnimationData(loaded)
+          syncIdCounter(migrated.tree)
+          setProject(migrated)
         } else {
           // Corrupted, create new
           const newProj = createNewProject("Untitled")
@@ -171,8 +178,9 @@ export function useProject(): UseProjectReturn {
     async (fileName: string): Promise<boolean> => {
       const loaded = await storage.loadProject(fileName)
       if (loaded) {
-        syncIdCounter(loaded.tree)  // Sync ID counter to avoid collisions
-        setProject(loaded)
+        const migrated = ensureAnimationData(loaded)
+        syncIdCounter(migrated.tree)
+        setProject(migrated)
         setError(null)
         return true
       } else {
@@ -208,12 +216,31 @@ export function useProject(): UseProjectReturn {
   // Update tree with optional history push and optional selectedId (atomic update)
   const updateTree = useCallback(
     (tree: ElementNode, pushHistory = true, selectedId?: string | null) => {
-      log("UPDATE_TREE_CALLED", { treeRootChildren: tree.children.length, pushHistory, selectedId })
+      // log("UPDATE_TREE_CALLED", { treeRootChildren: tree.children.length, pushHistory, selectedId })
       setProject((prev) => {
         if (!prev) return prev
 
-        const updated: Project = { ...prev, tree }
-        log("UPDATE_TREE_INSIDE_SET", { prevTreeChildren: prev.tree.children.length, newTreeChildren: tree.children.length })
+        // Sync current tree to the frames array
+        const newFrames = [...prev.animation.frames]
+        // Ensure we have frames (migration safety)
+        if (newFrames.length === 0) newFrames.push(tree)
+        
+        // Update the current frame with the new tree state
+        // If index is out of bounds, default to 0 or push
+        const safeIndex = Math.min(Math.max(0, prev.animation.currentFrameIndex), newFrames.length - 1)
+        newFrames[safeIndex] = tree
+
+        const updated: Project = { 
+          ...prev, 
+          tree,
+          animation: {
+            ...prev.animation,
+            frames: newFrames,
+            currentFrameIndex: safeIndex
+          }
+        }
+        
+        // log("UPDATE_TREE_INSIDE_SET", { prevTreeChildren: prev.tree.children.length, newTreeChildren: tree.children.length })
 
         // If selectedId is explicitly provided (including null), update it atomically
         if (selectedId !== undefined) {
@@ -236,6 +263,115 @@ export function useProject(): UseProjectReturn {
     },
     [scheduleSave]
   )
+
+  // Animation: Set current frame
+  const setCurrentFrame = useCallback((index: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      if (index < 0 || index >= prev.animation.frames.length) return prev
+      
+      const newTree = prev.animation.frames[index]
+      
+      return {
+        ...prev,
+        tree: newTree,
+        animation: {
+          ...prev.animation,
+          currentFrameIndex: index
+        },
+        selectedId: null // Clear selection on frame change
+      }
+    })
+    // scheduleSave() // No need to save on simple navigation? Maybe yes to persist "open on this frame"
+  }, [])
+
+  // Animation: Duplicate current frame
+  const duplicateFrame = useCallback(() => {
+    setProject((prev) => {
+      if (!prev) return prev
+      
+      const currentTree = prev.tree
+      const currentIndex = prev.animation.currentFrameIndex
+      
+      const newFrames = [...prev.animation.frames]
+      // Deep clone to avoid ref issues
+      const treeClone = JSON.parse(JSON.stringify(currentTree))
+      
+      // Insert after current
+      newFrames.splice(currentIndex + 1, 0, treeClone)
+      
+      return {
+        ...prev,
+        tree: treeClone,
+        animation: {
+          ...prev.animation,
+          frames: newFrames,
+          currentFrameIndex: currentIndex + 1
+        }
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Animation: Delete frame
+  const deleteFrame = useCallback((index: number) => {
+    setProject((prev) => {
+      if (!prev || prev.animation.frames.length <= 1) return prev // Can't delete last frame
+      
+      const newFrames = prev.animation.frames.filter((_, i) => i !== index)
+      // If we deleted the current frame, move to previous (or 0)
+      let newIndex = prev.animation.currentFrameIndex
+      if (index <= prev.animation.currentFrameIndex) {
+        newIndex = Math.max(0, prev.animation.currentFrameIndex - 1)
+      }
+      
+      return {
+        ...prev,
+        tree: newFrames[newIndex],
+        animation: {
+          ...prev.animation,
+          frames: newFrames,
+          currentFrameIndex: newIndex
+        }
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Animation: Set FPS
+  const setFps = useCallback((fps: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        animation: {
+          ...prev.animation,
+          fps
+        }
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Ensure project has animation data on load
+  const ensureAnimationData = (proj: Project): Project => {
+    if (!proj.animation) {
+      return {
+        ...proj,
+        animation: {
+          fps: 12,
+          frames: [proj.tree],
+          currentFrameIndex: 0
+        }
+      }
+    }
+    return proj
+  }
+
+  // Update loadProject and init to use ensureAnimationData
+  // We'll wrap the setProject calls in useEffect and loadProjectFn
+
+  // ... (rest of file)
 
   // Update selected ID
   const setSelectedId = useCallback(
@@ -328,5 +464,10 @@ export function useProject(): UseProjectReturn {
     redo,
     canUndo: (project?.history.length ?? 0) > 0,
     canRedo: (project?.future.length ?? 0) > 0,
+    // Animation methods
+    setCurrentFrame,
+    duplicateFrame,
+    deleteFrame,
+    setFps
   }
 }

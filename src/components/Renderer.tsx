@@ -2,15 +2,22 @@ import type { ElementNode } from "../lib/types"
 import { ELEMENT_REGISTRY } from "./elements"
 import { log } from "../lib/logger"
 
-interface ElementRendererProps {
+export interface DragEvent {
+  nodeId: string
+  x: number
+  y: number
+}
+
+export interface RendererProps {
   node: ElementNode
   selectedId: string | null
   hoveredId: string | null
   onSelect: (id: string) => void
   onHover: (id: string | null) => void
+  onDragStart?: (event: DragEvent) => void
 }
 
-export function ElementRenderer({ node, selectedId, hoveredId, onSelect, onHover }: ElementRendererProps) {
+export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDragStart }: RendererProps) {
   const isSelected = node.id === selectedId
   const isHovered = node.id === hoveredId && !isSelected
   const isRoot = node.id === "root"
@@ -22,7 +29,7 @@ export function ElementRenderer({ node, selectedId, hoveredId, onSelect, onHover
     return (
       <>
         {node.children.map((child) => (
-          <ElementRenderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} />
+          <Renderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} onDragStart={onDragStart} />
         ))}
       </>
     )
@@ -31,28 +38,30 @@ export function ElementRenderer({ node, selectedId, hoveredId, onSelect, onHover
   const entry = ELEMENT_REGISTRY[node.type]
   if (!entry) return null
 
-  const { Renderer, hasChildren } = entry
+  const { Renderer: ElementRenderer, hasChildren } = entry
 
   // Recursively render children for container elements
   const children = hasChildren
     ? node.children.map((child) => (
-        <ElementRenderer
+        <Renderer
           key={child.id}
           node={child}
           selectedId={selectedId}
           hoveredId={hoveredId}
           onSelect={onSelect}
           onHover={onHover}
+          onDragStart={onDragStart}
         />
       ))
     : undefined
 
-  return Renderer({
+  return ElementRenderer({
     node,
     isSelected,
     isHovered,
     onSelect: () => onSelect(node.id),
     onHover: (h: boolean) => onHover(h ? node.id : null),
+    onDragStart: onDragStart ? (x: number, y: number) => onDragStart({ nodeId: node.id, x, y }) : undefined,
     children,
   })
 }

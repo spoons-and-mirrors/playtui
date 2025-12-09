@@ -86,6 +86,12 @@ export interface BaseNode {
 
   // === VISIBILITY ===
   visible?: boolean
+
+  // === POSITIONING ===
+  position?: Position
+  x?: number
+  y?: number
+  zIndex?: number
 }
 
 // =============================================================================
@@ -109,14 +115,6 @@ export interface ContainerProps {
   paddingRight?: number
   paddingBottom?: number
   paddingLeft?: number
-
-  // === POSITIONING ===
-  position?: Position
-  top?: number
-  right?: number
-  bottom?: number
-  left?: number
-  zIndex?: number
 
   // === OVERFLOW ===
   overflow?: Overflow
@@ -323,7 +321,7 @@ export interface PropertyDef {
 }
 
 export type PropertySection =
-  | "sizing"
+  | "dimensions"
   | "flexContainer"
   | "flexItem"
   | "padding"

@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextareaNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -26,29 +27,38 @@ interface TextareaRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TextareaRendererProps) {
+export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
   const node = genericNode as TextareaNode
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
       style={{
-        width: node.width,
-        height: node.height || 4,
-        minHeight: node.minHeight,
-        maxHeight: node.maxHeight,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
-        backgroundColor: node.backgroundColor || COLORS.input,
-        padding: 1,
+        position: node.position,
+        top: node.y,
+        left: node.x,
+        zIndex: node.zIndex,
       }}
     >
       <text fg={node.placeholderColor || COLORS.muted} wrapMode="word">
@@ -131,8 +141,3 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
     </box>
   )
 }
-
-// List of textarea-specific property keys
-export const TEXTAREA_PROPERTY_KEYS = [
-  "initialValue", "blinking", "showCursor", "scrollMargin", "tabIndicatorColor"
-] as const

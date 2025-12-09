@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, SliderNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -27,9 +28,10 @@ interface SliderRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: SliderRendererProps) {
+export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SliderRendererProps) {
   const node = genericNode as SliderNode
   const isHorizontal = node.orientation !== "vertical"
   const val = node.value ?? 50
@@ -38,20 +40,33 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
   const pct = Math.round(((val - min) / (max - min)) * 100)
   const trackChar = isHorizontal ? "─" : "│"
   const thumbChar = "●"
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
 
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
       style={{
-        width: isHorizontal ? (node.width || 20) : 3,
-        height: isHorizontal ? 3 : (node.height || 10),
-        backgroundColor: node.backgroundColor || COLORS.bgAlt,
-        alignItems: "center",
-        justifyContent: "center",
+        margin: node.margin,
+        marginTop: node.marginTop,
+        marginRight: node.marginRight,
+        marginBottom: node.marginBottom,
+        marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.y,
+        left: node.x,
+        zIndex: node.zIndex,
       }}
     >
       <text fg={node.foregroundColor || COLORS.accent}>
@@ -167,9 +182,3 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
     </box>
   )
 }
-
-// List of slider-specific property keys
-export const SLIDER_PROPERTY_KEYS = [
-  "orientation", "value", "min", "max", "viewPortSize",
-  "backgroundColor", "foregroundColor"
-] as const

@@ -1,4 +1,5 @@
 import { TextAttributes } from "@opentui/core"
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -24,10 +25,15 @@ interface TextRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TextRendererProps) {
+export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextRendererProps) {
   const node = genericNode as TextNode
+  
+  // Only enable dragging for absolute positioned elements
+  const isDraggable = node.position === "absolute"
+  
   // Build text attributes bitmask
   let attrs = 0
   if (node.bold) attrs |= TextAttributes.BOLD
@@ -36,21 +42,36 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
   if (node.dim) attrs |= TextAttributes.DIM
   if (node.strikethrough) attrs |= TextAttributes.STRIKETHROUGH
 
+  // Drag start handler - canvas handles move/end
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
+  const wrapperStyle = {
+    backgroundColor: "transparent",
+    margin: node.margin,
+    marginTop: node.marginTop,
+    marginRight: node.marginRight,
+    marginBottom: node.marginBottom,
+    marginLeft: node.marginLeft,
+    position: node.position,
+    top: node.y,
+    left: node.x,
+    zIndex: node.zIndex,
+  }
+
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
-      style={{
-        backgroundColor: "transparent",
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-      }}
+      style={wrapperStyle}
     >
       <text
         fg={node.fg || COLORS.text}
@@ -187,8 +208,3 @@ function TextStyleToggle({
     </box>
   )
 }
-
-// List of text-specific property keys
-export const TEXT_PROPERTY_KEYS = [
-  "content", "fg", "bg", "wrapMode", "bold", "italic", "underline", "dim", "strikethrough", "selectable"
-] as const

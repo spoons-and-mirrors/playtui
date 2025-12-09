@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
-import { COLORS } from "../theme"
-import type { ElementNode, ElementType } from "../lib/types"
+import { COLORS } from "../../theme"
+import type { ElementNode, ElementType } from "../../lib/types"
 
 const TYPE_ICONS: Record<ElementType, string> = {
   box: "□",

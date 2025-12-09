@@ -1,13 +1,13 @@
 // Element-specific components and defaults
-export { BoxRenderer, BoxBorderProperties, BOX_PROPERTY_KEYS, BOX_DEFAULTS } from "./box"
-export { TextRenderer, TextProperties, TEXT_PROPERTY_KEYS, TEXT_DEFAULTS } from "./text"
-export { InputRenderer, InputProperties, INPUT_PROPERTY_KEYS, INPUT_DEFAULTS } from "./input"
-export { TextareaRenderer, TextareaProperties, TEXTAREA_PROPERTY_KEYS, TEXTAREA_DEFAULTS } from "./textarea"
-export { SelectRenderer, SelectProperties, SELECT_PROPERTY_KEYS, SELECT_DEFAULTS } from "./select"
-export { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_PROPERTY_KEYS, SCROLLBOX_DEFAULTS } from "./scrollbox"
-export { SliderRenderer, SliderProperties, SLIDER_PROPERTY_KEYS, SLIDER_DEFAULTS } from "./slider"
-export { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_PROPERTY_KEYS, ASCIIFONT_DEFAULTS } from "./asciifont"
-export { TabSelectRenderer, TabSelectProperties, TABSELECT_PROPERTY_KEYS, TABSELECT_DEFAULTS } from "./tabselect"
+export { BoxRenderer, BoxBorderProperties, BOX_DEFAULTS } from "./box"
+export { TextRenderer, TextProperties, TEXT_DEFAULTS } from "./text"
+export { InputRenderer, InputProperties, INPUT_DEFAULTS } from "./input"
+export { TextareaRenderer, TextareaProperties, TEXTAREA_DEFAULTS } from "./textarea"
+export { SelectRenderer, SelectProperties, SELECT_DEFAULTS } from "./select"
+export { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_DEFAULTS } from "./scrollbox"
+export { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
+export { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
+export { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
 
 import { BoxRenderer, BoxBorderProperties, BOX_DEFAULTS } from "./box"
 import { TextRenderer, TextProperties, TEXT_DEFAULTS } from "./text"
@@ -21,12 +21,15 @@ import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./ta
 import type { ElementType, ElementNode } from "../../lib/types"
 
 // Renderer props shared by all element renderers
-export interface ElementRendererProps {
+export interface RendererProps {
   node: ElementNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
+  onDragMove?: (x: number, y: number) => void
+  onDragEnd?: () => void
   children?: React.ReactNode
 }
 
@@ -42,7 +45,7 @@ export interface ElementPropertiesProps {
 
 // Registry entry type
 export interface ElementRegistryEntry {
-  Renderer: (props: ElementRendererProps) => React.ReactNode
+  Renderer: (props: RendererProps) => React.ReactNode
   Properties: ((props: ElementPropertiesProps) => React.ReactNode) | null
   defaults: Partial<ElementNode>
   hasChildren: boolean

@@ -1,71 +1,27 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react"
-import { useKeyboard } from "@opentui/react"
-import { RGBA } from "@opentui/core"
-import { COLORS } from "./theme"
-import type { ElementNode, ElementType } from "./lib/types"
-import { log, clearLog } from "./lib/logger"
-import {
-  genId, resetIdCounter,
-  findNode, findParent, updateNode, addChild, removeNode, flattenTree, cloneNode, countNodes, moveNode
-} from "./lib/tree"
-import { generateCode, generateChildrenCode } from "./lib/codegen"
-import { parseCode, parseCodeMultiple } from "./lib/parseCode"
-import { ElementRenderer } from "./components/ElementRenderer"
-import { ELEMENT_REGISTRY } from "./components/elements"
-import { TreeView } from "./components/TreeView"
-import { PropertyEditor } from "./components/PropertyEditor"
-import { ActionBtn, Footer, CodePanel, ElementToolbar } from "./components/shared"
-import { FileMenu, type MenuAction } from "./components/FileMenu"
-import { ProjectModal } from "./components/ProjectModal"
-import { DocsPanel } from "./components/DocsPanel"
-import { useProject, type SaveStatus } from "./hooks/useProject"
-
-// Keyboard shortcut to element type mapping
-const ADD_SHORTCUTS: Record<string, ElementType> = {
-  b: "box",
-  t: "text",
-  s: "scrollbox",
-  i: "input",
-  x: "textarea",
-  e: "select",
-  l: "slider",
-  f: "ascii-font",
-  w: "tab-select",
-}
+import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
+import type { ElementNode } from "./lib/types"
+import { clearLog } from "./lib/logger"
+import { resetIdCounter, findNode, countNodes, updateNode } from "./lib/tree"
+import { generateChildrenCode } from "./lib/codegen"
+import { TreeView } from "./components/pages/Tree"
+import { PropertyPane } from "./components/pages/Properties"
+import { LibraryPage } from "./components/pages/Library"
+import { PlayPage } from "./components/pages/Play"
+import { Title } from "./components/ui/Title"
+import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header } from "./components/ui"
+import { useProject } from "./hooks/useProject"
+import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
+import { useBuilderActions } from "./hooks/useBuilderActions"
+import type { DragEvent } from "./components/Renderer"
 
 interface BuilderProps {
   width: number
   height: number
 }
 
-function SaveIndicator({ status }: { status: SaveStatus }) {
-  if (status === "idle") return null
-  
-  const text = status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Error saving"
-  const color = status === "error" ? COLORS.danger : COLORS.muted
-  
-  return <text fg={color}>{text}</text>
-}
-
-// Half-char border characters for thin borders
-const ThinBorderRight = {
-  horizontal: " ", vertical: "▕", topLeft: " ", topRight: " ",
-  bottomLeft: " ", bottomRight: " ", cross: " ",
-  left: " ", right: " ", top: " ", bottom: " ",
-  topT: " ", bottomT: " ", leftT: " ", rightT: " ",
-}
-
-const ThinBorderLeft = {
-  horizontal: " ", vertical: "▏", topLeft: " ", topRight: " ",
-  bottomLeft: " ", bottomRight: " ", cross: " ",
-  left: " ", right: " ", top: " ", bottom: " ",
-  topT: " ", bottomT: " ", leftT: " ", rightT: " ",
-}
-
-// Semi-transparent accent color for panel borders (50% opacity)
-const BORDER_ACCENT = RGBA.fromInts(77, 168, 218, 128)
-
 export function Builder({ width, height }: BuilderProps) {
+  const projectHook = useProject()
   const {
     project,
     isLoading,
@@ -80,154 +36,89 @@ export function Builder({ width, height }: BuilderProps) {
     setCollapsed: setProjectCollapsed,
     undo,
     redo,
-    canUndo,
-    canRedo,
-  } = useProject()
+    // Animation methods
+    setCurrentFrame,
+    duplicateFrame,
+    deleteFrame,
+    setFps,
+  } = projectHook
 
   // Clear debug log on startup
   useEffect(() => { clearLog() }, [])
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
-  const [showCode, setShowCode] = useState(false)
-  const [codeError, setCodeError] = useState<string | null>(null)
+  const [mode, setMode] = useState<ViewMode>("editor")
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | null>(null)
-  const [showDocs, setShowDocs] = useState(false)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
-  // Derive state from project
+  // Track dragging state for absolute positioned elements
+  const dragStartRef = useRef<{
+    nodeId: string
+    mouseX: number
+    mouseY: number
+    nodeX: number
+    nodeY: number
+  } | null>(null)
+
+  // Extract commonly used values from project
   const tree = project?.tree ?? null
   const selectedId = project?.selectedId ?? null
-  const collapsed = useMemo(() => new Set(project?.collapsed ?? []), [project?.collapsed])
+  const collapsed = project?.collapsed ?? []
+  const animation = project?.animation
+  const treeKey = project?.history?.length ?? 0
+  const selectedNode = tree && selectedId ? findNode(tree, selectedId) : null
+  const code = useMemo(() => tree ? generateChildrenCode(tree) : "", [tree])
 
-  const selectedNode = selectedId && tree ? findNode(tree, selectedId) : null
-  // Flatten tree excluding root for navigation
-  const flatNodes = useMemo(() => {
-    if (!tree) return []
-    const all = flattenTree(tree)
-    return all.filter(n => n.id !== tree.id)  // Exclude hidden root
-  }, [tree])
-  const code = useMemo(() => {
-    if (!tree) return ""
-    log("CODE_MEMO", { 
-      treeId: tree.id, 
-      treeName: tree.name,
-      childCount: tree.children.length,
-      children: tree.children.map(c => ({ id: c.id, type: c.type, name: c.name }))
-    })
-    return generateChildrenCode(tree)
-  }, [tree])
-  const treeKey = useMemo(() => (tree ? countNodes(tree) : 0), [tree])
+  const {
+    handleAddElement,
+    handleCopy,
+    handlePaste,
+    handleDelete,
+    handleDuplicate,
+    handleMoveNode,
+    handleUpdate,
+    handleRename,
+    navigateTree,
+  } = useBuilderActions({
+    tree,
+    selectedId,
+    clipboard,
+    setClipboard,
+    updateTree,
+    setSelectedId: setProjectSelectedId,
+  })
 
-  // Handle live code editing - parse code and update tree
-  const handleCodeChange = useCallback((newCode: string) => {
-    log("HANDLE_CODE_CHANGE", { newCodeLength: newCode.length, showCode })
-    if (!tree) return
-    
-    // Empty code = clear all children
-    if (!newCode.trim()) {
-      updateTree({ ...tree, children: [] })
-      setCodeError(null)
-      return
-    }
-    
-    // Parse the code - can be one or multiple elements
-    const result = parseCodeMultiple(newCode)
-    if (!result.success) {
-      setCodeError(result.error || "Parse error")
-      return
-    }
-    
-    // Set parsed nodes as children of root
-    const newChildren = result.nodes || (result.node ? [result.node] : [])
-    updateTree({ ...tree, children: newChildren })
-    setCodeError(null)
-  }, [tree, updateTree])
-
-  // Get the parent container for adding new elements (selected container or root)
-  const getAddParent = useCallback((): ElementNode | null => {
-    if (!tree) return null
-    if (!selectedId) return tree  // Nothing selected = add to root
-    const node = findNode(tree, selectedId)
-    if (!node) return tree
-    // If selected is a container, add to it; otherwise add to its parent
-    if (node.type === "box" || node.type === "scrollbox") return node
-    const parent = findParent(tree, selectedId)
-    return parent || tree
-  }, [tree, selectedId])
-
-  // Add element by type using registry (single function replaces 9 handleAddXXX functions)
-  const handleAddElement = useCallback((type: ElementType) => {
-    if (!tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    
-    const entry = ELEMENT_REGISTRY[type]
-    if (!entry) return
-    
-    const newNode: ElementNode = {
-      id: genId(),
-      type,
-      name: entry.label,
-      ...entry.defaults,
-      children: [],
-    }
-    log("ADD_ELEMENT", { type, parentId: parent.id, parentChildren: parent.children.length, newNodeId: newNode.id, selectedId })
-    const newTree = addChild(tree, parent.id, newNode)
-    const parentAfter = findNode(newTree, parent.id)
-    log("ADD_RESULT", { parentChildrenAfter: parentAfter?.children.length, newTreeRootChildren: newTree.children.length })
-    updateTree(newTree, true, newNode.id)
-    log("AFTER_UPDATE", { calledUpdateTree: true })
-  }, [tree, getAddParent, updateTree])
-
-  // Copy/Paste (C and V keys)
-  const handleCopy = useCallback(() => {
-    if (!selectedId || !tree) return
-    const node = findNode(tree, selectedId)
-    if (node) setClipboard(node)
-  }, [selectedId, tree])
-
-  const handlePaste = useCallback(() => {
-    if (!clipboard || !tree) return
-    const parent = getAddParent()
-    if (!parent) return
-    const cloned = cloneNode(clipboard)
-    const newTree = addChild(tree, parent.id, cloned)
-    updateTree(newTree, true, cloned.id)
-  }, [clipboard, tree, getAddParent, updateTree])
-
-  const handleDelete = useCallback(() => {
-    if (!selectedId || !tree || selectedId === tree.id) return
-    const parent = findParent(tree, selectedId)
-    const newTree = removeNode(tree, selectedId)
-    // Determine next selection: sibling or parent (don't select hidden root)
-    let nextId: string | null = null
-    if (parent && parent.id !== tree.id) {
-      nextId = parent.id
-    } else if (parent && parent.children.length > 1) {
-      const siblings = parent.children.filter(c => c.id !== selectedId)
-      nextId = siblings[0]?.id || null
-    }
-    updateTree(newTree, true, nextId)
-  }, [selectedId, tree, updateTree])
-
-  const handleDuplicate = useCallback(() => {
-    if (!selectedId || !tree) return
-    const node = findNode(tree, selectedId)
-    const parent = findParent(tree, selectedId)
-    if (!node || !parent) return
-    const cloned = cloneNode(node)
-    const newTree = addChild(tree, parent.id, cloned)
-    updateTree(newTree, true, cloned.id)
-  }, [selectedId, tree, updateTree])
-
-  const handleMoveNode = useCallback((direction: "up" | "down") => {
-    if (!selectedId || !tree) return
-    const newTree = moveNode(tree, selectedId, direction)
-    if (newTree) updateTree(newTree, true)
-  }, [selectedId, tree, updateTree])
+  // Use keyboard hook
+  useBuilderKeyboard({
+    modalMode,
+    mode,
+    focusedField,
+    addMode,
+    setModalMode,
+    setMode,
+    setFocusedField,
+    setAddMode,
+    setSelectedId: setProjectSelectedId,
+    onDelete: handleDelete,
+    onDuplicate: handleDuplicate,
+    onCopy: handleCopy,
+    onPaste: handlePaste,
+    onUndo: undo,
+    onRedo: redo,
+    onMoveNode: handleMoveNode,
+    onNavigateTree: navigateTree,
+    onAddElement: handleAddElement,
+    // Animation Actions
+    onAnimNextFrame: () => project?.animation && setCurrentFrame(Math.min(project.animation.frames.length - 1, project.animation.currentFrameIndex + 1)),
+    onAnimPrevFrame: () => project?.animation && setCurrentFrame(Math.max(0, project.animation.currentFrameIndex - 1)),
+    onAnimPlayToggle: () => setIsPlaying(p => !p),
+    onAnimDuplicateFrame: duplicateFrame,
+    onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
+  })
 
   const handleToggleCollapse = useCallback((id: string) => {
     const current = project?.collapsed ?? []
@@ -237,39 +128,6 @@ export function Builder({ width, height }: BuilderProps) {
     setProjectCollapsed(Array.from(currentSet))
   }, [project?.collapsed, setProjectCollapsed])
 
-  const handleRename = useCallback((id: string, name: string) => {
-    log("HANDLE_RENAME", { id, name })
-    if (!tree) return
-    const node = findNode(tree, id)
-    if (!node) return
-    const updated = { ...node, name } as ElementNode
-    const newTree = updateNode(tree, id, updated)
-    updateTree(newTree)
-  }, [tree, updateTree])
-
-  // Store selectedId in a ref to avoid stale closure issues
-  const selectedIdRef = useRef(selectedId)
-  useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
-
-  const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
-    // Use ref to get current selectedId, avoiding stale closure race conditions
-    const currentSelectedId = selectedIdRef.current
-    log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId })
-    if (!tree || !currentSelectedId) return
-    const node = findNode(tree, currentSelectedId)
-    if (!node) return
-    const updated = { ...node, ...updates } as ElementNode
-    const newTree = updateNode(tree, currentSelectedId, updated)
-    updateTree(newTree)
-  }, [tree, updateTree])
-
-  const navigateTree = useCallback((dir: "up" | "down") => {
-    const idx = flatNodes.findIndex((n) => n.id === selectedId)
-    if (idx === -1) { setProjectSelectedId(flatNodes[0]?.id || null); return }
-    const next = dir === "up" ? Math.max(0, idx - 1) : Math.min(flatNodes.length - 1, idx + 1)
-    setProjectSelectedId(flatNodes[next].id)
-  }, [flatNodes, selectedId, setProjectSelectedId])
-
   const handleFileAction = useCallback(async (action: MenuAction) => {
     await refreshProjects()
     setModalMode(action)
@@ -278,16 +136,12 @@ export function Builder({ width, height }: BuilderProps) {
   const handleCreateProject = useCallback(async (name: string) => {
     resetIdCounter()
     const success = await createProject(name)
-    if (success) {
-      setModalMode(null)
-    }
+    if (success) setModalMode(null)
   }, [createProject])
 
   const handleLoadProject = useCallback(async (fileName: string) => {
     const success = await loadProject(fileName)
-    if (success) {
-      setModalMode(null)
-    }
+    if (success) setModalMode(null)
   }, [loadProject])
 
   const handleDeleteProject = useCallback(async (fileName: string) => {
@@ -295,142 +149,150 @@ export function Builder({ width, height }: BuilderProps) {
     await refreshProjects()
   }, [deleteProject, refreshProjects])
 
-  useKeyboard((key) => {
-    // Close modal on escape
-    if (modalMode) {
-      if (key.name === "escape") setModalMode(null)
-      return
+  // Handle drag for absolute positioned elements
+  const handleDragStart = useCallback((event: DragEvent) => {
+    if (!tree) return
+    const node = findNode(tree, event.nodeId)
+    if (!node || !("position" in node) || node.position !== "absolute") return
+    
+    // Store initial mouse position and node position
+    dragStartRef.current = {
+      nodeId: event.nodeId,
+      mouseX: event.x,
+      mouseY: event.y,
+      nodeX: (node as any).x ?? 0,
+      nodeY: (node as any).y ?? 0,
     }
+  }, [tree])
 
-    if (showDocs) {
-      if (key.name === "escape") setShowDocs(false)
-      return
-    }
+  const handleDragMove = useCallback((event: DragEvent) => {
+    if (!tree || !dragStartRef.current) return
+    if (dragStartRef.current.nodeId !== event.nodeId) return
+    
+    // Calculate delta from initial mouse position
+    const deltaX = event.x - dragStartRef.current.mouseX
+    const deltaY = event.y - dragStartRef.current.mouseY
+    
+    const node = findNode(tree, event.nodeId)
+    if (!node) return
 
-    if (showCode) {
-      if (key.name === "escape") setShowCode(false)
-      return
-    }
-    if (focusedField) {
-      if (key.name === "escape" || key.name === "return") setFocusedField(null)
-      return
-    }
+    const newX = dragStartRef.current.nodeX + deltaX
+    const newY = dragStartRef.current.nodeY + deltaY
+    
+    // Update node position (without adding to history during drag)
+    const updated = { ...node, x: newX, y: newY } as ElementNode
+    const newTree = updateNode(tree, event.nodeId, updated)
+    updateTree(newTree, false) // false = don't add to history
+  }, [tree, updateTree])
 
-    // Add mode: A toggles out, other keys add components using ADD_SHORTCUTS mapping
-    if (addMode) {
-      if (key.name === "escape" || key.name === "a") { setAddMode(false); return }
-      const elementType = ADD_SHORTCUTS[key.name as string]
-      if (elementType) handleAddElement(elementType)
-      return
+  const handleDragEnd = useCallback((nodeId: string) => {
+    // Reset drag start position
+    dragStartRef.current = null
+    // Add final state to history
+    if (tree) {
+      updateTree(tree, true) // true = add to history
     }
-
-    // Main shortcuts
-    if (key.name === "delete" || key.name === "backspace") handleDelete()
-    else if (key.name === "d") handleDuplicate()
-    else if (key.name === "a") setAddMode(true)
-    else if (key.name === "c" && key.shift) handleCopy()
-    else if (key.name === "v" && !key.ctrl) handlePaste()
-    else if (key.name === "tab") setShowCode(true)
-    else if (key.name === "z" && !key.shift) undo()
-    else if (key.name === "y" || (key.name === "z" && key.shift)) redo()
-    else if (key.option && key.name === "up") handleMoveNode("up")
-    else if (key.option && key.name === "down") handleMoveNode("down")
-    else if (key.name === "up" || key.name === "k") navigateTree("up")
-    else if (key.name === "down" || key.name === "j") navigateTree("down")
-    else if (key.name === "escape") setProjectSelectedId(null)
-  })
+  }, [tree, updateTree])
 
   const treeWidth = 30
   const sidebarWidth = 40
 
   // Loading state
-  if (isLoading || !project || !tree) {
+  if (isLoading) { // Allow project to be null if we are in library mode?
+                   // But useProject loads the last project by default.
     return (
       <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
         <text fg={COLORS.muted}>Loading...</text>
       </box>
     )
   }
+  
+  // Library Mode - Full Screen (hides tree and sidebar)
+  if (mode === "library") {
+    return (
+      <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
+        <LibraryPage 
+          projectHook={projectHook} 
+          onLoadProject={() => setMode("editor")} 
+          width={width}
+          height={height - 3}
+        />
+        <Footer mode={mode} onModeChange={setMode} />
+      </box>
+    )
+  }
+
+  // Ensure project is loaded for other modes
+  if (!project || !tree) {
+    // Should generally not happen if isLoading handled, but safe guard
+    return (
+       <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
+        <text fg={COLORS.muted}>No project loaded.</text>
+        <Footer mode={mode} onModeChange={setMode} />
+      </box>
+    )
+  }
 
   return (
     <box id="builder" style={{ width, height, flexDirection: "row" }}>
-      {/* Left Panel - Tree (full height, thin right border) */}
+      {/* Left Panel - Tree */}
       <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
-        style={{ width: treeWidth, height: "100%", backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column" }}>
-        <box style={{ alignItems: "center", marginBottom: 1, flexDirection: "column" }} onMouseDown={() => setShowDocs(v => !v)}>
-          <ascii-font text="PLAYTUI" font="tiny" color={RGBA.fromHex("#4da8da")} />
-          <box style={{ width: 25, height: 1, flexDirection: "column", alignItems: "flex-end" }}>
-            <text fg="#d8dce5"><strong>opentui builder</strong></text>
-          </box>
-          <box border={["bottom"]} borderStyle="single" borderColor="#2a3545" style={{ width: 25, height: 0, flexDirection: "column" }} />
-        </box>
+        style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
+        <Title saveStatus={saveStatus} onLogoClick={() => setMode(mode === "docs" ? "editor" : "docs")} />
         <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={collapsed}
+          <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
             onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
         </scrollbox>
       </box>
 
       {/* Center Area - header top, canvas middle, footer bottom */}
-      <box id="builder-center" style={{ flexGrow: 1, height: "100%", flexDirection: "column", padding: 1 }}>
-        {/* Header row: FileMenu, Save indicator, Code button */}
-        <box id="center-header" style={{ flexDirection: "column", gap: 0 }}>
-          <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <FileMenu projectName={project.name} onAction={handleFileAction} />
-            <box style={{ flexDirection: "row", gap: 2, alignItems: "center" }}>
-              <box 
-                id="auto-layout-toggle"
-                onMouseDown={() => setAutoLayout(!autoLayout)}
-                style={{ backgroundColor: autoLayout ? COLORS.accent : COLORS.card, paddingLeft: 1, paddingRight: 1 }}
-              >
-                <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞</text>
-              </box>
-              <SaveIndicator status={saveStatus} />
-            </box>
-          </box>
-          {/* Element toolbar - second line, left aligned */}
-          <box style={{ flexDirection: "row", justifyContent: "flex-start", marginTop: 1 }}>
-            <ElementToolbar 
-              expanded={addMode} 
-              onToggle={() => setAddMode(!addMode)} 
-              onAddElement={handleAddElement} 
-            />
-          </box>
-          {/* Separator line */}
-          <box style={{ height: 1, marginTop: 1 }}>
-            <text fg={COLORS.border}>{"─".repeat(200)}</text>
-          </box>
-        </box>
+      <box id="builder-center" style={{ width: width - treeWidth - sidebarWidth, height, flexDirection: "column", padding: 1 }}>
+        <Header
+          projectName={project.name}
+          addMode={addMode}
+          onFileAction={handleFileAction}
+          onToggleAddMode={() => setAddMode(!addMode)}
+          onAddElement={handleAddElement}
+        />
 
         {/* Canvas or Code or Docs Panel - grows to fill middle */}
-        {showCode ? (
-          <CodePanel code={code} error={codeError} onCodeChange={handleCodeChange} onClose={() => setShowCode(false)} />
-        ) : showDocs ? (
+        {mode === "code" ? (
+          <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setMode("editor")} />
+        ) : mode === "docs" ? (
           <DocsPanel />
+        ) : mode === "play" ? (
+           <PlayPage 
+             projectHook={projectHook} 
+             isPlaying={isPlaying}
+             onTogglePlay={() => setIsPlaying(p => !p)}
+           />
         ) : (
-          <box id="builder-canvas"
-            onMouseDown={() => setFocusedField(null)} style={{ 
-              backgroundColor: COLORS.bg, 
-              flexGrow: 1,
-              justifyContent: autoLayout ? "center" : "flex-start",
-              alignItems: autoLayout ? "center" : "flex-start",
-            }}>
-            <ElementRenderer key={treeKey} node={tree} selectedId={selectedId} hoveredId={hoveredId}
-              onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }} onHover={setHoveredId} />
-          </box>
+          <EditorPanel
+            tree={tree}
+            treeKey={treeKey}
+            selectedId={selectedId}
+            hoveredId={hoveredId}
+            autoLayout={autoLayout}
+            onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
+            onHover={setHoveredId}
+            onBackgroundClick={() => setFocusedField(null)}
+            onToggleAutoLayout={() => setAutoLayout(!autoLayout)}
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
+          />
         )}
 
-        {/* Footer - shortcuts at bottom */}
-        <Footer addMode={addMode} />
+        {/* Footer - mode tabs centered */}
+        <Footer mode={mode} onModeChange={setMode} />
       </box>
 
-      {/* Right Panel - Properties (full height, thin left border) */}
+      {/* Right Panel - Properties */}
       <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
-        style={{ width: sidebarWidth, height: "100%", flexDirection: "column", backgroundColor: COLORS.card, padding: 1 }}>
-        <text fg={COLORS.muted} style={{ marginBottom: 1 }}>
-          {selectedNode ? <span fg={COLORS.accent}>{selectedNode.type}</span> : "Properties"}
-        </text>
+        style={{ width: sidebarWidth, height, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
+        {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
         {selectedNode ? (
-          <PropertyEditor key={selectedId} node={selectedNode} onUpdate={handleUpdate}
+          <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
             focusedField={focusedField} setFocusedField={setFocusedField} />
         ) : (
           <text fg={COLORS.muted}>Select an element</text>
@@ -438,7 +300,6 @@ export function Builder({ width, height }: BuilderProps) {
       </box>
 
 
-      
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (
         <ProjectModal

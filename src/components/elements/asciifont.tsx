@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, AsciiFontNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -5,17 +6,17 @@ import {
 } from "../controls"
 
 // =============================================================================
-// ASCII-FONT DEFAULTS
+// ASCIIFONT DEFAULTS
 // =============================================================================
 
 export const ASCIIFONT_DEFAULTS: Partial<AsciiFontNode> = {
   text: "HELLO",
-  font: "tiny",
+  font: "block",
   color: COLORS.accent,
 }
 
 // =============================================================================
-// ASCII-FONT RENDERER
+// ASCIIFONT RENDERER
 // =============================================================================
 
 interface AsciiFontRendererProps {
@@ -24,29 +25,48 @@ interface AsciiFontRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: AsciiFontRendererProps) {
+export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: AsciiFontRendererProps) {
   const node = genericNode as AsciiFontNode
-  const fontName = node.font || "tiny"
-  const textContent = node.text || "ASCII"
+  
+  // Only enable dragging for absolute positioned elements
+  const isDraggable = node.position === "absolute"
+
+  // Drag start handler - canvas handles move/end
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
+  const wrapperStyle = {
+    margin: node.margin,
+    marginTop: node.marginTop,
+    marginRight: node.marginRight,
+    marginBottom: node.marginBottom,
+    marginLeft: node.marginLeft,
+    position: node.position,
+    top: node.y,
+    left: node.x,
+    zIndex: node.zIndex,
+  }
 
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
-      style={{
-        width: node.width,
-        height: node.height,
-        backgroundColor: "transparent",
-      }}
+      style={wrapperStyle}
     >
       <ascii-font
-        text={textContent}
-        font={fontName}
+        text={node.text || "HELLO"}
+        font={node.font || "block"}
         color={node.color || COLORS.accent}
       />
     </box>
@@ -103,8 +123,3 @@ export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of ascii-font-specific property keys
-export const ASCIIFONT_PROPERTY_KEYS = [
-  "text", "font", "color"
-] as const

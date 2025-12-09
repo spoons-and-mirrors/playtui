@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, ScrollboxNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -28,10 +29,11 @@ interface ScrollboxRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
   children?: React.ReactNode
 }
 
-export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, children }: ScrollboxRendererProps) {
+export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
   const node = genericNode as ScrollboxNode
   const hasBorder = node.border === true
   const borderValue = hasBorder
@@ -43,13 +45,20 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     return val
   }
 
-  const boxStyle = {
-    width: parseSize(node.width),
-    height: parseSize(node.height),
-    minWidth: node.minWidth,
-    maxWidth: node.maxWidth,
-    minHeight: node.minHeight,
-    maxHeight: node.maxHeight,
+  // Split positioning styles from box styles
+  const positionStyle = {
+    margin: node.margin,
+    marginTop: node.marginTop,
+    marginRight: node.marginRight,
+    marginBottom: node.marginBottom,
+    marginLeft: node.marginLeft,
+    position: node.position,
+    top: node.y,
+    left: node.x,
+    zIndex: node.zIndex,
+  }
+
+  const scrollboxStyle = {
     flexDirection: node.flexDirection || "column",
     flexWrap: node.flexWrap,
     justifyContent: node.justifyContent,
@@ -57,26 +66,11 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     gap: node.gap,
     rowGap: node.rowGap,
     columnGap: node.columnGap,
-    flexGrow: node.flexGrow,
-    flexShrink: node.flexShrink,
-    flexBasis: node.flexBasis,
-    alignSelf: node.alignSelf,
     padding: node.padding,
     paddingTop: node.paddingTop,
     paddingRight: node.paddingRight,
     paddingBottom: node.paddingBottom,
     paddingLeft: node.paddingLeft,
-    margin: node.margin,
-    marginTop: node.marginTop,
-    marginRight: node.marginRight,
-    marginBottom: node.marginBottom,
-    marginLeft: node.marginLeft,
-    position: node.position,
-    top: node.top,
-    right: node.right,
-    bottom: node.bottom,
-    left: node.left,
-    zIndex: node.zIndex,
     overflow: node.overflow,
     backgroundColor: node.backgroundColor || "transparent",
   } as const
@@ -90,31 +84,48 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     },
   } : undefined
 
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
-    <scrollbox
+    <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={borderValue}
-      borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={node.borderColor}
       visible={node.visible !== false}
-      title={node.title}
-      titleAlignment={node.titleAlignment}
-      stickyScroll={node.stickyScroll}
-      stickyStart={node.stickyStart}
-      scrollX={node.scrollX}
-      scrollY={node.scrollY}
-      viewportCulling={node.viewportCulling}
-      style={{
-        ...boxStyle,
-        contentOptions: { flexDirection: node.flexDirection || "column", gap: node.gap },
-        scrollbarOptions,
-      }}
+      style={positionStyle}
     >
-      {children}
-    </scrollbox>
+      <scrollbox
+        border={borderValue}
+        borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
+        borderColor={node.borderColor}
+        visible={node.visible !== false}
+        title={node.title}
+        titleAlignment={node.titleAlignment}
+        stickyScroll={node.stickyScroll}
+        stickyStart={node.stickyStart}
+        scrollX={node.scrollX}
+        scrollY={node.scrollY}
+        viewportCulling={node.viewportCulling}
+        style={{
+          ...scrollboxStyle,
+          width: "100%", // Fill wrapper
+          height: "100%", // Fill wrapper
+          contentOptions: { flexDirection: node.flexDirection || "column", gap: node.gap },
+          scrollbarOptions,
+        }}
+      >
+        {children}
+      </scrollbox>
+    </box>
   )
 }
 
@@ -216,9 +227,3 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of scrollbox-specific property keys
-export const SCROLLBOX_PROPERTY_KEYS = [
-  "stickyScroll", "stickyStart", "scrollX", "scrollY", "viewportCulling",
-  "showScrollArrows", "scrollbarForeground", "scrollbarBackground"
-] as const
