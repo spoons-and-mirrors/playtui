@@ -61,7 +61,7 @@ const ELEMENT_OPTIONS: ElementOption[] = [
 
 const FILE_MENU_ITEMS: { id: MenuAction; label: string }[] = [
   { id: "new", label: "New" },
-  { id: "load", label: "Load" },
+  { id: "load", label: "Open" },
   { id: "saveAs", label: "Save As" },
   { id: "delete", label: "Delete" },
 ]

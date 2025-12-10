@@ -115,7 +115,7 @@ export function useProject(): UseProjectReturn {
     }
   }, [])
 
-  // Load project list
+  // Open project list
   const refreshProjects = useCallback(async () => {
     const list = await storage.listProjects()
     setProjects(list)
@@ -130,7 +130,7 @@ export function useProject(): UseProjectReturn {
       setProjects(list)
 
       if (list.length > 0) {
-        // Load most recent project
+        // Open most recent project
         const loaded = await storage.loadProject(list[0].fileName)
         if (loaded) {
           const migrated = ensureProjectData(loaded)
@@ -183,7 +183,7 @@ export function useProject(): UseProjectReturn {
     [refreshProjects]
   )
 
-  // Load existing project
+  // Open existing project
   const loadProjectFn = useCallback(
     async (fileName: string): Promise<boolean> => {
       const loaded = await storage.loadProject(fileName)

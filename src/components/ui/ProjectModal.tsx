@@ -37,7 +37,7 @@ export function ProjectModal({
 
   const titles: Record<ModalMode, string> = {
     new: "New Project",
-    load: "Load Project",
+    load: "Open Project",
     delete: "Delete Project",
     saveAs: "Save As",
   }
@@ -137,7 +137,7 @@ export function ProjectModal({
           </>
         )}
 
-        {/* Load Project Mode */}
+        {/* Open Project Mode */}
         {mode === "load" && (
           <>
             {projects.length === 0 ? (
