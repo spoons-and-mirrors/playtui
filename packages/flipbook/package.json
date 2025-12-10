@@ -1,8 +1,11 @@
 {
   "name": "@playtui/flipbook",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "description": "Terminal animation player for TUI animations created with PlayTUI",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "flipbook": "dist/cli.js"
   },

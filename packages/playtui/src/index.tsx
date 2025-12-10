@@ -226,7 +226,7 @@ export function Builder({ width, height }: BuilderProps) {
     }
   }, [tree, updateTree])
 
-  const treeWidth = 28
+  const treeWidth = 27
   const sidebarWidth = 35
 
   // Loading state

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Visual TUI component builder for OpenTUI",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "playtui": "dist/cli.js"
   },
