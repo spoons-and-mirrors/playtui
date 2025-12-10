@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { COLORS } from "../../theme"
 import type { ElementType } from "../../lib/types"
+import { PaletteProp } from "../controls"
 
 // ============================================================================
 // Types
@@ -9,11 +10,17 @@ import type { ElementType } from "../../lib/types"
 export type MenuAction = "new" | "load" | "delete"
 
 interface HeaderProps {
-  projectName: string
   addMode: boolean
   onFileAction: (action: MenuAction) => void
   onToggleAddMode: () => void
   onAddElement: (type: ElementType) => void
+  // Palette support
+  palettes?: Array<{ id: string; name: string; swatches: Array<{ id: string; color: string }> }>
+  activePaletteIndex?: number
+  selectedColor?: string
+  onSelectColor?: (color: string) => void
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
 }
 
 // ============================================================================
@@ -186,24 +193,36 @@ function ElementToolbar({
 // ============================================================================
 
 export function Header({
-  projectName,
   addMode,
   onFileAction,
   onToggleAddMode,
   onAddElement,
+  palettes,
+  activePaletteIndex,
+  selectedColor,
+  onSelectColor,
+  onUpdateSwatch,
+  onChangePalette,
 }: HeaderProps) {
   return (
     <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
-      {/* Row 1: File menu */}
-      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      {/* Row 1: File menu (left) + Palette (right) */}
+      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
         <FileMenu onAction={onFileAction} />
-        <box id="header-project-name" style={{ marginLeft: 2 }}>
-          <text id="header-project-name-text" fg={COLORS.muted}>{projectName}</text>
-        </box>
+        {palettes && palettes.length > 0 && onSelectColor && (
+          <PaletteProp
+            palettes={palettes}
+            activePaletteIndex={activePaletteIndex ?? 0}
+            selectedColor={selectedColor}
+            onSelectColor={onSelectColor}
+            onUpdateSwatch={onUpdateSwatch}
+            onChangePalette={onChangePalette}
+          />
+        )}
       </box>
 
       {/* Row 2: Element toolbar */}
-      <box style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 1 }}>
+      <box style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddElement={onAddElement} />
       </box>
 

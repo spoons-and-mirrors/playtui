@@ -289,8 +289,8 @@ export function useProject(): UseProjectReturn {
         animation: {
           ...prev.animation,
           currentFrameIndex: index
-        },
-        selectedId: null // Clear selection on frame change
+        }
+        // Preserve selectedId across frame changes
       }
     })
     // scheduleSave() // No need to save on simple navigation? Maybe yes to persist "open on this frame"

@@ -7,7 +7,7 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorPropWithHex, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-   OverflowPicker, DimensionsControl, PaletteProp
+   OverflowPicker, DimensionsControl
 } from "../controls"
 import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
@@ -361,72 +361,51 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       }}
     >
       <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, paddingBottom: 0, flexDirection: "column", gap: 0 }}>
-        {/* Row 1: Type badge + Palette (centered) + Visibility */}
-        <box style={{ flexDirection: "row", alignItems: "flex-start", paddingRight: 1 }}>
-          {/* Type badge */}
-          <box id="element-type" style={{ backgroundColor: COLORS.accent, paddingLeft: 1, paddingRight: 1 }}>
-            <text fg={COLORS.bg}><strong>{node.type}</strong></text>
-          </box>
-          
-          {/* Palette - centered with flexGrow */}
-          <box style={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
-            {palettes && palettes.length > 0 && (
-              <PaletteProp
-                palettes={palettes}
-                activePaletteIndex={activePaletteIndex ?? 0}
-                selectedColor={node.type === "text" ? (node as TextNode).fg : (node as BoxNode).backgroundColor}
-                onSelectColor={(color) => {
-                  if (node.type === "text") {
-                    onUpdate({ fg: color } as Partial<ElementNode>)
-                  } else if (node.type === "box" || node.type === "scrollbox") {
-                    onUpdate({ backgroundColor: color } as Partial<ElementNode>)
-                  }
-                }}
-                onUpdateSwatch={onUpdateSwatch}
-                onChangePalette={onChangePalette}
-              />
-            )}
-          </box>
-          
-          {/* Visibility toggle */}
-          <box
-            id="visibility-toggle"
+        {/* Row 1: Type badge (click to toggle visibility) + Name inline */}
+        <box style={{ flexDirection: "row", alignItems: "center", gap: 1, marginBottom: 2, height: 1 }}>
+          {/* Type badge - click to toggle visibility */}
+          <box 
+            id="element-type" 
+            style={{ backgroundColor: node.visible !== false ? COLORS.accent : COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
             onMouseDown={() => onUpdate({ visible: !node.visible } as Partial<ElementNode>)}
           >
-            <text fg={node.visible !== false ? COLORS.accent : COLORS.danger} selectable={false}>
-              {node.visible !== false ? "⬢" : "⬡"}
-            </text>
+            <text fg={node.visible !== false ? COLORS.bg : COLORS.muted}><strong>{node.type}</strong></text>
           </box>
-        </box>
-        
-        {/* Row 2: Name */}
-        <box id="element-name" style={{ flexDirection: "row" }} onMouseDown={(e) => e.stopPropagation()}>
-          {focusedField === "name" ? (
-            <input
-              id="name-input"
-              value={node.name || ""}
-              focused
-              width={(node.name?.length || 1) + 2}
-              backgroundColor={COLORS.cardHover}
-              textColor={COLORS.text}
-              onInput={(v) => onUpdate({ name: v } as Partial<ElementNode>)}
-              onSubmit={() => setFocusedField(null)}
-            />
-          ) : (
-            <box
-              id="name-display"
-              style={{ backgroundColor: COLORS.cardHover, paddingLeft: 1, paddingRight: 1 }}
-              onMouseDown={() => {
-                const now = Date.now()
-                if (now - lastNameClickRef.current < 400) {
-                  setFocusedField("name")
-                }
-                lastNameClickRef.current = now
-              }}
-            >
-              <text fg={COLORS.text}>{node.name || ""}</text>
-            </box>
-          )}
+          
+          {/* Name - inline with type */}
+          <box id="element-name" onMouseDown={(e) => e.stopPropagation()}>
+            {focusedField === "name" ? (
+              <box style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}>
+                <input
+                  id="name-input"
+                  value={node.name || ""}
+                  focused
+                  width={(node.name?.length || 0) + 2}
+                  height={1}
+                  backgroundColor={COLORS.bg}
+                  textColor={COLORS.text}
+                  onInput={(v) => onUpdate({ name: v } as Partial<ElementNode>)}
+                  onSubmit={() => setFocusedField(null)}
+                />
+              </box>
+            ) : (
+              <box
+                id="name-display"
+                style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
+                onMouseDown={() => {
+                  const now = Date.now()
+                  if (now - lastNameClickRef.current < 400) {
+                    setFocusedField("name")
+                  }
+                  lastNameClickRef.current = now
+                }}
+              >
+                <text fg={node.name && node.name !== ELEMENT_REGISTRY[node.type]?.label ? COLORS.accent : COLORS.muted}>
+                  {node.name && node.name !== ELEMENT_REGISTRY[node.type]?.label ? node.name : "unnamed"}
+                </text>
+              </box>
+            )}
+          </box>
         </box>
       </box>
       

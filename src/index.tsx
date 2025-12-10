@@ -9,7 +9,7 @@ import { PropertyPane } from "./components/pages/Properties"
 import { LibraryPage } from "./components/pages/Library"
 import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
-import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header } from "./components/ui"
+import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, AppHeader } from "./components/ui"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
@@ -220,7 +220,7 @@ export function Builder({ width, height }: BuilderProps) {
     }
   }, [tree, updateTree])
 
-  const treeWidth = 30
+  const treeWidth = 28
   const sidebarWidth = 35
 
   // Loading state
@@ -237,6 +237,7 @@ export function Builder({ width, height }: BuilderProps) {
   if (mode === "library" || mode === "docs") {
     return (
       <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
+        <AppHeader mode={mode} width={width} onModeChange={setMode} />
         {mode === "library" ? (
           <LibraryPage 
             projectHook={projectHook} 
@@ -247,7 +248,6 @@ export function Builder({ width, height }: BuilderProps) {
         ) : (
           <DocsPanel />
         )}
-        <Footer mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -258,33 +258,49 @@ export function Builder({ width, height }: BuilderProps) {
     return (
        <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
         <text fg={COLORS.muted}>No project loaded.</text>
-        <Footer mode={mode} width={width} onModeChange={setMode} />
+        <AppHeader mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
 
   return (
-    <box id="builder" style={{ width, height, flexDirection: "row" }}>
-      {/* Left Panel - Tree */}
-      {showTree && (
-        <box id="builder-tree" border={["right"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderRight}
-          style={{ width: treeWidth, height, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
-          <Title saveStatus={saveStatus} onLogoClick={() => setMode("docs")} />
-          <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-            <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
-              onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
-          </scrollbox>
-        </box>
-      )}
+    <box id="builder" style={{ width, height, flexDirection: "column" }}>
+      {/* Top Bar - Mode tabs spanning full width */}
+      <AppHeader mode={mode} width={width} projectName={project.name} onModeChange={setMode} />
 
-      {/* Center Area - header top, canvas middle, footer bottom */}
-      <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), height, flexDirection: "column", padding: 1 }}>
-        <Header
-          projectName={project.name}
+      {/* Main content area - horizontal panels */}
+      <box id="builder-main" style={{ width, height: height - 1, flexDirection: "row" }}>
+        {/* Left Panel - Tree */}
+        {showTree && (
+          <box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
+            style={{ width: treeWidth, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
+            <Title saveStatus={saveStatus} onLogoClick={() => setMode("docs")} />
+            <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
+              <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
+                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
+            </scrollbox>
+          </box>
+        )}
+
+        {/* Center Area - header, canvas */}
+        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", padding: 1 }}>
+          <Header
           addMode={addMode}
           onFileAction={handleFileAction}
           onToggleAddMode={() => setAddMode(!addMode)}
           onAddElement={handleAddElement}
+          palettes={palettes}
+          activePaletteIndex={activePaletteIndex}
+          selectedColor={selectedNode?.type === "text" ? (selectedNode as any).fg : (selectedNode as any)?.backgroundColor}
+          onSelectColor={(color) => {
+            if (selectedNode?.type === "text") {
+              handleUpdate({ fg: color })
+            } else if (selectedNode?.type === "box" || selectedNode?.type === "scrollbox") {
+              handleUpdate({ backgroundColor: color })
+            }
+          }}
+          onUpdateSwatch={updateSwatch}
+          onChangePalette={setActivePalette}
         />
 
         {/* Canvas or Code Panel - grows to fill middle */}
@@ -311,28 +327,25 @@ export function Builder({ width, height }: BuilderProps) {
             onDragMove={handleDragMove}
             onDragEnd={handleDragEnd}
           />
-        )}
-
-        {/* Footer - mode tabs centered */}
-        <Footer mode={mode} width={width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0)} onModeChange={setMode} />
-      </box>
-
-      {/* Right Panel - Properties */}
-      {showProperties && (
-        <box id="builder-sidebar" border={["left"]} borderColor={BORDER_ACCENT} customBorderChars={ThinBorderLeft}
-          style={{ width: sidebarWidth, height, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
-          {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
-          {selectedNode ? (
-            <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
-              focusedField={focusedField} setFocusedField={setFocusedField}
-              palettes={palettes} activePaletteIndex={activePaletteIndex}
-              onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
-          ) : (
-            <text fg={COLORS.muted}>Select an element</text>
           )}
         </box>
-      )}
 
+        {/* Right Panel - Properties */}
+        {showProperties && (
+          <box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
+            style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
+            {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
+            {selectedNode ? (
+              <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
+                focusedField={focusedField} setFocusedField={setFocusedField}
+                palettes={palettes} activePaletteIndex={activePaletteIndex}
+                onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
+            ) : (
+              <text fg={COLORS.muted}>Select an element</text>
+            )}
+          </box>
+        )}
+      </box>
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

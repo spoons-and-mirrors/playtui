@@ -1,5 +1,5 @@
 export { ActionBtn } from "./ActionBtn"
-export { Footer, type ViewMode } from "./Footer"
+export { AppHeader, Footer, ModeTabBar, type ViewMode } from "./AppHeader"
 export { ProjectModal } from "./ProjectModal"
 export { ValueSlider } from "./ValueSlider"
 

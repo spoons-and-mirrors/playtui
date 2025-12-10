@@ -10,7 +10,7 @@ import {
 // =============================================================================
 
 export const ASCIIFONT_DEFAULTS: Partial<AsciiFontNode> = {
-  text: "HELLO",
+  text: "",
   font: "block",
   color: COLORS.accent,
 }
@@ -64,11 +64,13 @@ export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, on
       visible={node.visible !== false}
       style={wrapperStyle}
     >
-      <ascii-font
-        text={node.text || "HELLO"}
-        font={node.font || "block"}
-        color={node.color || COLORS.accent}
-      />
+      {node.text ? (
+        <ascii-font
+          text={node.text}
+          font={node.font || "block"}
+          color={node.color || COLORS.accent}
+        />
+      ) : null}
     </box>
   )
 }

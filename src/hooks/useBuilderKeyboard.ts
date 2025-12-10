@@ -1,6 +1,6 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
-import type { ViewMode } from "../components/ui/Footer"
+import type { ViewMode } from "../components/ui/AppHeader"
 
 // Keyboard shortcut to element type mapping
 const ADD_SHORTCUTS: Record<string, ElementType> = {
