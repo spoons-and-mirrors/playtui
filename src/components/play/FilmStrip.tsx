@@ -4,6 +4,8 @@ import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
 import { generateAnimationData, type AnimationData } from "../../lib/codegen"
+import { copyToClipboard, readFromClipboard } from "../../lib/clipboard"
+import { log } from "../../lib/logger"
 
 const FRAME_GAP = 1
 
@@ -49,32 +51,51 @@ export function FilmStrip({
   const frameWidth = getFrameWidth(frames.length)
   const [copied, setCopied] = useState(false)
   const [imported, setImported] = useState(false)
+  const [clipboardError, setClipboardError] = useState<string | null>(null)
 
-  const copyAnimationCode = useCallback(() => {
+  const copyAnimationCode = useCallback(async () => {
     const data = generateAnimationData(frames, fps, "Animation")
-    const proc = Bun.spawn(["xclip", "-selection", "clipboard"], { stdin: "pipe" })
-    proc.stdin.write(data)
-    proc.stdin.end()
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1000)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
+    const result = await copyToClipboard(data, { filename: `animation-${timestamp}.json` })
+    
+    if (result.success) {
+      setCopied(true)
+      if (result.filePath) {
+        setClipboardError(`Saved to: ${result.filePath}`)
+        setTimeout(() => setClipboardError(null), 5000)
+      } else {
+        setClipboardError(null)
+      }
+      setTimeout(() => setCopied(false), 1000)
+    } else {
+      log("EXPORT_ERROR", { error: result.error })
+      setClipboardError(result.error || "Failed to export")
+      setTimeout(() => setClipboardError(null), 3000)
+    }
   }, [frames, fps])
 
   const importFromClipboard = useCallback(async () => {
+    const result = await readFromClipboard()
+    
+    if (!result.success) {
+      log("IMPORT_ERROR", { error: result.error })
+      setClipboardError(result.error || "Failed to read clipboard")
+      setTimeout(() => setClipboardError(null), 3000)
+      return
+    }
+
     try {
-      const proc = Bun.spawn(["xclip", "-selection", "clipboard", "-o"], {
-        stdout: "pipe",
-        stderr: "pipe"
-      })
-      await proc.exited
-      const text = await new Response(proc.stdout).text()
-      const data = JSON.parse(text) as AnimationData
+      const data = JSON.parse(result.text || "") as AnimationData
       if (data.frames && Array.isArray(data.frames) && data.frames.length > 0) {
         onImport(data.frames, data.fps || 10)
         setImported(true)
+        setClipboardError(null)
         setTimeout(() => setImported(false), 1000)
       }
     } catch {
-      // Invalid JSON or clipboard data - ignore silently
+      log("IMPORT_PARSE_ERROR", {})
+      setClipboardError("Invalid animation data in clipboard")
+      setTimeout(() => setClipboardError(null), 3000)
     }
   }, [onImport])
 
@@ -91,65 +112,96 @@ export function FilmStrip({
   return (
     <box
       id="film-strip"
-      height={5}
+      height={clipboardError ? 6 : 5}
       flexDirection="column"
       backgroundColor={COLORS.bgAlt}
     >
-      {/* Top Bar: Play | FPS | Frame Counter */}
-      <box
-        id="film-strip-header"
-        height={1}
-        flexDirection="row"
-        alignItems="center"
-        paddingLeft={1}
-        paddingRight={1}
-      >
-        {/* Play/Stop Button */}
+      {/* Notification bar */}
+      {clipboardError && (
         <box
-          id="play-btn"
-          backgroundColor={COLORS.card}
+          id="clipboard-notification-bar"
+          height={1}
+          backgroundColor={clipboardError.startsWith("Saved to:") ? COLORS.accent : COLORS.danger}
           paddingLeft={1}
-          onMouseDown={onTogglePlay}
         >
-          {isPlaying 
-            ? <text fg={COLORS.danger}><strong>■ STOP</strong></text>
-            : <text fg={COLORS.accent}>▶ PLAY</text>
-          }
+          <text fg={COLORS.bg}>{clipboardError}</text>
         </box>
+      )}
 
-        {/* FPS Control - cohesive unit */}
-        <box id="fps-control" flexDirection="row" marginLeft={1}>
-          <box border={["left"]} borderColor={COLORS.muted} paddingLeft={1} paddingRight={1}>
-            <text fg={COLORS.muted}>FPS</text>
+       {/* Top Bar: Play | FPS | Frame Counter | Export/Import */}
+       <box
+         id="film-strip-header"
+         height={1}
+         flexDirection="row"
+         alignItems="center"
+         paddingLeft={1}
+         paddingRight={1}
+       >
+         {/* Play/Stop Button */}
+         <box
+           id="play-btn"
+           backgroundColor={COLORS.card}
+           paddingLeft={1}
+           onMouseDown={onTogglePlay}
+         >
+           {isPlaying 
+             ? <text fg={COLORS.danger}><strong>■ STOP</strong></text>
+             : <text fg={COLORS.accent}>▶ PLAY</text>
+           }
+         </box>
+
+         {/* FPS Control - cohesive unit */}
+         <box id="fps-control" flexDirection="row" marginLeft={1}>
+           <box border={["left"]} borderColor={COLORS.muted} paddingLeft={1} paddingRight={1}>
+             <text fg={COLORS.muted}>FPS</text>
+           </box>
+           <box flexDirection="row" gap={1} paddingLeft={1}>
+             <text fg={COLORS.accent} onMouseDown={() => onFpsChange(Math.max(1, fps - 1))}>◀</text>
+             <text fg={COLORS.text}><strong>{fps}</strong></text>
+             <text fg={COLORS.accent} onMouseDown={() => onFpsChange(fps + 1)}>▶</text>
+           </box>
+           <box paddingRight={1} />
+         </box>
+
+         {/* Frame Counter */}
+         <box id="frame-counter" marginLeft={1}>
+           <text fg={COLORS.muted}>
+             <span fg={COLORS.accent}>{formatFrameNum(currentIndex, frames.length)}</span>/{formatFrameNum(frames.length - 1, frames.length)}
+           </text>
+         </box>
+
+         {/* Spacer */}
+         <box flexGrow={1} />
+
+          {/* Export Button - Card style */}
+          <box
+            id="export-btn"
+            marginLeft={1}
+            marginRight={1}
+            paddingLeft={1}
+            paddingRight={1}
+            backgroundColor={copied ? COLORS.success : COLORS.accent}
+            onMouseDown={copyAnimationCode}
+          >
+            <text fg={COLORS.bg}>
+              {copied ? "✓ Export" : "⎘ Export"}
+            </text>
           </box>
-          <box flexDirection="row" gap={1} paddingLeft={1}>
-            <text fg={COLORS.accent} onMouseDown={() => onFpsChange(Math.max(1, fps - 1))}>◀</text>
-            <text fg={COLORS.text}><strong>{fps}</strong></text>
-            <text fg={COLORS.accent} onMouseDown={() => onFpsChange(fps + 1)}>▶</text>
-          </box>
-          <box paddingRight={1} />
-        </box>
 
-        {/* Spacer */}
-        <box flexGrow={1} />
-
-        {/* Frame Counter */}
-        <box id="frame-counter">
-          <text fg={COLORS.muted}>
-            <span fg={COLORS.accent}>{formatFrameNum(currentIndex, frames.length)}</span>/{formatFrameNum(frames.length - 1, frames.length)}
-          </text>
-        </box>
-
-        {/* Export Button */}
-        <box id="export-btn" marginLeft={2} onMouseDown={copyAnimationCode}>
-          <text fg={copied ? COLORS.success : COLORS.accent}>{copied ? "✓ Copied" : "⎘ Export"}</text>
-        </box>
-
-        {/* Import Button */}
-        <box id="import-btn" marginLeft={1} onMouseDown={importFromClipboard}>
-          <text fg={imported ? COLORS.success : COLORS.muted}>{imported ? "✓ Imported" : "⎗ Import"}</text>
-        </box>
-      </box>
+          {/* Import Button - Card style */}
+          <box
+            id="import-btn"
+            marginRight={1}
+            paddingLeft={1}
+            paddingRight={1}
+            backgroundColor={imported ? COLORS.success : (clipboardError ? COLORS.danger : COLORS.muted)}
+            onMouseDown={importFromClipboard}
+          >
+            <text fg={COLORS.bg}>
+             {clipboardError ? "✗ Error" : (imported ? "✓ Import" : "⎗ Import")}
+           </text>
+         </box>
+       </box>
 
       {/* Film Strip Frames */}
       <box

@@ -4,6 +4,7 @@ import { COLORS } from "../../theme"
 import { log } from "../../lib/logger"
 import type { ElementNode } from "../../lib/types"
 import { parseCodeMultiple } from "../../lib/parseCode"
+import { copyToClipboard } from "../../lib/clipboard"
 
 interface CodePanelProps {
   code: string
@@ -84,24 +85,43 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   }, [handleCodeChange])
 
   const [copied, setCopied] = useState(false)
-  const copyToClipboard = useCallback(() => {
-    const proc = Bun.spawn(["xclip", "-selection", "clipboard"], {
-      stdin: "pipe",
-    })
-    proc.stdin.write(code)
-    proc.stdin.end()
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1000)
+  const [clipboardError, setClipboardError] = useState<string | null>(null)
+  
+  const copyCode = useCallback(async () => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
+    const result = await copyToClipboard(code, { filename: `code-${timestamp}.tsx` })
+    
+    if (result.success) {
+      setCopied(true)
+      if (result.filePath) {
+        setClipboardError(`Saved to: ${result.filePath}`)
+        setTimeout(() => setClipboardError(null), 5000)
+      } else {
+        setClipboardError(null)
+      }
+      setTimeout(() => setCopied(false), 1000)
+    } else {
+      log("CODE_COPY_ERROR", { error: result.error })
+      setClipboardError(result.error || "Failed to export")
+      setTimeout(() => setClipboardError(null), 3000)
+    }
   }, [code])
 
   return (
     <box id="code-panel" style={{ flexGrow: 1, flexDirection: "column", backgroundColor: COLORS.bg }}>
       <box id="code-panel-header" style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <box style={{ flexDirection: "row" }}>
+        <box style={{ flexDirection: "row", gap: 1 }}>
           {error && <text fg={COLORS.danger}>Error: {error}</text>}
+          {clipboardError && (
+            <text fg={clipboardError.startsWith("Saved to:") ? COLORS.accent : COLORS.danger}>
+              {clipboardError}
+            </text>
+          )}
         </box>
-        <box onMouseDown={copyToClipboard}>
-          <text fg={copied ? COLORS.success : COLORS.accent}>{copied ? "✓ Copied" : "⎘ Copy"}</text>
+        <box onMouseDown={() => copyCode()}>
+          <text fg={copied ? COLORS.success : COLORS.accent}>
+            {copied ? "✓ Exported" : "⎘ Copy"}
+          </text>
         </box>
       </box>
       <textarea
