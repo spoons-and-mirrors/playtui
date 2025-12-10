@@ -1,8 +1,9 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState, useCallback } from "react"
 import type { ScrollBoxRenderable } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
+import { generateAnimationData } from "../../lib/codegen"
 
 const FRAME_GAP = 1
 
@@ -44,6 +45,16 @@ export function FilmStrip({
 }: FilmStripProps) {
   const scrollRef = useRef<ScrollBoxRenderable>(null)
   const frameWidth = getFrameWidth(frames.length)
+  const [copied, setCopied] = useState(false)
+
+  const copyAnimationCode = useCallback(() => {
+    const data = generateAnimationData(frames, fps, "Animation")
+    const proc = Bun.spawn(["xclip", "-selection", "clipboard"], { stdin: "pipe" })
+    proc.stdin.write(data)
+    proc.stdin.end()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1000)
+  }, [frames, fps])
 
   // Auto-scroll to keep current frame centered
   useEffect(() => {
@@ -105,6 +116,11 @@ export function FilmStrip({
           <text fg={COLORS.muted}>
             <span fg={COLORS.accent}>{formatFrameNum(currentIndex, frames.length)}</span>/{formatFrameNum(frames.length - 1, frames.length)}
           </text>
+        </box>
+
+        {/* Export Button */}
+        <box id="export-btn" marginLeft={2} onMouseDown={copyAnimationCode}>
+          <text fg={copied ? COLORS.success : COLORS.accent}>{copied ? "✓ Copied" : "⎘ Export"}</text>
         </box>
       </box>
 

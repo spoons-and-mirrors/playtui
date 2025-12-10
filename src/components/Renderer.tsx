@@ -1,6 +1,47 @@
+import { useState, useEffect } from "react"
 import type { ElementNode } from "../lib/types"
 import { ELEMENT_REGISTRY } from "./elements"
 import { log } from "../lib/logger"
+import type { AnimationData } from "../lib/codegen"
+
+// ============================================================================
+// Animation Player - renders animation data using the Renderer
+// ============================================================================
+
+export interface AnimationPlayerProps {
+  data: AnimationData
+  fpsOverride?: number
+}
+
+export function AnimationPlayer({ data, fpsOverride }: AnimationPlayerProps) {
+  const [frameIndex, setFrameIndex] = useState(0)
+  const fps = fpsOverride ?? data.fps
+
+  useEffect(() => {
+    if (data.frames.length <= 1) return
+    const id = setInterval(() => {
+      setFrameIndex(f => (f + 1) % data.frames.length)
+    }, 1000 / fps)
+    return () => clearInterval(id)
+  }, [data.frames.length, fps])
+
+  const frame = data.frames[frameIndex]
+  if (!frame) return null
+
+  return (
+    <Renderer
+      node={frame}
+      selectedId={null}
+      hoveredId={null}
+      onSelect={() => {}}
+      onHover={() => {}}
+    />
+  )
+}
+
+// ============================================================================
+// Renderer - renders ElementNode tree
+// ============================================================================
 
 export interface DragEvent {
   nodeId: string

@@ -21,32 +21,37 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
   } = projectHook
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const frameIndexRef = useRef(0)
 
   if (!project) return null
 
   const { animation, tree } = project
   const { fps, frames, currentFrameIndex } = animation
 
+  // Keep ref in sync
+  frameIndexRef.current = currentFrameIndex
+
   // Playback logic
   useEffect(() => {
-    if (isPlaying) {
-      if (timerRef.current) clearInterval(timerRef.current)
-      
-      timerRef.current = setInterval(() => {
-        const nextIndex = (currentFrameIndex + 1) % frames.length
-        setCurrentFrame(nextIndex)
-      }, 1000 / fps)
-    } else {
+    if (!isPlaying) {
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
       }
+      return
     }
+
+    if (timerRef.current) clearInterval(timerRef.current)
+    
+    timerRef.current = setInterval(() => {
+      const nextIndex = (frameIndexRef.current + 1) % frames.length
+      setCurrentFrame(nextIndex)
+    }, 1000 / fps)
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [isPlaying, fps, frames.length, currentFrameIndex, setCurrentFrame])
+  }, [isPlaying, fps, frames.length, setCurrentFrame])
 
   // Stop playing if user interacts manually (optional, but good UX)
   const handleSelectFrame = (index: number) => {
