@@ -1,5 +1,5 @@
 /**
- * PlayTUI Animation Player - Type Definitions
+ * Flipbook - Type Definitions
  */
 
 export type ElementType = "box" | "text" | "ascii-font" | "scrollbox"

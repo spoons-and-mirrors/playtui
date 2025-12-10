@@ -1,10 +1,10 @@
 {
-  "name": "@playtui/player",
+  "name": "@playtui/flipbook",
   "version": "0.1.0",
   "type": "module",
-  "description": "Standalone player for TUI animations created with PlayTUI",
+  "description": "Terminal animation player for TUI animations created with PlayTUI",
   "bin": {
-    "playtui-player": "dist/cli.js"
+    "flipbook": "dist/cli.js"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -17,7 +17,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "demo.json"
   ],
   "scripts": {
     "build": "bun build src/cli.tsx src/index.ts --outdir dist --target bun --minify && bun run build:types",

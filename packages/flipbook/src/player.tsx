@@ -1,5 +1,5 @@
 /**
- * PlayTUI Animation Player - React Component
+ * Flipbook - Animation Player React Component
  */
 
 import React, { useState, useEffect } from "react"

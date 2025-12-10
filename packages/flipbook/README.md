@@ -1,29 +1,32 @@
-# @playtui/player
+# @playtui/flipbook
 
-Standalone player for TUI animations created with [PlayTUI](https://github.com/spoons-and-mirrors/playtui).
+Terminal animation player for TUI animations created with [PlayTUI](https://github.com/spoons-and-mirrors/playtui).
 
 ## Installation
 
 ```bash
 # Global install
-npm install -g @playtui/player
+npm install -g @playtui/flipbook
 
 # Or use directly with npx/bunx
-npx @playtui/player animation.json
-bunx @playtui/player animation.json
+npx @playtui/flipbook animation.json
+bunx @playtui/flipbook animation.json
 ```
 
 ## CLI Usage
 
 ```bash
 # Play an animation
-playtui-player my-animation.json
+flipbook my-animation.json
+
+# Play the bundled demo
+flipbook --demo
 
 # Override FPS
-playtui-player my-animation.json --fps 30
+flipbook my-animation.json --fps 30
 
 # Show help
-playtui-player --help
+flipbook --help
 ```
 
 ### Controls
@@ -35,7 +38,7 @@ playtui-player --help
 You can also use the player as a React component in your own OpenTUI applications:
 
 ```tsx
-import { AnimationPlayer, type AnimationData } from "@playtui/player"
+import { AnimationPlayer, type AnimationData } from "@playtui/flipbook"
 
 const myAnimation: AnimationData = {
   name: "My Animation",

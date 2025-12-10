@@ -1,25 +1,32 @@
 #!/usr/bin/env bun
 /**
- * PlayTUI Animation Player CLI
+ * Flipbook - Terminal Animation Player
  * 
  * Usage:
- *   npx playtui-player animation.json
- *   npx playtui-player animation.json --fps 30
- *   bunx playtui-player animation.json
+ *   flipbook animation.json
+ *   flipbook animation.json --fps 30
+ *   flipbook --demo
  */
 
 import { createCliRenderer } from "@opentui/core"
 import { createRoot, useKeyboard, useTerminalDimensions } from "@opentui/react"
 import { readFileSync, existsSync } from "fs"
-import { resolve } from "path"
+import { resolve, dirname } from "path"
+import { fileURLToPath } from "url"
 import { AnimationPlayer } from "./player"
 import type { AnimationData } from "./types"
+
+function getPackageDir(): string {
+  const currentFile = fileURLToPath(import.meta.url)
+  return dirname(dirname(currentFile))
+}
 
 function parseArgs() {
   const args = process.argv.slice(2)
   let filePath: string | null = null
   let fps: number | undefined = undefined
   let help = false
+  let demo = false
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
@@ -31,22 +38,26 @@ function parseArgs() {
       }
     } else if (arg === "--help" || arg === "-h") {
       help = true
+    } else if (arg === "--demo" || arg === "-d") {
+      demo = true
     } else if (!arg.startsWith("-")) {
       filePath = arg
     }
   }
 
-  return { filePath, fps, help }
+  return { filePath, fps, help, demo }
 }
 
 function showHelp() {
   console.log(`
-playtui-player - Play TUI animations in your terminal
+flipbook - Terminal animation player for PlayTUI animations
 
 Usage:
-  playtui-player <animation.json> [options]
+  flipbook <animation.json> [options]
+  flipbook --demo
 
 Options:
+  --demo, -d           Play the bundled demo animation
   --fps, -f <number>   Override animation FPS
   --help, -h           Show this help message
 
@@ -54,9 +65,9 @@ Controls:
   q, Esc, Ctrl+C       Exit
 
 Examples:
-  playtui-player my-animation.json
-  playtui-player loading.json --fps 30
-  npx playtui-player animation.json
+  flipbook my-animation.json
+  flipbook loading.json --fps 30
+  flipbook --demo
 `)
 }
 
@@ -113,14 +124,23 @@ function App({ data, fpsOverride }: AppProps) {
 }
 
 async function main() {
-  const { filePath, fps, help } = parseArgs()
+  const { filePath, fps, help, demo } = parseArgs()
 
-  if (help || !filePath) {
+  if (help) {
     showHelp()
-    process.exit(help ? 0 : 1)
+    process.exit(0)
   }
 
-  const animationData = loadAnimation(filePath)
+  if (!filePath && !demo) {
+    showHelp()
+    process.exit(1)
+  }
+
+  const animationPath = demo 
+    ? resolve(getPackageDir(), "demo.json")
+    : filePath!
+  
+  const animationData = loadAnimation(animationPath)
   
   console.log(`Playing: ${animationData.name || filePath}`)
   console.log(`Frames: ${animationData.frames.length} @ ${fps ?? animationData.fps} FPS`)
