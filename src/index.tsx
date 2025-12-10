@@ -243,7 +243,6 @@ export function Builder({ width, height }: BuilderProps) {
   if (mode === "library" || mode === "docs") {
     return (
       <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
-        <AppHeader mode={mode} width={width} onModeChange={setMode} />
         {mode === "library" ? (
           <LibraryPage 
             projectHook={projectHook} 
@@ -254,6 +253,7 @@ export function Builder({ width, height }: BuilderProps) {
         ) : (
           <DocsPanel />
         )}
+        <AppHeader mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -262,8 +262,10 @@ export function Builder({ width, height }: BuilderProps) {
   if (!project || !tree) {
     // Should generally not happen if isLoading handled, but safe guard
     return (
-       <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
-        <text fg={COLORS.muted}>No project loaded.</text>
+       <box style={{ width, height, flexDirection: "column", alignItems: "stretch", justifyContent: "space-between" }}>
+        <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
+          <text fg={COLORS.muted}>No project loaded.</text>
+        </box>
         <AppHeader mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
@@ -271,9 +273,6 @@ export function Builder({ width, height }: BuilderProps) {
 
   return (
     <box id="builder" style={{ width, height, flexDirection: "column" }}>
-      {/* Top Bar - Mode tabs spanning full width */}
-      <AppHeader mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
-
       {/* Main content area - horizontal panels */}
       <box id="builder-main" style={{ width, height: height - 1, flexDirection: "row" }}>
         {/* Left Panel - Tree */}
@@ -353,6 +352,9 @@ export function Builder({ width, height }: BuilderProps) {
           </box>
         )}
       </box>
+
+      {/* Bottom Bar - Mode tabs spanning full width */}
+      <AppHeader mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (
