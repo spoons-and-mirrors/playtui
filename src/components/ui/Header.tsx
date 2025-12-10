@@ -221,7 +221,7 @@ export function Header({
       {/* Row 1: File menu (left) + Animation (center) + Type/Name boxes (right) */}
       <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 1 }}>
         <FileMenu onAction={onFileAction} />
-        <AnimationPlayer data={TEST_ANIMATION} />
+        {/*<AnimationPlayer data={TEST_ANIMATION} /> */}
         {selectedNode && onUpdateNode && setFocusedField && (
           <box id="element-type-name" style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
             {/* Type badge - click to toggle visibility */}
