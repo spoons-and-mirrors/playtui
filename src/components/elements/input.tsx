@@ -1,3 +1,4 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, InputNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
@@ -24,26 +25,38 @@ interface InputRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: InputRendererProps) {
+export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
   const node = genericNode as InputNode
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
       style={{
-        width: node.width,
-        height: node.height || 1,
         margin: node.margin,
         marginTop: node.marginTop,
         marginRight: node.marginRight,
         marginBottom: node.marginBottom,
         marginLeft: node.marginLeft,
-        backgroundColor: node.backgroundColor || COLORS.input,
+        position: node.position,
+        top: node.y,
+        left: node.x,
+        zIndex: node.zIndex,
       }}
     >
       <text fg={node.placeholderColor || COLORS.muted}>
@@ -179,10 +192,3 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
     </box>
   )
 }
-
-// List of input-specific property keys
-export const INPUT_PROPERTY_KEYS = [
-  "placeholder", "placeholderColor", "maxLength",
-  "textColor", "focusedTextColor", "backgroundColor", "focusedBackgroundColor",
-  "cursorColor", "cursorStyle"
-] as const

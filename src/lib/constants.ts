@@ -2,7 +2,7 @@ import { COLORS } from "../theme"
 import type { PropertyDef, PropertySection } from "./types"
 
 export const SECTION_LABELS: Record<PropertySection, string> = {
-  sizing: "◫ Size",
+  dimensions: "◫ Dimensions",
   flexContainer: "⬓ Layout",
   flexItem: "◧ Flex Item",
   padding: "⊞ Padding",
@@ -24,7 +24,7 @@ export const SECTION_LABELS: Record<PropertySection, string> = {
 
 // Section ordering for property panel - most used first
 export const SECTION_ORDER: PropertySection[] = [
-  "sizing",
+  "dimensions",
   "position",
   "margin",
   "padding",
@@ -47,7 +47,7 @@ export const SECTION_ORDER: PropertySection[] = [
 
 // Sections that start expanded by default
 export const EXPANDED_BY_DEFAULT: PropertySection[] = [
-  "sizing",
+  "dimensions",
   "flexContainer",
   "background",
   "border",
@@ -61,17 +61,14 @@ export const EXPANDED_BY_DEFAULT: PropertySection[] = [
 // =============================================================================
 
 export const PROPERTIES: PropertyDef[] = [
-  // === IDENTITY ===
-  { key: "name", label: "Name", type: "string" },
-
-  // === SIZING === (common to most elements)
-  { key: "width", label: "Width", type: "size", section: "sizing" },
-  { key: "height", label: "Height", type: "size", section: "sizing" },
-  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "sizing", appliesTo: ["box", "scrollbox", "input"] },
-  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "sizing", appliesTo: ["box", "scrollbox"] },
+  // === DIMENSIONS === (common to most elements)
+  { key: "width", label: "Width", type: "size", section: "dimensions" },
+  { key: "height", label: "Height", type: "size", section: "dimensions" },
+  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "dimensions", appliesTo: ["box", "scrollbox", "input"] },
+  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "dimensions", appliesTo: ["box", "scrollbox"] },
 
   // === FLEX CONTAINER === (container elements only)
   { key: "flexDirection", label: "Direction", type: "select", options: ["row", "column"], section: "flexContainer", appliesTo: ["box", "scrollbox"] },
@@ -89,12 +86,12 @@ export const PROPERTIES: PropertyDef[] = [
   { key: "flexBasis", label: "Basis", type: "size", section: "flexItem", appliesTo: ["box", "scrollbox", "input"] },
   { key: "alignSelf", label: "Align Self", type: "select", options: ["auto", "flex-start", "center", "flex-end", "stretch"], section: "flexItem", appliesTo: ["box", "scrollbox", "input"] },
 
-  // === PADDING === (container elements only)
-  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
-  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox"] },
+  // === PADDING === (container elements and text)
+  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
+  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding", appliesTo: ["box", "scrollbox", "text"] },
 
   // === MARGIN === (common to many elements)
   { key: "margin", label: "All", type: "number", min: 0, max: 20, section: "margin", appliesTo: ["box", "scrollbox", "text", "input"] },
@@ -103,19 +100,14 @@ export const PROPERTIES: PropertyDef[] = [
   { key: "marginBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "margin", appliesTo: ["box", "scrollbox", "text", "input"] },
   { key: "marginLeft", label: "Left", type: "number", min: 0, max: 20, section: "margin", appliesTo: ["box", "scrollbox", "text", "input"] },
 
-  // === POSITIONING === (container elements only)
-  { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position", appliesTo: ["box", "scrollbox"] },
-  { key: "top", label: "Top", type: "number", min: -100, max: 100, section: "position", appliesTo: ["box", "scrollbox"] },
-  { key: "right", label: "Right", type: "number", min: -100, max: 100, section: "position", appliesTo: ["box", "scrollbox"] },
-  { key: "bottom", label: "Bottom", type: "number", min: -100, max: 100, section: "position", appliesTo: ["box", "scrollbox"] },
-  { key: "left", label: "Left", type: "number", min: -100, max: 100, section: "position", appliesTo: ["box", "scrollbox"] },
-  { key: "zIndex", label: "Z-Index", type: "number", min: -100, max: 100, section: "position", appliesTo: ["box", "scrollbox"] },
+  // === POSITIONING === (all elements can be positioned)
+  { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position" },
+  { key: "x", label: "X", type: "number", min: -100, max: 200, section: "position" },
+  { key: "y", label: "Y", type: "number", min: -100, max: 200, section: "position" },
+  { key: "zIndex", label: "Z", type: "number", min: -100, max: 100, section: "position" },
 
   // === OVERFLOW === (container elements only)
   { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow", appliesTo: ["box", "scrollbox"] },
-
-  // === VISIBILITY === (common to many elements)
-  { key: "visible", label: "Visible", type: "toggle", section: "visibility", appliesTo: ["box", "text", "scrollbox", "input"] },
 
   // === BACKGROUND === (elements with background color)
   { key: "backgroundColor", label: "BG Color", type: "color", section: "background", appliesTo: ["box", "scrollbox", "input"] },

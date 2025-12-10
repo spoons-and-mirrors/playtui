@@ -1,21 +1,21 @@
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TabSelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  StringProp, NumberProp, ToggleProp, ColorPropWithHex, SectionHeader
+  ToggleProp, NumberProp, StringProp, ColorPropWithHex, SectionHeader
 } from "../controls"
 
 // =============================================================================
-// TAB-SELECT DEFAULTS
+// TABSELECT DEFAULTS
 // =============================================================================
 
 export const TABSELECT_DEFAULTS: Partial<TabSelectNode> = {
-  width: 40,
-  options: ["Tab 1", "Tab 2", "Tab 3"],
-  tabWidth: 12,
+  options: ["Tab 1", "Tab 2"],
+  tabWidth: 15,
 }
 
 // =============================================================================
-// TAB-SELECT RENDERER
+// TABSELECT RENDERER
 // =============================================================================
 
 interface TabSelectRendererProps {
@@ -24,46 +24,51 @@ interface TabSelectRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TabSelectRendererProps) {
+export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TabSelectRendererProps) {
   const node = genericNode as TabSelectNode
-  const options = node.options || ["Tab 1", "Tab 2", "Tab 3"]
-  const tabW = node.tabWidth || 12
-  const bgColor = node.backgroundColor || COLORS.bgAlt
-  const selBgColor = node.selectedBackgroundColor || "transparent"
-  const textColor = node.textColor || COLORS.text
-  const selTextColor = node.selectedTextColor || COLORS.accent
+  const options = node.options || ["Tab 1", "Tab 2"]
+  const isDraggable = node.position === "absolute"
+
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
 
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
       style={{
-        width: node.width || options.length * tabW,
-        height: 3,
-        flexDirection: "row",
-        backgroundColor: bgColor,
+        margin: node.margin,
+        marginTop: node.marginTop,
+        marginRight: node.marginRight,
+        marginBottom: node.marginBottom,
+        marginLeft: node.marginLeft,
+        position: node.position,
+        top: node.y,
+        left: node.x,
+        zIndex: node.zIndex,
       }}
     >
-      {options.slice(0, 5).map((opt, i) => (
-        <box
-          key={i}
-          border={node.showUnderline !== false ? ["bottom"] : undefined}
-          borderColor={i === 0 ? selTextColor : COLORS.border}
-          style={{
-            width: tabW,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: i === 0 ? selBgColor : "transparent",
-          }}
-        >
-          <text fg={i === 0 ? selTextColor : textColor}>{opt}</text>
-        </box>
-      ))}
+      <tab-select
+        options={options.map(o => ({ name: o, description: "" }))}
+        tabWidth={node.tabWidth || 15}
+        focused={false} // Editor view is not interactive
+        backgroundColor={node.backgroundColor || COLORS.bgAlt}
+        textColor={node.textColor || COLORS.text}
+        selectedBackgroundColor={node.selectedBackgroundColor || "transparent"}
+        selectedTextColor={node.selectedTextColor || COLORS.accent}
+        showUnderline={node.showUnderline !== false}
+      />
     </box>
   )
 }
@@ -177,9 +182,3 @@ export function TabSelectProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of tab-select-specific property keys
-export const TABSELECT_PROPERTY_KEYS = [
-  "options", "tabWidth", "showUnderline", "wrapSelection",
-  "backgroundColor", "textColor", "selectedBackgroundColor", "selectedTextColor"
-] as const

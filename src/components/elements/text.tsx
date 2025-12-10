@@ -1,9 +1,13 @@
+import { useRef } from "react"
 import { TextAttributes } from "@opentui/core"
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, StringProp, ColorPropWithHex, SectionHeader
+  ToggleProp, SelectProp, FillColorProp, PropRow
 } from "../controls"
+
+import type { ColorPalette } from "../../lib/projectTypes"
 
 // =============================================================================
 // TEXT DEFAULTS
@@ -24,10 +28,15 @@ interface TextRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
 }
 
-export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover }: TextRendererProps) {
+export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextRendererProps) {
   const node = genericNode as TextNode
+  
+  // Only enable dragging for absolute positioned elements
+  const isDraggable = node.position === "absolute"
+  
   // Build text attributes bitmask
   let attrs = 0
   if (node.bold) attrs |= TextAttributes.BOLD
@@ -36,21 +45,41 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
   if (node.dim) attrs |= TextAttributes.DIM
   if (node.strikethrough) attrs |= TextAttributes.STRIKETHROUGH
 
+  // Drag start handler - canvas handles move/end
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
+  const wrapperStyle = {
+    backgroundColor: "transparent",
+    margin: node.margin,
+    marginTop: node.marginTop,
+    marginRight: node.marginRight,
+    marginBottom: node.marginBottom,
+    marginLeft: node.marginLeft,
+    padding: node.padding,
+    paddingTop: node.paddingTop,
+    paddingRight: node.paddingRight,
+    paddingBottom: node.paddingBottom,
+    paddingLeft: node.paddingLeft,
+    position: node.position,
+    top: node.y,
+    left: node.x,
+    zIndex: node.zIndex,
+  }
+
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
       visible={node.visible !== false}
-      style={{
-        backgroundColor: "transparent",
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-      }}
+      style={wrapperStyle}
     >
       <text
         fg={node.fg || COLORS.text}
@@ -71,79 +100,94 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
 
 interface TextPropertiesProps {
   node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  onUpdate: (updates: Partial<TextNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
-  collapsed: boolean
-  onToggle: () => void
+  collapsed: boolean  // kept for interface compatibility, but ignored
+  onToggle: () => void  // kept for interface compatibility, but ignored
+  // Palette support (optional with defaults)
+  palettes?: ColorPalette[]
+  activePaletteIndex?: number
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
 }
 
-export function TextProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: TextPropertiesProps) {
+export function TextProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, palettes = [], activePaletteIndex = 0, onUpdateSwatch, onChangePalette }: TextPropertiesProps) {
   const node = genericNode as TextNode
+  
+  const lastContentClickRef = useRef<number>(0)
+  
   return (
-    <box id="section-text" style={{ flexDirection: "column" }}>
-      <SectionHeader title="T Text" collapsed={collapsed} onToggle={onToggle} />
-      {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-          {/* Content */}
-          <StringProp
-            label="Content"
-            value={node.content || ""}
-            focused={focusedField === "content"}
-            onFocus={() => setFocusedField("content")}
-            onChange={(v) => onUpdate({ content: v })}
-          />
-
-          {/* Colors row */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
-            <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
-                label="Color"
-                value={node.fg || ""}
-                focused={focusedField === "fg"}
-                onFocus={() => setFocusedField("fg")}
-                onChange={(v) => onUpdate({ fg: v })}
-              />
+    <box id="section-text" style={{ flexDirection: "column", gap: 1, marginTop: 2 }}>
+      {/* Header row: Text label (col1) + inline content (col2) - matches PropRow layout */}
+      <box style={{ flexDirection: "row", gap: 1, height: 1, alignItems: "center" }}>
+        <text fg={COLORS.text} style={{ width: 9 }}><strong>Text</strong></text>
+        <box style={{ flexDirection: "row", flexGrow: 1, justifyContent: "center" }}>
+          {focusedField === "content" ? (
+            <input
+              id="content-input"
+              value={node.content || ""}
+              focused
+              width={(node.content?.length || 1) + 2}
+              backgroundColor={COLORS.cardHover}
+              textColor={COLORS.text}
+              onInput={(v) => onUpdate({ content: v })}
+              onSubmit={() => setFocusedField(null)}
+            />
+          ) : (
+            <box
+              id="content-display"
+              style={{ backgroundColor: COLORS.cardHover, paddingLeft: 1, paddingRight: 1, height: 1 }}
+              onMouseDown={() => {
+                const now = Date.now()
+                if (now - lastContentClickRef.current < 400) {
+                  setFocusedField("content")
+                }
+                lastContentClickRef.current = now
+              }}
+            >
+              <text fg={COLORS.text}>{node.content || ""}</text>
             </box>
-            <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
-                label="BG"
-                value={node.bg || ""}
-                focused={focusedField === "bg"}
-                onFocus={() => setFocusedField("bg")}
-                onChange={(v) => onUpdate({ bg: v })}
-              />
-            </box>
-          </box>
-
-          {/* Wrap mode */}
-          <SelectProp
-            label="Wrap"
-            value={node.wrapMode || "none"}
-            options={["none", "word", "char"]}
-            onChange={(v) => onUpdate({ wrapMode: v as any })}
-          />
-
-          {/* Text style toggles - compact row */}
-          <box style={{ flexDirection: "row", gap: 0, marginTop: 1 }}>
-            <text fg={COLORS.muted} style={{ width: 8 }}>Style</text>
-            <box style={{ flexDirection: "row", gap: 1 }}>
-              <TextStyleToggle label="B" active={node.bold} onChange={(v) => onUpdate({ bold: v })} style="bold" />
-              <TextStyleToggle label="I" active={node.italic} onChange={(v) => onUpdate({ italic: v })} style="italic" />
-              <TextStyleToggle label="U" active={node.underline} onChange={(v) => onUpdate({ underline: v })} style="underline" />
-              <TextStyleToggle label="D" active={node.dim} onChange={(v) => onUpdate({ dim: v })} style="dim" />
-              <TextStyleToggle label="S" active={node.strikethrough} onChange={(v) => onUpdate({ strikethrough: v })} style="strike" />
-            </box>
-          </box>
-
-          {/* Selectable */}
-          <ToggleProp
-            label="Select"
-            value={node.selectable === true}
-            onChange={(v) => onUpdate({ selectable: v || undefined })}
-          />
+          )}
         </box>
-      )}
+      </box>
+
+      {/* Properties - no extra paddingLeft since PropRow handles alignment */}
+      <box style={{ flexDirection: "column", gap: 1 }}>
+        {/* Style - directly under Text header */}
+        <PropRow label="Style">
+          <box style={{ flexDirection: "row", gap: 0 }}>
+            <TextStyleToggle label="B" active={node.bold} onChange={(v) => onUpdate({ bold: v })} style="bold" />
+            <TextStyleToggle label="I" active={node.italic} onChange={(v) => onUpdate({ italic: v })} style="italic" />
+            <TextStyleToggle label="U" active={node.underline} onChange={(v) => onUpdate({ underline: v })} style="underline" />
+            <TextStyleToggle label="D" active={node.dim} onChange={(v) => onUpdate({ dim: v })} style="dim" />
+            <TextStyleToggle label="S" active={node.strikethrough} onChange={(v) => onUpdate({ strikethrough: v })} style="strike" />
+          </box>
+        </PropRow>
+
+        {/* Fill color */}
+        <FillColorProp
+          value={node.fg || ""}
+          onChange={(v) => onUpdate({ fg: v || undefined })}
+          focused={focusedField === "fg"}
+          onFocus={() => setFocusedField("fg")}
+        />
+
+        {/* Wrap */}
+        <SelectProp
+          label="Wrap"
+          value={node.wrapMode || "none"}
+          options={["none", "word", "char"]}
+          onChange={(v) => onUpdate({ wrapMode: v as TextNode["wrapMode"] })}
+        />
+
+        {/* Select */}
+        <ToggleProp
+          label="Select"
+          value={node.selectable === true}
+          onChange={(v) => onUpdate({ selectable: v || undefined })}
+        />
+      </box>
     </box>
   )
 }
@@ -187,8 +231,3 @@ function TextStyleToggle({
     </box>
   )
 }
-
-// List of text-specific property keys
-export const TEXT_PROPERTY_KEYS = [
-  "content", "fg", "bg", "wrapMode", "bold", "italic", "underline", "dim", "strikethrough", "selectable"
-] as const

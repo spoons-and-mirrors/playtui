@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
-import { COLORS } from "../theme"
-import type { ElementNode, ElementType } from "../lib/types"
+import { COLORS } from "../../theme"
+import type { ElementNode, ElementType } from "../../lib/types"
 
 const TYPE_ICONS: Record<ElementType, string> = {
   box: "□",
@@ -23,10 +23,11 @@ interface TreeNodeProps {
   onToggle: (id: string) => void
   onStartEdit: (id: string) => void
   onRename: (id: string, name: string) => void
+  onBlurEdit: () => void
   depth?: number
 }
 
-function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, onStartEdit, onRename, depth = 0 }: TreeNodeProps) {
+function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, onStartEdit, onRename, onBlurEdit, depth = 0 }: TreeNodeProps) {
   const isSelected = node.id === selectedId
   const isEditing = node.id === editingId
   const isCollapsed = collapsed.has(node.id)
@@ -36,9 +37,15 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
   
   const canCollapse = hasChildren && (node.type === "box" || node.type === "scrollbox")
   const icon = canCollapse ? (isCollapsed ? "▸" : "▾") : TYPE_ICONS[node.type]
-  const label = node.name || (node.type === "text" ? `"${(node.content || "").slice(0, 8)}"` : node.id.slice(3, 8))
+  const typeLabel = node.type.charAt(0).toUpperCase() + node.type.slice(1)
+  const label = node.name || (node.type === "text" ? `"${(node.content || "").slice(0, 8)}"` : typeLabel)
 
   const handleMouseDown = (e: any) => {
+    // If we're editing another node, blur first
+    if (editingId && editingId !== node.id) {
+      onBlurEdit()
+    }
+    
     if (canCollapse && e.x < depth * 2 + 2) {
       onToggle(node.id)
       return
@@ -68,14 +75,14 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
       >
         {isEditing ? (
           <box style={{ flexDirection: "row" }}>
-            <text fg={COLORS.muted}>{indent}{icon} </text>
+            <text fg={COLORS.bg}><strong>{indent}{icon} </strong></text>
             <input
               value={node.name || ""}
               focused
               width={12}
               placeholder="name..."
-              backgroundColor={COLORS.bg}
-              textColor={COLORS.text}
+              backgroundColor={COLORS.accent}
+              textColor={COLORS.bg}
               onSubmit={(val) => onRename(node.id, val)}
               onKeyDown={(key) => {
                 if (key.name === "escape") onRename(node.id, node.name || "")
@@ -84,7 +91,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
           </box>
         ) : (
           <text fg={isSelected ? COLORS.bg : COLORS.muted}>
-            {indent}{icon} <span fg={isSelected ? COLORS.bg : COLORS.text}>{label}</span>
+            {indent}{icon} {isSelected ? <strong><span fg={COLORS.bg}>{label}</span></strong> : <span fg={COLORS.text}>{label}</span>}
           </text>
         )}
       </box>
@@ -99,6 +106,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
           onToggle={onToggle}
           onStartEdit={onStartEdit}
           onRename={onRename}
+          onBlurEdit={onBlurEdit}
           depth={depth + 1}
         />
       ))}
@@ -135,7 +143,7 @@ export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRe
   }
 
   return (
-    <box id="tree-root" style={{ flexDirection: "column" }}>
+    <box id="tree-root" style={{ flexDirection: "column" }} onMouseDown={() => { if (editingId) setEditingId(null) }}>
       {root.children.map((child) => (
         <TreeNode
           key={child.id}
@@ -147,6 +155,7 @@ export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRe
           onToggle={onToggle}
           onStartEdit={handleStartEdit}
           onRename={handleRename}
+          onBlurEdit={() => setEditingId(null)}
           depth={0}
         />
       ))}

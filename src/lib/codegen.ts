@@ -2,6 +2,51 @@ import type { ElementNode, SizeValue, BorderSide, BoxNode, ScrollboxNode } from 
 import { isContainerNode } from "./types"
 import { log } from "./logger"
 
+// ============================================================================
+// Animation Data Export (Approach 2: Component Tree Export)
+// ============================================================================
+
+export interface AnimationData {
+  frames: ElementNode[]
+  fps: number
+  name: string
+}
+
+// Generate exportable animation data as JSON string
+export function generateAnimationData(frames: ElementNode[], fps: number, name = "Animation"): string {
+  const data: AnimationData = { frames, fps, name }
+  return JSON.stringify(data, null, 2)
+}
+
+// Generate a self-contained animation component from frames (Approach 3: JSX codegen)
+// Note: This may not perfectly match the Play view - use generateAnimationData for exact fidelity
+export function generateAnimationCode(frames: ElementNode[], fps: number, name = "Animation"): string {
+  const componentName = name.replace(/[^a-zA-Z0-9]/g, "")
+  
+  const framesCodes = frames.map((frame, i) => {
+    const frameCode = generateChildrenCode(frame, { stripInternal: true }) || "<box />"
+    return `  // Frame ${i}\n  <>\n${frameCode.split("\n").map(line => "    " + line).join("\n")}\n  </>`
+  })
+
+  return `import { useState, useEffect } from "react"
+
+const FRAMES = [
+${framesCodes.join(",\n")}
+]
+
+export function ${componentName}({ fps = ${fps} }: { fps?: number }) {
+  const [frame, setFrame] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setFrame(f => (f + 1) % FRAMES.length), 1000 / fps)
+    return () => clearInterval(id)
+  }, [fps])
+
+  return FRAMES[frame]
+}
+`
+}
+
 function formatSize(val: SizeValue | undefined): string | undefined {
   if (val === undefined) return undefined
   if (typeof val === "number") return String(val)
@@ -13,24 +58,31 @@ function formatBorderSides(sides: BorderSide[] | undefined): string | undefined 
   return `{[${sides.map(s => `"${s}"`).join(", ")}]}`
 }
 
+interface CodegenOptions {
+  stripInternal?: boolean  // Remove internal props like name for clean export
+}
+
 // Generate code for children only (hides root wrapper)
-export function generateChildrenCode(node: ElementNode): string {
+export function generateChildrenCode(node: ElementNode, opts: CodegenOptions = {}): string {
   if (node.children.length === 0) {
     return ""
   }
-  return node.children.map((c) => generateCode(c, 0)).join("\n")
+  return node.children.map((c) => generateCode(c, 0, opts)).join("\n")
 }
 
-export function generateCode(node: ElementNode, indent = 0): string {
+export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions = {}): string {
   const pad = "  ".repeat(indent)
   const props: string[] = []
+  const { stripInternal = false } = opts
 
   log("CODEGEN", { type: node.type, name: node.name, id: node.id })
 
   // Name attribute (preserve element names for round-trip editing)
-  // Use explicit name, or generate default from type for unnamed elements
-  const name = node.name || node.type.charAt(0).toUpperCase() + node.type.slice(1)
-  props.push(`name="${name}"`)
+  // Skip for clean export (stripInternal mode)
+  if (!stripInternal) {
+    const name = node.name || node.type.charAt(0).toUpperCase() + node.type.slice(1)
+    props.push(`name="${name}"`)
+  }
 
   if (node.type === "box" || node.type === "scrollbox") {
     // Border properties
@@ -43,9 +95,10 @@ export function generateCode(node: ElementNode, indent = 0): string {
       if (node.borderStyle && node.borderStyle !== "single") {
         props.push(`borderStyle="${node.borderStyle}"`)
       }
+      // Only output borderColor if border is enabled
+      if (node.borderColor) props.push(`borderColor="${node.borderColor}"`)
+      if (node.focusedBorderColor) props.push(`focusedBorderColor="${node.focusedBorderColor}"`)
     }
-    if (node.borderColor) props.push(`borderColor="${node.borderColor}"`)
-    if (node.focusedBorderColor) props.push(`focusedBorderColor="${node.focusedBorderColor}"`)
     if (node.shouldFill === false) props.push("shouldFill={false}")
     if (node.title) props.push(`title="${node.title}"`)
     if (node.titleAlignment && node.titleAlignment !== "left") {
@@ -89,12 +142,10 @@ export function generateCode(node: ElementNode, indent = 0): string {
     if (container.paddingBottom) styleProps.push(`paddingBottom: ${container.paddingBottom}`)
     if (container.paddingLeft) styleProps.push(`paddingLeft: ${container.paddingLeft}`)
 
-    // Positioning
+    // Positioning - our x/y map to OpenTUI's left/top
     if (container.position) styleProps.push(`position: "${container.position}"`)
-    if (container.top !== undefined) styleProps.push(`top: ${container.top}`)
-    if (container.right !== undefined) styleProps.push(`right: ${container.right}`)
-    if (container.bottom !== undefined) styleProps.push(`bottom: ${container.bottom}`)
-    if (container.left !== undefined) styleProps.push(`left: ${container.left}`)
+    if (container.x !== undefined) styleProps.push(`left: ${container.x}`)
+    if (container.y !== undefined) styleProps.push(`top: ${container.y}`)
     if (container.zIndex !== undefined) styleProps.push(`zIndex: ${container.zIndex}`)
 
     // Overflow
@@ -257,9 +308,11 @@ export function generateCode(node: ElementNode, indent = 0): string {
   // ASCII-font element
   if (node.type === "ascii-font") {
     const asciiProps: string[] = []
-    // Include name for round-trip editing
-    const name = node.name || "AsciiFont"
-    asciiProps.push(`name="${name}"`)
+    // Include name for round-trip editing (skip in clean export)
+    if (!stripInternal) {
+      const name = node.name || "AsciiFont"
+      asciiProps.push(`name="${name}"`)
+    }
     if (node.text) asciiProps.push(`text="${node.text}"`)
     if (node.font) asciiProps.push(`font="${node.font}"`)
     if (node.color) asciiProps.push(`color="${node.color}"`)
@@ -298,7 +351,7 @@ export function generateCode(node: ElementNode, indent = 0): string {
     if (node.children.length === 0) {
       return `${pad}<scrollbox ${props.join(" ")} />`
     }
-    const childCode = node.children.map((c) => generateCode(c, indent + 1)).join("\n")
+    const childCode = node.children.map((c) => generateCode(c, indent + 1, opts)).join("\n")
     return `${pad}<scrollbox ${props.join(" ")}>\n${childCode}\n${pad}</scrollbox>`
   }
 
@@ -307,6 +360,6 @@ export function generateCode(node: ElementNode, indent = 0): string {
     return `${pad}<box ${props.join(" ")} />`
   }
 
-  const childCode = node.children.map((c) => generateCode(c, indent + 1)).join("\n")
+  const childCode = node.children.map((c) => generateCode(c, indent + 1, opts)).join("\n")
   return `${pad}<box ${props.join(" ")}>\n${childCode}\n${pad}</box>`
 }

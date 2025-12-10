@@ -1,147 +1,371 @@
+import { useRef, useState } from "react"
+import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
+import { useDragCapture } from "../pages/Properties"
 
 type SizeValue = number | "auto" | `${number}%` | undefined
+type SizeMode = "fixed" | "hug" | "fill" | "percent"
 
-function InlineSizeControl({ value, onChange, label }: {
-  value: SizeValue
-  onChange: (v: SizeValue) => void
+interface DimensionRowProps {
+  id: string
   label: string
-}) {
-  const isAuto = value === "auto"
+  value: SizeValue
+  flexGrow?: number
+  onChange: (value: SizeValue, flexGrow?: number) => void
+  onChangeEnd?: (value: SizeValue, flexGrow?: number) => void
+  minValue?: number
+  maxValue?: number
+  onMinChange: (v: number | undefined) => void
+  onMaxChange: (v: number | undefined) => void
+  onMinChangeEnd?: (v: number | undefined) => void
+  onMaxChangeEnd?: (v: number | undefined) => void
+}
+
+function getMode(value: SizeValue, flexGrow?: number): SizeMode {
+  if (flexGrow && flexGrow > 0) return "fill"
+  if (value === "auto" || value === undefined) return "hug"
+  if (typeof value === "string" && value.endsWith("%")) return "percent"
+  return "fixed"
+}
+
+function ModeButton({ id, label, active, onClick }: { id: string; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <box
+      id={id}
+      backgroundColor={active ? COLORS.accent : COLORS.bg}
+      paddingLeft={1}
+      paddingRight={1}
+      onMouseDown={onClick}
+    >
+      <text fg={active ? COLORS.bg : COLORS.muted} selectable={false} onMouseDown={onClick}>{label}</text>
+    </box>
+  )
+}
+
+function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minValue, maxValue, onMinChange, onMaxChange, onMinChangeEnd, onMaxChangeEnd }: DimensionRowProps) {
+  const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
+  const [dragging, setDragging] = useState(false)
+  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
+  const registerDrag = useDragCapture()
+
+  const mode = getMode(value, flexGrow)
   const isPercent = typeof value === "string" && value.endsWith("%")
   const numVal = typeof value === "number" ? value : (isPercent ? parseInt(value as string) : 0)
-  const isSet = value !== undefined
+  const canAdjust = mode === "fixed" || mode === "percent"
 
-  const cycleMode = () => {
-    if (isAuto) onChange(`${numVal || 50}%`)
-    else if (isPercent) onChange(numVal || 0)
-    else onChange("auto")
+  const hasMin = minValue !== undefined
+  const hasMax = maxValue !== undefined
+
+  const setMode = (newMode: SizeMode) => {
+    switch (newMode) {
+      case "hug":
+        onChange("auto", 0)
+        break
+      case "fill":
+        onChange("auto", 1)
+        break
+      case "fixed":
+        onChange(numVal || 20, 0)
+        break
+      case "percent":
+        onChange(`${numVal || 50}%`, 0)
+        break
+    }
   }
 
-  const modeLabel = isAuto ? "A" : isPercent ? "%" : "#"
-  const modeColor = isAuto ? COLORS.accent : isPercent ? COLORS.warning : COLORS.bgAlt
-
   const adjust = (delta: number) => {
+    if (!canAdjust) return
     const max = isPercent ? 100 : 999
     const next = Math.max(0, Math.min(max, numVal + delta))
-    onChange(isPercent ? `${next}%` : next)
+    onChange(isPercent ? `${next}%` : next, flexGrow)
+  }
+
+  const handleValueMouseDown = (e: MouseEvent) => {
+    if (canAdjust) {
+      dragStart.current = { x: e.x, y: e.y, value: numVal }
+      setDragging(true)
+      // Register with panel for cross-bounds dragging
+      if (registerDrag) {
+        const maxVal = isPercent ? 100 : 999
+        registerDrag(e.x, e.y, numVal, (next) => {
+          const clamped = Math.max(0, Math.min(maxVal, next))
+          onChange(isPercent ? `${clamped}%` : clamped, flexGrow)
+        }, (next) => {
+          if (onChangeEnd) {
+            const clamped = Math.max(0, Math.min(maxVal, next))
+            onChangeEnd(isPercent ? `${clamped}%` : clamped, flexGrow)
+          }
+        })
+      }
+    }
+  }
+
+  const handleValueDrag = (e: MouseEvent) => {
+    if (!dragStart.current || !canAdjust) return
+    const deltaX = e.x - dragStart.current.x
+    const deltaY = dragStart.current.y - e.y // up = positive
+    const max = isPercent ? 100 : 999
+    const next = Math.max(0, Math.min(max, dragStart.current.value + deltaX + deltaY))
+    if (next === numVal) return
+    onChange(isPercent ? `${next}%` : next, flexGrow)
+  }
+
+  const handleValueDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      const isPercent = typeof value === "string" && value.endsWith("%")
+      const numVal = typeof value === "number" ? value : (isPercent ? parseInt(value as string) : 0)
+      onChangeEnd(isPercent ? `${numVal}%` : numVal, flexGrow)
+    }
+    dragStart.current = null
+    setDragging(false)
   }
 
   return (
-    <box style={{ flexDirection: "row", gap: 0, alignItems: "center" }}>
-      <text fg={isSet ? COLORS.accent : COLORS.muted} style={{ width: 2 }}>{label}</text>
-      <box id={`dim-mode-${label}`} onMouseDown={cycleMode}
-        style={{ backgroundColor: modeColor, width: 2, alignItems: "center" }}>
-        <text fg={isAuto || isPercent ? COLORS.bg : COLORS.muted}>{modeLabel}</text>
+    <box id={id} flexDirection="column" gap={1}>
+      {/* Row 1: Label + Mode selector left, Value counter right */}
+      <box id={`${id}-modes`} flexDirection="row" justifyContent="space-between">
+        <box id={`${id}-mode-btns`} flexDirection="row" gap={0}>
+          <box paddingRight={1}>
+            <text fg={COLORS.text} selectable={false}><strong>{label}</strong></text>
+          </box>
+          <ModeButton id={`${id}-hug`} label="hug" active={mode === "hug"} onClick={() => setMode("hug")} />
+          <ModeButton id={`${id}-fill`} label="fill" active={mode === "fill"} onClick={() => setMode("fill")} />
+          <ModeButton id={`${id}-fixed`} label="px" active={mode === "fixed"} onClick={() => setMode("fixed")} />
+          <ModeButton id={`${id}-pct`} label="%" active={mode === "percent"} onClick={() => setMode("percent")} />
+        </box>
+        {/* Value counter right-aligned */}
+        {canAdjust && (
+          <box id={`${id}-value-ctrl`} flexDirection="row">
+            <box
+              id={`${id}-dec`}
+              backgroundColor={COLORS.bg}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={() => { setPressing("dec"); adjust(-1) }}
+              onMouseUp={() => setPressing(null)}
+              onMouseOut={() => setPressing(null)}
+            >
+              <text fg={COLORS.accent} selectable={false} onMouseDown={() => { setPressing("dec"); adjust(-1) }}>-</text>
+            </box>
+            <box
+              id={`${id}-value`}
+              backgroundColor={pressing || dragging ? COLORS.accent : COLORS.muted}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={handleValueMouseDown}
+              onMouseDrag={handleValueDrag}
+              onMouseDragEnd={handleValueDragEnd}
+            >
+              <text fg={COLORS.bg} selectable={false} onMouseDown={handleValueMouseDown}>
+                <strong>{numVal}</strong>
+              </text>
+            </box>
+            <box
+              id={`${id}-inc`}
+              backgroundColor={COLORS.bg}
+              paddingLeft={1}
+              paddingRight={1}
+              onMouseDown={() => { setPressing("inc"); adjust(1) }}
+              onMouseUp={() => setPressing(null)}
+              onMouseOut={() => setPressing(null)}
+            >
+              <text fg={COLORS.accent} selectable={false} onMouseDown={() => { setPressing("inc"); adjust(1) }}>+</text>
+            </box>
+          </box>
+        )}
       </box>
-      {!isAuto && (
-        <>
-          <box id={`dim-dec-${label}`} onMouseDown={() => adjust(-1)}
-            style={{ paddingLeft: 1 }}>
-            <text fg={COLORS.warning}>‹</text>
-          </box>
-          <box style={{ width: 4, alignItems: "center" }}>
-            <text fg={COLORS.text}>{numVal}{isPercent ? "%" : ""}</text>
-          </box>
-          <box id={`dim-inc-${label}`} onMouseDown={() => adjust(1)}
-            style={{ paddingRight: 1 }}>
-            <text fg={COLORS.success}>›</text>
-          </box>
-        </>
+
+      {/* Row 2: Bounds toggles left-aligned (only for fixed/percent) */}
+      {canAdjust && (
+        <box id={`${id}-bounds`} flexDirection="row" gap={1} paddingLeft={3}>
+          <BoundToggle 
+            id={`${id}-min`} 
+            label="min" 
+            value={minValue} 
+            enabled={hasMin}
+            onToggle={() => onMinChange(hasMin ? undefined : 0)}
+            onChange={onMinChange}
+            onChangeEnd={onMinChangeEnd}
+          />
+          <BoundToggle 
+            id={`${id}-max`} 
+            label="max" 
+            value={maxValue} 
+            enabled={hasMax}
+            onToggle={() => onMaxChange(hasMax ? undefined : 0)}
+            onChange={onMaxChange}
+            onChangeEnd={onMaxChangeEnd}
+          />
+        </box>
       )}
     </box>
   )
 }
 
-function BoundControl({ label, value, onChange }: {
+interface BoundToggleProps {
+  id: string
   label: string
   value: number | undefined
+  enabled: boolean
+  onToggle: () => void
   onChange: (v: number | undefined) => void
-}) {
-  const isSet = value !== undefined
-  const display = value ?? "-"
-  
+  onChangeEnd?: (v: number | undefined) => void
+}
+
+function BoundToggle({ id, label, value, enabled, onToggle, onChange, onChangeEnd }: BoundToggleProps) {
+  const [dragging, setDragging] = useState(false)
+  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
+  const registerDrag = useDragCapture()
+
+  const handleValueMouseDown = (e: MouseEvent) => {
+    if (enabled && value !== undefined) {
+      dragStart.current = { x: e.x, y: e.y, value }
+      setDragging(true)
+      // Register with panel for cross-bounds dragging
+      if (registerDrag) {
+        registerDrag(e.x, e.y, value, (next) => {
+          const clamped = Math.max(0, Math.min(999, next))
+          onChange(clamped)
+        }, (next) => {
+          if (onChangeEnd) {
+            const clamped = Math.max(0, Math.min(999, next))
+            onChangeEnd(clamped)
+          }
+        })
+      }
+    }
+  }
+
+  const handleDrag = (e: MouseEvent) => {
+    if (!dragStart.current || !enabled) return
+    const deltaX = e.x - dragStart.current.x
+    const deltaY = dragStart.current.y - e.y // up = positive
+    const next = Math.max(0, Math.min(999, dragStart.current.value + deltaX + deltaY))
+    if (next !== value) onChange(next)
+  }
+
+  const handleDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      onChangeEnd(value)
+    }
+    dragStart.current = null
+    setDragging(false)
+  }
+
   return (
-    <box style={{ flexDirection: "row", gap: 0, alignItems: "center" }}>
-      <text fg={COLORS.muted} style={{ width: 3 }}>{label}:</text>
-      <box id={`bound-${label}-dec`} onMouseDown={() => onChange(Math.max(0, (value ?? 0) - 5))}
-        style={{ paddingLeft: 1 }}>
-        <text fg={COLORS.warning}>‹</text>
-      </box>
-      <box 
-        id={`bound-${label}-val`}
-        onMouseDown={() => onChange(isSet ? undefined : 0)}
-        style={{ width: 3, alignItems: "center" }}
+    <box id={id} flexDirection="row">
+      {/* Toggle checkbox */}
+      <box
+        id={`${id}-toggle`}
+        backgroundColor={COLORS.bg}
+        paddingLeft={1}
+        paddingRight={1}
+        onMouseDown={onToggle}
       >
-        <text fg={isSet ? COLORS.text : COLORS.muted}>{display}</text>
+        <text fg={enabled ? COLORS.accent : COLORS.muted} selectable={false}>
+          {enabled ? "☑" : "☐"} {label}
+        </text>
       </box>
-      <box id={`bound-${label}-inc`} onMouseDown={() => onChange(Math.min(999, (value ?? 0) + 5))}
-        style={{ paddingRight: 1 }}>
-        <text fg={COLORS.success}>›</text>
-      </box>
+      {/* Value (only if enabled) */}
+      {enabled && (
+        <box
+          id={`${id}-value`}
+          backgroundColor={dragging ? COLORS.accent : COLORS.card}
+          paddingLeft={1}
+          paddingRight={1}
+          onMouseDown={handleValueMouseDown}
+          onMouseDrag={handleDrag}
+          onMouseDragEnd={handleDragEnd}
+        >
+          <text fg={COLORS.text} selectable={false}>{value}</text>
+        </box>
+      )}
     </box>
   )
 }
 
-export function DimensionsControl({ 
-  width, height, minWidth, maxWidth, minHeight, maxHeight,
-  onChange 
-}: {
+export interface DimensionsControlProps {
   width: SizeValue
   height: SizeValue
+  flexGrow?: number
   minWidth?: number
   maxWidth?: number
   minHeight?: number
   maxHeight?: number
-  onChange: (key: "width" | "height" | "minWidth" | "maxWidth" | "minHeight" | "maxHeight", val: SizeValue) => void
-}) {
-  const hasMinMax = minWidth !== undefined || maxWidth !== undefined || minHeight !== undefined || maxHeight !== undefined
+  onChange: (key: string, val: SizeValue | number | undefined) => void
+  onChangeEnd?: (key: string, val: SizeValue | number | undefined) => void
+  onBatchUpdate?: (updates: Record<string, SizeValue | number | undefined>) => void
+  onBatchUpdateEnd?: (updates: Record<string, SizeValue | number | undefined>) => void
+}
 
+export function DimensionsControl({ 
+  width, height, flexGrow,
+  minWidth, maxWidth, minHeight, maxHeight,
+  onChange,
+  onChangeEnd,
+  onBatchUpdate,
+  onBatchUpdateEnd
+}: DimensionsControlProps) {
   return (
-    <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 0 }}>
-      {/* Main W x H row */}
-      <box style={{ flexDirection: "row", gap: 1, alignItems: "center", backgroundColor: COLORS.bgAlt, padding: 1 }}>
-        <InlineSizeControl value={width} onChange={(v) => onChange("width", v)} label="W" />
-        <text fg={COLORS.muted}>×</text>
-        <InlineSizeControl value={height} onChange={(v) => onChange("height", v)} label="H" />
-      </box>
-      
-      {/* Min/Max toggle and controls */}
-      <box style={{ flexDirection: "row", gap: 1, marginTop: 1 }}>
-        <text fg={COLORS.muted} style={{ width: 8 }}>Bounds</text>
-        <box 
-          id="dim-bounds-toggle"
-          onMouseDown={() => {
-            if (hasMinMax) {
-              onChange("minWidth", undefined)
-              onChange("maxWidth", undefined)
-              onChange("minHeight", undefined)
-              onChange("maxHeight", undefined)
-            } else {
-              onChange("minWidth", 0)
-              onChange("maxWidth", 100)
-            }
-          }}
-          style={{ backgroundColor: hasMinMax ? COLORS.accent : COLORS.bgAlt, paddingLeft: 1, paddingRight: 1 }}
-        >
-          <text fg={hasMinMax ? COLORS.bg : COLORS.muted}>{hasMinMax ? "ON" : "OFF"}</text>
-        </box>
-      </box>
-      
-      {hasMinMax && (
-        <box style={{ flexDirection: "column", gap: 0, marginTop: 1, paddingLeft: 1 }}>
-          <box style={{ flexDirection: "row", gap: 1 }}>
-            <text fg={COLORS.muted} style={{ width: 6 }}>Width</text>
-            <BoundControl label="min" value={minWidth} onChange={(v) => onChange("minWidth", v)} />
-            <BoundControl label="max" value={maxWidth} onChange={(v) => onChange("maxWidth", v)} />
-          </box>
-          <box style={{ flexDirection: "row", gap: 1 }}>
-            <text fg={COLORS.muted} style={{ width: 6 }}>Height</text>
-            <BoundControl label="min" value={minHeight} onChange={(v) => onChange("minHeight", v)} />
-            <BoundControl label="max" value={maxHeight} onChange={(v) => onChange("maxHeight", v)} />
-          </box>
-        </box>
-      )}
+    <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingBottom: 1 }}>
+      {/* Width */}
+      <DimensionRow 
+        id="dim-w" 
+        label="W" 
+        value={width} 
+        flexGrow={flexGrow}
+        onChange={(v, fg) => {
+          if (onBatchUpdate && fg !== undefined) {
+            onBatchUpdate({ width: v, flexGrow: fg })
+          } else {
+            onChange("width", v)
+            if (fg !== undefined) onChange("flexGrow", fg)
+          }
+        }}
+        onChangeEnd={(v, fg) => {
+          if (onBatchUpdateEnd && fg !== undefined) {
+            onBatchUpdateEnd({ width: v, flexGrow: fg })
+          } else if (onChangeEnd) {
+            onChangeEnd("width", v)
+            if (fg !== undefined) onChangeEnd("flexGrow", fg)
+          }
+        }}
+        minValue={minWidth}
+        maxValue={maxWidth}
+        onMinChange={(v) => onChange("minWidth", v)}
+        onMaxChange={(v) => onChange("maxWidth", v)}
+        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minWidth", v) : undefined}
+        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxWidth", v) : undefined}
+      />
+      {/* Height */}
+      <DimensionRow 
+        id="dim-h" 
+        label="H" 
+        value={height}
+        flexGrow={flexGrow}
+        onChange={(v, fg) => {
+          if (onBatchUpdate && fg !== undefined) {
+            onBatchUpdate({ height: v, flexGrow: fg })
+          } else {
+            onChange("height", v)
+            if (fg !== undefined) onChange("flexGrow", fg)
+          }
+        }}
+        onChangeEnd={(v, fg) => {
+          if (onBatchUpdateEnd && fg !== undefined) {
+            onBatchUpdateEnd({ height: v, flexGrow: fg })
+          } else if (onChangeEnd) {
+            onChangeEnd("height", v)
+            if (fg !== undefined) onChangeEnd("flexGrow", fg)
+          }
+        }}
+        minValue={minHeight}
+        maxValue={maxHeight}
+        onMinChange={(v) => onChange("minHeight", v)}
+        onMaxChange={(v) => onChange("maxHeight", v)}
+        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minHeight", v) : undefined}
+        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxHeight", v) : undefined}
+      />
     </box>
   )
 }

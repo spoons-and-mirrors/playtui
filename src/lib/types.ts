@@ -86,6 +86,12 @@ export interface BaseNode {
 
   // === VISIBILITY ===
   visible?: boolean
+
+  // === POSITIONING ===
+  position?: Position
+  x?: number
+  y?: number
+  zIndex?: number
 }
 
 // =============================================================================
@@ -109,14 +115,6 @@ export interface ContainerProps {
   paddingRight?: number
   paddingBottom?: number
   paddingLeft?: number
-
-  // === POSITIONING ===
-  position?: Position
-  top?: number
-  right?: number
-  bottom?: number
-  left?: number
-  zIndex?: number
 
   // === OVERFLOW ===
   overflow?: Overflow
@@ -167,6 +165,13 @@ export interface TextNode extends BaseNode {
   strikethrough?: boolean
   selectable?: boolean
   wrapMode?: WrapMode
+  
+  // === SPACING - PADDING ===
+  padding?: number
+  paddingTop?: number
+  paddingRight?: number
+  paddingBottom?: number
+  paddingLeft?: number
 }
 
 export interface InputNode extends BaseNode {
@@ -323,7 +328,7 @@ export interface PropertyDef {
 }
 
 export type PropertySection =
-  | "sizing"
+  | "dimensions"
   | "flexContainer"
   | "flexItem"
   | "padding"

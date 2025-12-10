@@ -1,6 +1,4 @@
-# PLAYTUI Documentation
-
-A visual TUI builder for OpenTUI applications.
+Native TUI design tool based on sst/opentui
 
 ## Navigation
 
@@ -48,12 +46,23 @@ A visual TUI builder for OpenTUI applications.
 | z | Undo |
 | y / Shift + Z | Redo |
 
+## Animation (Play Mode)
+
+| Key | Action |
+|-----|--------|
+| e | Previous frame |
+| r | Next frame |
+| f | New frame (duplicate current) |
+| x | Delete frame |
+| Space | Play / Pause |
+
 ## Views
 
 | Key | Action |
 |-----|--------|
 | Tab | Toggle code view |
-| Click title | Show this help |
+| Click title | Show docs |
+| Shift + D | Show docs |
 
 ## Tips
 
@@ -61,7 +70,3 @@ A visual TUI builder for OpenTUI applications.
 - Double-click tree items to rename
 - Use property panel on right to edit styles
 - Auto-layout button (⊞) toggles flex positioning
-
----
-
-*Press Escape or click title again to close*

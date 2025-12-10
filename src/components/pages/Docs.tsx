@@ -1,10 +1,10 @@
-import { COLORS } from "../theme"
+import { COLORS } from "../../theme"
 import { readFileSync } from "fs"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const docsContent = readFileSync(join(__dirname, "../docs.md"), "utf-8")
+const docsContent = readFileSync(join(__dirname, "../../docs.md"), "utf-8")
 
 interface DocLine {
   type: "heading" | "subheading" | "text" | "table-header" | "table-row" | "list" | "divider" | "empty"
@@ -57,7 +57,10 @@ export function DocsPanel() {
         flexGrow: 1,
         backgroundColor: COLORS.bg,
         flexDirection: "column",
-        padding: 2,
+        paddingTop: 1,
+        paddingBottom: 2,
+        paddingLeft: 2,
+        paddingRight: 0,
       }}
     >
       <scrollbox
@@ -65,6 +68,7 @@ export function DocsPanel() {
         style={{
           flexGrow: 1,
           contentOptions: { flexDirection: "column", gap: 0 },
+          scrollbarOptions: { showArrows: false, trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" } },
         }}
       >
         {parsedDocs.map((line, idx) => {
@@ -105,7 +109,7 @@ export function DocsPanel() {
             case "text":
               return (
                 <box key={idx}>
-                  <text fg={COLORS.muted}>{line.content}</text>
+                  <text fg={COLORS.text}>{line.content}</text>
                 </box>
               )
             case "empty":
@@ -115,10 +119,6 @@ export function DocsPanel() {
           }
         })}
       </scrollbox>
-      
-      <box style={{ marginTop: 1 }}>
-        <text fg={COLORS.muted}>Press Escape or click title again to close</text>
-      </box>
     </box>
   )
 }

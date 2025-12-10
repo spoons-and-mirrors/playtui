@@ -1,4 +1,5 @@
 import type { ElementNode, BoxNode } from "../../lib/types"
+import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, StringProp, ColorPropWithHex, BorderSidesProp, SectionHeader
@@ -28,6 +29,7 @@ interface BoxRendererProps {
   isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
   children?: React.ReactNode
 }
 
@@ -37,12 +39,12 @@ const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
   return val
 }
 
-export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, children }: BoxRendererProps) {
+export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: BoxRendererProps) {
   const node = genericNode as BoxNode
   const hasBorder = node.border === true
-  const borderValue = hasBorder
-    ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
-    : undefined
+  
+  // Only enable dragging for absolute positioned elements
+  const isDraggable = node.position === "absolute"
 
   const boxStyle = {
     // Sizing
@@ -86,10 +88,8 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
 
     // Positioning
     position: node.position,
-    top: node.top,
-    right: node.right,
-    bottom: node.bottom,
-    left: node.left,
+    top: node.y,
+    left: node.x,
     zIndex: node.zIndex,
 
     // Overflow
@@ -99,20 +99,34 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     backgroundColor: node.backgroundColor || "transparent",
   } as const
 
+  // Drag start handler - canvas handles move/end
+  const handleMouseDown = (e: MouseEvent) => {
+    e.stopPropagation()
+    onSelect()
+    if (isDraggable && onDragStart) {
+      onDragStart(e.x, e.y)
+    }
+  }
+
+  // Border props - only include when border is enabled
+  const borderProps = hasBorder ? {
+    border: node.borderSides && node.borderSides.length > 0 ? node.borderSides : true,
+    borderStyle: node.borderStyle || "single",
+    borderColor: node.borderColor,
+    focusedBorderColor: node.focusedBorderColor,
+  } : {}
+
   return (
     <box
       id={`render-${node.id}`}
-      onMouseDown={(e) => { e.stopPropagation(); onSelect() }}
+      onMouseDown={handleMouseDown}
       onMouseOver={() => onHover(true)}
       onMouseOut={() => onHover(false)}
-      border={borderValue}
-      borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
-      borderColor={node.borderColor}
-      focusedBorderColor={node.focusedBorderColor}
+      {...borderProps}
       shouldFill={node.shouldFill}
       visible={node.visible !== false}
-      title={node.title}
-      titleAlignment={node.titleAlignment}
+      title={hasBorder ? node.title : undefined}
+      titleAlignment={hasBorder ? node.titleAlignment : undefined}
       style={boxStyle}
     >
       {children}
@@ -217,9 +231,3 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
     </box>
   )
 }
-
-// List of box-specific property keys for filtering
-export const BOX_PROPERTY_KEYS = [
-  "border", "borderSides", "borderStyle", "borderColor", "focusedBorderColor",
-  "shouldFill", "title", "titleAlignment", "backgroundColor", "visible"
-] as const
