@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useRef, createContext, useContext } from "react"
+import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
@@ -11,6 +12,19 @@ import {
 import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
 import { COLORS } from "../../theme"
+
+// Drag capture context - allows value controls to register drags at the panel level
+// This ensures dragging continues even when mouse leaves the control bounds
+export type DragRegisterFn = (
+  startX: number,
+  startY: number,
+  startValue: number,
+  onChange: (value: number) => void,
+  onChangeEnd?: (value: number) => void
+) => void
+
+export const DragCaptureContext = createContext<DragRegisterFn | null>(null)
+export const useDragCapture = () => useContext(DragCaptureContext)
 
 // Sections that are element-specific and handled by registry Properties components
 const ELEMENT_SPECIFIC_SECTIONS: PropertySection[] = [
@@ -42,6 +56,38 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     })
     return initial
   })
+
+  // Drag capture system for value controls (sliders, counters)
+  // This allows drag to continue even when mouse leaves the control bounds
+  const activeDrag = useRef<{
+    startX: number
+    startY: number
+    startValue: number
+    lastValue: number
+    onChange: (value: number) => void
+    onChangeEnd?: (value: number) => void
+  } | null>(null)
+
+  const handlePanelDrag = (e: MouseEvent) => {
+    if (!activeDrag.current) return
+    const deltaX = e.x - activeDrag.current.startX
+    const deltaY = activeDrag.current.startY - e.y // up = positive
+    const next = activeDrag.current.startValue + deltaX + deltaY
+    activeDrag.current.lastValue = next
+    activeDrag.current.onChange(next)
+  }
+
+  const handlePanelDragEnd = () => {
+    if (!activeDrag.current) return
+    if (activeDrag.current.onChangeEnd) {
+      activeDrag.current.onChangeEnd(activeDrag.current.lastValue)
+    }
+    activeDrag.current = null
+  }
+
+  const registerDrag = (startX: number, startY: number, startValue: number, onChange: (v: number) => void, onChangeEnd?: (v: number) => void) => {
+    activeDrag.current = { startX, startY, startValue, lastValue: startValue, onChange, onChangeEnd }
+  }
 
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
@@ -364,29 +410,33 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
   }
 
   return (
-    <scrollbox 
-      id="prop-pane-scroll" 
-      style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}
-      scrollbarOptions={{
-        trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
-      }}
-    >
-      {/* Palette header - centered */}
-      {palettes && palettes.length > 0 && onSelectColor && (
-        <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, paddingBottom: 0, justifyContent: "center" }}>
-          <PaletteProp
-            palettes={palettes}
-            activePaletteIndex={activePaletteIndex ?? 0}
-            selectedColor={selectedColor}
-            onSelectColor={onSelectColor}
-            onUpdateSwatch={onUpdateSwatch}
-            onChangePalette={onChangePalette}
-          />
-        </box>
-      )}
-      
-      {unsectioned.map(renderProp)}
-      {activeSections.map(renderSection)}
-    </scrollbox>
+    <DragCaptureContext.Provider value={registerDrag}>
+      <scrollbox 
+        id="prop-pane-scroll" 
+        style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}
+        scrollbarOptions={{
+          trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
+        }}
+        onMouseDrag={handlePanelDrag}
+        onMouseDragEnd={handlePanelDragEnd}
+      >
+        {/* Palette header - centered */}
+        {palettes && palettes.length > 0 && onSelectColor && (
+          <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 0, paddingBottom: 0, justifyContent: "center" }}>
+            <PaletteProp
+              palettes={palettes}
+              activePaletteIndex={activePaletteIndex ?? 0}
+              selectedColor={selectedColor}
+              onSelectColor={onSelectColor}
+              onUpdateSwatch={onUpdateSwatch}
+              onChangePalette={onChangePalette}
+            />
+          </box>
+        )}
+        
+        {unsectioned.map(renderProp)}
+        {activeSections.map(renderSection)}
+      </scrollbox>
+    </DragCaptureContext.Provider>
   )
 }

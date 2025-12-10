@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
+import { useDragCapture } from "../pages/Properties"
 
 type SizeValue = number | "auto" | `${number}%` | undefined
 type SizeMode = "fixed" | "hug" | "fill" | "percent"
@@ -44,7 +45,8 @@ function ModeButton({ id, label, active, onClick }: { id: string; label: string;
 function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minValue, maxValue, onMinChange, onMaxChange, onMinChangeEnd, onMaxChangeEnd }: DimensionRowProps) {
   const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
   const [dragging, setDragging] = useState(false)
-  const dragStart = useRef<{ x: number; value: number } | null>(null)
+  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
+  const registerDrag = useDragCapture()
 
   const mode = getMode(value, flexGrow)
   const isPercent = typeof value === "string" && value.endsWith("%")
@@ -80,16 +82,30 @@ function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minVa
 
   const handleValueMouseDown = (e: MouseEvent) => {
     if (canAdjust) {
-      dragStart.current = { x: e.x, value: numVal }
+      dragStart.current = { x: e.x, y: e.y, value: numVal }
       setDragging(true)
+      // Register with panel for cross-bounds dragging
+      if (registerDrag) {
+        const maxVal = isPercent ? 100 : 999
+        registerDrag(e.x, e.y, numVal, (next) => {
+          const clamped = Math.max(0, Math.min(maxVal, next))
+          onChange(isPercent ? `${clamped}%` : clamped, flexGrow)
+        }, (next) => {
+          if (onChangeEnd) {
+            const clamped = Math.max(0, Math.min(maxVal, next))
+            onChangeEnd(isPercent ? `${clamped}%` : clamped, flexGrow)
+          }
+        })
+      }
     }
   }
 
   const handleValueDrag = (e: MouseEvent) => {
     if (!dragStart.current || !canAdjust) return
     const deltaX = e.x - dragStart.current.x
+    const deltaY = dragStart.current.y - e.y // up = positive
     const max = isPercent ? 100 : 999
-    const next = Math.max(0, Math.min(max, dragStart.current.value + deltaX))
+    const next = Math.max(0, Math.min(max, dragStart.current.value + deltaX + deltaY))
     if (next === numVal) return
     onChange(isPercent ? `${next}%` : next, flexGrow)
   }
@@ -198,19 +214,33 @@ interface BoundToggleProps {
 
 function BoundToggle({ id, label, value, enabled, onToggle, onChange, onChangeEnd }: BoundToggleProps) {
   const [dragging, setDragging] = useState(false)
-  const dragStart = useRef<{ x: number; value: number } | null>(null)
+  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
+  const registerDrag = useDragCapture()
 
   const handleValueMouseDown = (e: MouseEvent) => {
     if (enabled && value !== undefined) {
-      dragStart.current = { x: e.x, value }
+      dragStart.current = { x: e.x, y: e.y, value }
       setDragging(true)
+      // Register with panel for cross-bounds dragging
+      if (registerDrag) {
+        registerDrag(e.x, e.y, value, (next) => {
+          const clamped = Math.max(0, Math.min(999, next))
+          onChange(clamped)
+        }, (next) => {
+          if (onChangeEnd) {
+            const clamped = Math.max(0, Math.min(999, next))
+            onChangeEnd(clamped)
+          }
+        })
+      }
     }
   }
 
   const handleDrag = (e: MouseEvent) => {
     if (!dragStart.current || !enabled) return
     const deltaX = e.x - dragStart.current.x
-    const next = Math.max(0, Math.min(999, dragStart.current.value + deltaX))
+    const deltaY = dragStart.current.y - e.y // up = positive
+    const next = Math.max(0, Math.min(999, dragStart.current.value + deltaX + deltaY))
     if (next !== value) onChange(next)
   }
 
