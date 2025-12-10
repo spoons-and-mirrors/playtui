@@ -43,6 +43,7 @@ export interface UseProjectReturn {
   duplicateFrame: () => void
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
+  importAnimation: (frames: ElementNode[], fps: number) => void
   
   // Palettes
   palettes: ColorPalette[]
@@ -426,6 +427,28 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
+  // Animation: Import animation data (frames + fps)
+  const importAnimation = useCallback((frames: ElementNode[], fps: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      if (frames.length === 0) return prev
+      
+      return {
+        ...prev,
+        tree: frames[0],
+        animation: {
+          fps,
+          frames,
+          currentFrameIndex: 0
+        },
+        // Clear history when importing
+        history: [],
+        future: []
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
   // Ensure project has required data on load (handles older project files)
   const ensureProjectData = (proj: Project): Project => {
     // Migration: convert old swatches to palettes
@@ -586,6 +609,7 @@ export function useProject(): UseProjectReturn {
     duplicateFrame,
     deleteFrame,
     setFps,
+    importAnimation,
     // Palette methods
     palettes,
     activePaletteIndex,

@@ -17,7 +17,8 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
     duplicateFrame, 
     deleteFrame, 
     setFps,
-    setSelectedId 
+    setSelectedId,
+    importAnimation
   } = projectHook
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -71,6 +72,7 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
         onFpsChange={setFps}
         isPlaying={isPlaying}
         onTogglePlay={onTogglePlay}
+        onImport={importAnimation}
       />
 
       <EditorPanel

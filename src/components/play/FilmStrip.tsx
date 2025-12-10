@@ -3,7 +3,7 @@ import type { ScrollBoxRenderable } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
-import { generateAnimationData } from "../../lib/codegen"
+import { generateAnimationData, type AnimationData } from "../../lib/codegen"
 
 const FRAME_GAP = 1
 
@@ -30,6 +30,7 @@ interface FilmStripProps {
   onFpsChange: (fps: number) => void
   isPlaying: boolean
   onTogglePlay: () => void
+  onImport: (frames: ElementNode[], fps: number) => void
 }
 
 export function FilmStrip({
@@ -42,10 +43,12 @@ export function FilmStrip({
   onFpsChange,
   isPlaying,
   onTogglePlay,
+  onImport,
 }: FilmStripProps) {
   const scrollRef = useRef<ScrollBoxRenderable>(null)
   const frameWidth = getFrameWidth(frames.length)
   const [copied, setCopied] = useState(false)
+  const [imported, setImported] = useState(false)
 
   const copyAnimationCode = useCallback(() => {
     const data = generateAnimationData(frames, fps, "Animation")
@@ -55,6 +58,25 @@ export function FilmStrip({
     setCopied(true)
     setTimeout(() => setCopied(false), 1000)
   }, [frames, fps])
+
+  const importFromClipboard = useCallback(async () => {
+    try {
+      const proc = Bun.spawn(["xclip", "-selection", "clipboard", "-o"], {
+        stdout: "pipe",
+        stderr: "pipe"
+      })
+      await proc.exited
+      const text = await new Response(proc.stdout).text()
+      const data = JSON.parse(text) as AnimationData
+      if (data.frames && Array.isArray(data.frames) && data.frames.length > 0) {
+        onImport(data.frames, data.fps || 10)
+        setImported(true)
+        setTimeout(() => setImported(false), 1000)
+      }
+    } catch {
+      // Invalid JSON or clipboard data - ignore silently
+    }
+  }, [onImport])
 
   // Auto-scroll to keep current frame centered
   useEffect(() => {
@@ -121,6 +143,11 @@ export function FilmStrip({
         {/* Export Button */}
         <box id="export-btn" marginLeft={2} onMouseDown={copyAnimationCode}>
           <text fg={copied ? COLORS.success : COLORS.accent}>{copied ? "✓ Copied" : "⎘ Export"}</text>
+        </box>
+
+        {/* Import Button */}
+        <box id="import-btn" marginLeft={1} onMouseDown={importFromClipboard}>
+          <text fg={imported ? COLORS.success : COLORS.muted}>{imported ? "✓ Imported" : "⎗ Import"}</text>
         </box>
       </box>
 
