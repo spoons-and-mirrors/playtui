@@ -159,9 +159,9 @@ function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minVa
         )}
       </box>
 
-      {/* Row 2: Bounds toggles centered (only for fixed/percent) */}
+      {/* Row 2: Bounds toggles left-aligned (only for fixed/percent) */}
       {canAdjust && (
-        <box id={`${id}-bounds`} flexDirection="row" gap={1} justifyContent="center">
+        <box id={`${id}-bounds`} flexDirection="row" gap={1} paddingLeft={3}>
           <BoundToggle 
             id={`${id}-min`} 
             label="min" 

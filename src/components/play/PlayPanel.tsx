@@ -77,8 +77,6 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}
-        onToggleAutoLayout={() => {}}
-        hideCenterButton={true}
       />
     </box>
   )

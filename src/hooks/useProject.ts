@@ -507,14 +507,13 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
-  // Change the active palette
+  // Change the active palette (UI state only, no save needed)
   const setActivePalette = useCallback((index: number) => {
     setProject((prev) => {
       if (!prev) return prev
       return { ...prev, activePaletteIndex: index }
     })
-    scheduleSave()
-  }, [scheduleSave])
+  }, [])
 
   // Get palettes and active index with fallback
   const palettes = project?.palettes ?? []

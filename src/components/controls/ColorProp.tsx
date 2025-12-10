@@ -208,7 +208,7 @@ export function PaletteProp({
 
   const activePalette = palettes[activePaletteIndex] || palettes[0]
   const swatches = activePalette?.swatches || []
-  const visibleSwatches = swatches.slice(0, 6)
+  const visibleSwatches = swatches.slice(0, 8)
   const paletteName = activePalette?.name || "Palette"
 
   const handlePrevPalette = () => {
@@ -222,7 +222,7 @@ export function PaletteProp({
   }
 
   return (
-    <box style={{ flexDirection: "column", gap: 0 }}>
+    <box style={{ flexDirection: "column", gap: 1 }}>
       {/* Row 1: chevrons + swatches, centered */}
       <box style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 0 }}>
         <box backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1} onMouseDown={handlePrevPalette}>

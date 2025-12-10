@@ -1,5 +1,4 @@
-import { useState, useRef } from "react"
-import type { InputRenderable } from "@opentui/core"
+import { useState } from "react"
 import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
@@ -7,7 +6,7 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorPropWithHex, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-   OverflowPicker, DimensionsControl
+   OverflowPicker, DimensionsControl, PaletteProp
 } from "../controls"
 import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
@@ -29,11 +28,13 @@ interface PropertyPaneProps {
   // Palette support
   palettes?: Array<{ id: string; name: string; swatches: Array<{ id: string; color: string }> }>
   activePaletteIndex?: number
+  selectedColor?: string
+  onSelectColor?: (color: string) => void
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
 }
 
-export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
+export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, selectedColor, onSelectColor, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     SECTION_ORDER.forEach(section => {
@@ -41,7 +42,6 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     })
     return initial
   })
-  const lastNameClickRef = useRef<number>(0)
 
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
@@ -370,58 +370,20 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       scrollbarOptions={{
         trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
       }}
-      onMouseDown={() => {
-        if (focusedField === "name") setFocusedField(null)
-      }}
     >
-      <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, paddingBottom: 0, flexDirection: "column", gap: 0 }}>
-        {/* Row 1: Type badge (click to toggle visibility) + Name inline */}
-        <box style={{ flexDirection: "row", alignItems: "center", gap: 1, marginBottom: 2, height: 1 }}>
-          {/* Type badge - click to toggle visibility */}
-          <box 
-            id="element-type" 
-            style={{ backgroundColor: node.visible !== false ? COLORS.accent : COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
-            onMouseDown={() => onUpdate({ visible: !node.visible } as Partial<ElementNode>)}
-          >
-            <text fg={node.visible !== false ? COLORS.bg : COLORS.muted}><strong>{node.type}</strong></text>
-          </box>
-          
-          {/* Name - inline with type */}
-          <box id="element-name" onMouseDown={(e) => e.stopPropagation()}>
-            {focusedField === "name" ? (
-              <box style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}>
-                <input
-                  id="name-input"
-                  value={node.name || ""}
-                  focused
-                  width={(node.name?.length || 0) + 2}
-                  height={1}
-                  backgroundColor={COLORS.bg}
-                  textColor={COLORS.text}
-                  onInput={(v) => onUpdate({ name: v } as Partial<ElementNode>)}
-                  onSubmit={() => setFocusedField(null)}
-                />
-              </box>
-            ) : (
-              <box
-                id="name-display"
-                style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
-                onMouseDown={() => {
-                  const now = Date.now()
-                  if (now - lastNameClickRef.current < 400) {
-                    setFocusedField("name")
-                  }
-                  lastNameClickRef.current = now
-                }}
-              >
-                <text fg={node.name && node.name !== ELEMENT_REGISTRY[node.type]?.label ? COLORS.accent : COLORS.muted}>
-                  {node.name && node.name !== ELEMENT_REGISTRY[node.type]?.label ? node.name : "unnamed"}
-                </text>
-              </box>
-            )}
-          </box>
+      {/* Palette header - centered */}
+      {palettes && palettes.length > 0 && onSelectColor && (
+        <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, paddingBottom: 0, justifyContent: "center" }}>
+          <PaletteProp
+            palettes={palettes}
+            activePaletteIndex={activePaletteIndex ?? 0}
+            selectedColor={selectedColor}
+            onSelectColor={onSelectColor}
+            onUpdateSwatch={onUpdateSwatch}
+            onChangePalette={onChangePalette}
+          />
         </box>
-      </box>
+      )}
       
       {unsectioned.map(renderProp)}
       {activeSections.map(renderSection)}

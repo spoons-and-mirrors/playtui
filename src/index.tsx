@@ -289,18 +289,12 @@ export function Builder({ width, height }: BuilderProps) {
           onFileAction={handleFileAction}
           onToggleAddMode={() => setAddMode(!addMode)}
           onAddElement={handleAddElement}
-          palettes={palettes}
-          activePaletteIndex={activePaletteIndex}
-          selectedColor={selectedNode?.type === "text" ? (selectedNode as any).fg : (selectedNode as any)?.backgroundColor}
-          onSelectColor={(color) => {
-            if (selectedNode?.type === "text") {
-              handleUpdate({ fg: color })
-            } else if (selectedNode?.type === "box" || selectedNode?.type === "scrollbox") {
-              handleUpdate({ backgroundColor: color })
-            }
-          }}
-          onUpdateSwatch={updateSwatch}
-          onChangePalette={setActivePalette}
+          selectedNode={selectedNode}
+          onUpdateNode={handleUpdate}
+          focusedField={focusedField}
+          setFocusedField={setFocusedField}
+          autoLayout={autoLayout}
+          onToggleAutoLayout={() => setAutoLayout(!autoLayout)}
         />
 
         {/* Canvas or Code Panel - grows to fill middle */}
@@ -322,7 +316,6 @@ export function Builder({ width, height }: BuilderProps) {
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
             onHover={setHoveredId}
             onBackgroundClick={() => setFocusedField(null)}
-            onToggleAutoLayout={() => setAutoLayout(!autoLayout)}
             onDragStart={handleDragStart}
             onDragMove={handleDragMove}
             onDragEnd={handleDragEnd}
@@ -339,6 +332,14 @@ export function Builder({ width, height }: BuilderProps) {
               <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
                 focusedField={focusedField} setFocusedField={setFocusedField}
                 palettes={palettes} activePaletteIndex={activePaletteIndex}
+                selectedColor={selectedNode?.type === "text" ? (selectedNode as any).fg : (selectedNode as any)?.backgroundColor}
+                onSelectColor={(color) => {
+                  if (selectedNode?.type === "text") {
+                    handleUpdate({ fg: color })
+                  } else if (selectedNode?.type === "box" || selectedNode?.type === "scrollbox") {
+                    handleUpdate({ backgroundColor: color })
+                  }
+                }}
                 onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
             ) : (
               <text fg={COLORS.muted}>Select an element</text>

@@ -31,11 +31,9 @@ interface EditorPanelProps {
   onSelect: (id: string | null) => void
   onHover: (id: string | null) => void
   onBackgroundClick: () => void
-  onToggleAutoLayout: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
   onDragEnd?: (nodeId: string) => void
-  hideCenterButton?: boolean
 }
 
 export function EditorPanel({
@@ -47,11 +45,9 @@ export function EditorPanel({
   onSelect,
   onHover,
   onBackgroundClick,
-  onToggleAutoLayout,
   onDragStart,
   onDragMove,
   onDragEnd,
-  hideCenterButton = false,
 }: EditorPanelProps) {
   // Track which node is being dragged (captured at canvas level)
   const draggingNodeId = useRef<string | null>(null)
@@ -91,23 +87,6 @@ export function EditorPanel({
         flexDirection: "column",
       }}
     >
-      {/* Header row with Center toggle */}
-      <box style={{ flexDirection: "row", justifyContent: "flex-end", flexShrink: 0, height: 1 }}>
-        {!hideCenterButton && (
-          <box
-            id="auto-layout-toggle"
-            onMouseDown={onToggleAutoLayout}
-            style={{
-              backgroundColor: autoLayout ? COLORS.accent : COLORS.card,
-              paddingLeft: 1,
-              paddingRight: 1,
-            }}
-          >
-            <text fg={autoLayout ? COLORS.bg : COLORS.muted}>⊞ Center</text>
-          </box>
-        )}
-      </box>
-
       {/* Canvas area - captures drag events at this level for smooth dragging */}
       <box
         id="editor-canvas"

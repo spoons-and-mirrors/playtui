@@ -1,7 +1,7 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { ElementType } from "../../lib/types"
-import { PaletteProp } from "../controls"
+import type { ElementType, ElementNode } from "../../lib/types"
+import { ELEMENT_REGISTRY } from "../elements"
 
 // ============================================================================
 // Types
@@ -14,13 +14,14 @@ interface HeaderProps {
   onFileAction: (action: MenuAction) => void
   onToggleAddMode: () => void
   onAddElement: (type: ElementType) => void
-  // Palette support
-  palettes?: Array<{ id: string; name: string; swatches: Array<{ id: string; color: string }> }>
-  activePaletteIndex?: number
-  selectedColor?: string
-  onSelectColor?: (color: string) => void
-  onUpdateSwatch?: (id: string, color: string) => void
-  onChangePalette?: (index: number) => void
+  // Selected node for type/name display
+  selectedNode?: ElementNode | null
+  onUpdateNode?: (updates: Partial<ElementNode>) => void
+  focusedField?: string | null
+  setFocusedField?: (field: string | null) => void
+  // Auto layout toggle
+  autoLayout?: boolean
+  onToggleAutoLayout?: () => void
 }
 
 // ============================================================================
@@ -197,33 +198,85 @@ export function Header({
   onFileAction,
   onToggleAddMode,
   onAddElement,
-  palettes,
-  activePaletteIndex,
-  selectedColor,
-  onSelectColor,
-  onUpdateSwatch,
-  onChangePalette,
+  selectedNode,
+  onUpdateNode,
+  focusedField,
+  setFocusedField,
+  autoLayout,
+  onToggleAutoLayout,
 }: HeaderProps) {
+  const lastNameClickRef = useRef<number>(0)
+
   return (
     <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
-      {/* Row 1: File menu (left) + Palette (right) */}
-      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+      {/* Row 1: File menu (left) + Type/Name boxes (right) */}
+      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 1 }}>
         <FileMenu onAction={onFileAction} />
-        {palettes && palettes.length > 0 && onSelectColor && (
-          <PaletteProp
-            palettes={palettes}
-            activePaletteIndex={activePaletteIndex ?? 0}
-            selectedColor={selectedColor}
-            onSelectColor={onSelectColor}
-            onUpdateSwatch={onUpdateSwatch}
-            onChangePalette={onChangePalette}
-          />
+        {selectedNode && onUpdateNode && setFocusedField && (
+          <box id="element-type-name" style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+            {/* Type badge - click to toggle visibility */}
+            <box 
+              id="element-type" 
+              style={{ backgroundColor: selectedNode.visible !== false ? COLORS.accent : COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
+              onMouseDown={() => onUpdateNode({ visible: !selectedNode.visible } as Partial<ElementNode>)}
+            >
+              <text fg={selectedNode.visible !== false ? COLORS.bg : COLORS.muted}><strong>{selectedNode.type}</strong></text>
+            </box>
+            
+            {/* Name - inline with type */}
+            <box id="element-name" onMouseDown={(e) => e.stopPropagation()}>
+              {focusedField === "name" ? (
+                <box style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}>
+                  <input
+                    id="name-input"
+                    value={selectedNode.name || ""}
+                    focused
+                    width={(selectedNode.name?.length || 0) + 2}
+                    height={1}
+                    backgroundColor={COLORS.bg}
+                    textColor={COLORS.text}
+                    onInput={(v) => onUpdateNode({ name: v } as Partial<ElementNode>)}
+                    onSubmit={() => setFocusedField(null)}
+                  />
+                </box>
+              ) : (
+                <box
+                  id="name-display"
+                  style={{ backgroundColor: COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
+                  onMouseDown={() => {
+                    const now = Date.now()
+                    if (now - lastNameClickRef.current < 400) {
+                      setFocusedField("name")
+                    }
+                    lastNameClickRef.current = now
+                  }}
+                >
+                  <text fg={selectedNode.name && selectedNode.name !== ELEMENT_REGISTRY[selectedNode.type]?.label ? COLORS.accent : COLORS.muted}>
+                    {selectedNode.name && selectedNode.name !== ELEMENT_REGISTRY[selectedNode.type]?.label ? selectedNode.name : "unnamed"}
+                  </text>
+                </box>
+              )}
+            </box>
+          </box>
         )}
       </box>
 
-      {/* Row 2: Element toolbar */}
-      <box style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      {/* Row 2: Element toolbar (left) + Auto button (right) */}
+      <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddElement={onAddElement} />
+        {onToggleAutoLayout && (
+          <box
+            id="auto-layout-toggle"
+            onMouseDown={onToggleAutoLayout}
+            style={{
+              backgroundColor: autoLayout ? COLORS.accent : COLORS.card,
+              paddingLeft: 1,
+              paddingRight: 1,
+            }}
+          >
+            <text fg={autoLayout ? COLORS.bg : COLORS.muted}>Auto</text>
+          </box>
+        )}
       </box>
 
       {/* Separator line */}
