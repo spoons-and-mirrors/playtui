@@ -259,7 +259,12 @@ export function useProject(): UseProjectReturn {
             tree: prev.tree,
             selectedId: prev.selectedId,
           }
-          updated.history = [...prev.history, historyEntry]
+          const newHistory = [...prev.history, historyEntry]
+          // Cap history at 10,000 entries
+          if (newHistory.length > 10000) {
+            newHistory.splice(0, newHistory.length - 10000)
+          }
+          updated.history = newHistory
           updated.future = [] // Clear redo stack on new action
         }
 

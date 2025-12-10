@@ -37,7 +37,7 @@ export interface Project {
     currentFrameIndex: number
   }
 
-  // Full undo history (persisted, no limit)
+  // Undo history (persisted, capped at 10,000 entries)
   history: HistoryEntry[]
   future: HistoryEntry[] // Redo stack
 }
