@@ -17,13 +17,13 @@ const ADD_SHORTCUTS: Record<string, ElementType> = {
 
 interface UseBuilderKeyboardParams {
   // Modal/UI state
-  modalMode: "new" | "load" | "delete" | null
+  modalMode: "new" | "load" | "delete" | "saveAs" | null
   mode: ViewMode
   focusedField: string | null
   addMode: boolean
 
   // State setters
-  setModalMode: (mode: "new" | "load" | "delete" | null) => void
+  setModalMode: (mode: "new" | "load" | "delete" | "saveAs" | null) => void
   setMode: (mode: ViewMode) => void
   setFocusedField: (field: string | null) => void
   setAddMode: (mode: boolean) => void

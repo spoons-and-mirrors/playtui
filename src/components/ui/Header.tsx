@@ -7,7 +7,7 @@ import { ELEMENT_REGISTRY } from "../elements"
 // Types
 // ============================================================================
 
-export type MenuAction = "new" | "load" | "delete"
+export type MenuAction = "new" | "load" | "delete" | "saveAs"
 
 interface HeaderProps {
   addMode: boolean
@@ -54,6 +54,7 @@ const ELEMENT_OPTIONS: ElementOption[] = [
 const FILE_MENU_ITEMS: { id: MenuAction; label: string }[] = [
   { id: "new", label: "New" },
   { id: "load", label: "Load" },
+  { id: "saveAs", label: "Save As" },
   { id: "delete", label: "Delete" },
 ]
 
@@ -99,7 +100,7 @@ function FileMenu({ onAction }: { onAction: (action: MenuAction) => void }) {
                 onMouseOut={() => setHoveredItem(null)}
                 border={["left"]}
                 borderStyle="heavy"
-                borderColor={isDelete ? COLORS.danger : COLORS.accentBright}
+                borderColor={isDelete ? COLORS.danger : item.id === "saveAs" ? COLORS.success : COLORS.accentBright}
                 style={{
                   flexDirection: "row",
                   backgroundColor: COLORS.cardHover,
@@ -108,7 +109,7 @@ function FileMenu({ onAction }: { onAction: (action: MenuAction) => void }) {
                   marginLeft: 1,
                 }}
               >
-                <text id={`file-menu-label-${item.id}`} fg={isDelete ? COLORS.danger : COLORS.text}>
+                <text id={`file-menu-label-${item.id}`} fg={isDelete ? COLORS.danger : item.id === "saveAs" ? COLORS.success : COLORS.text}>
                   {isHovered ? <strong>{item.label}</strong> : item.label}
                 </text>
               </box>

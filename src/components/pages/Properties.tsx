@@ -64,6 +64,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     startY: number
     startValue: number
     lastValue: number
+    hasMoved: boolean
     onChange: (value: number) => void
     onChangeEnd?: (value: number) => void
   } | null>(null)
@@ -74,19 +75,21 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     const deltaY = activeDrag.current.startY - e.y // up = positive
     const next = activeDrag.current.startValue + deltaX + deltaY
     activeDrag.current.lastValue = next
+    activeDrag.current.hasMoved = true
     activeDrag.current.onChange(next)
   }
 
   const handlePanelDragEnd = () => {
     if (!activeDrag.current) return
-    if (activeDrag.current.onChangeEnd) {
+    // Only call onChangeEnd if drag actually moved
+    if (activeDrag.current.hasMoved && activeDrag.current.onChangeEnd) {
       activeDrag.current.onChangeEnd(activeDrag.current.lastValue)
     }
     activeDrag.current = null
   }
 
   const registerDrag = (startX: number, startY: number, startValue: number, onChange: (v: number) => void, onChangeEnd?: (v: number) => void) => {
-    activeDrag.current = { startX, startY, startValue, lastValue: startValue, onChange, onChangeEnd }
+    activeDrag.current = { startX, startY, startValue, lastValue: startValue, hasMoved: false, onChange, onChangeEnd }
   }
 
   const toggleSection = (section: string) => {

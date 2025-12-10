@@ -3,7 +3,7 @@ import { RGBA } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ProjectMeta } from "../../lib/projectTypes"
 
-type ModalMode = "new" | "load" | "delete"
+type ModalMode = "new" | "load" | "delete" | "saveAs"
 
 interface ProjectModalProps {
   mode: ModalMode
@@ -13,6 +13,7 @@ interface ProjectModalProps {
   onCreate: (name: string) => void
   onLoad: (fileName: string) => void
   onDelete: (fileName: string) => void
+  onSaveAs: (name: string) => void
   width: number
   height: number
 }
@@ -25,6 +26,7 @@ export function ProjectModal({
   onCreate,
   onLoad,
   onDelete,
+  onSaveAs,
   width,
   height,
 }: ProjectModalProps) {
@@ -37,6 +39,7 @@ export function ProjectModal({
     new: "New Project",
     load: "Load Project",
     delete: "Delete Project",
+    saveAs: "Save As",
   }
 
   const modalWidth = Math.min(50, width - 10)
@@ -46,6 +49,13 @@ export function ProjectModal({
     const name = inputValue.trim()
     if (name) {
       onCreate(name)
+    }
+  }
+
+  const handleSaveAs = () => {
+    const name = inputValue.trim()
+    if (name) {
+      onSaveAs(name)
     }
   }
 
@@ -176,6 +186,43 @@ export function ProjectModal({
                 style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
               >
                 <text fg={COLORS.bg}>Cancel</text>
+              </box>
+            </box>
+          </>
+        )}
+
+        {/* Save As Mode */}
+        {mode === "saveAs" && (
+          <>
+            <text fg={COLORS.text}>Save current project as:</text>
+            <box
+              border
+              borderColor={COLORS.borderFocus}
+              style={{ backgroundColor: COLORS.input, padding: 0 }}
+            >
+              <input
+                value={inputValue}
+                placeholder={`${currentProjectName} (copy)`}
+                focused
+                onInput={setInputValue}
+                onSubmit={handleSaveAs}
+              />
+            </box>
+            <text fg={COLORS.muted} style={{ marginTop: 1 }}>
+              Creates a backup copy with a new name
+            </text>
+            <box style={{ flexDirection: "row", gap: 2, justifyContent: "flex-end", marginTop: 1 }}>
+              <box
+                onMouseDown={onClose}
+                style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+              >
+                <text fg={COLORS.bg}>Cancel</text>
+              </box>
+              <box
+                onMouseDown={handleSaveAs}
+                style={{ backgroundColor: COLORS.success, paddingLeft: 2, paddingRight: 2 }}
+              >
+                <text fg={COLORS.bg}>Save</text>
               </box>
             </box>
           </>

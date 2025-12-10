@@ -25,6 +25,7 @@ export interface UseProjectReturn {
   createProject: (name: string) => Promise<boolean>
   loadProject: (fileName: string) => Promise<boolean>
   deleteProject: (fileName: string) => Promise<boolean>
+  duplicateProject: (newName: string) => Promise<boolean>
 
   // State updates (triggers auto-save)
   updateTree: (tree: ElementNode, pushHistory?: boolean, selectedId?: string | null) => void
@@ -215,6 +216,49 @@ export function useProject(): UseProjectReturn {
         return true
       } else {
         setError("Failed to delete project")
+        return false
+      }
+    },
+    [project, refreshProjects]
+  )
+
+  // Duplicate current project with a new name (Save As)
+  const duplicateProject = useCallback(
+    async (newName: string): Promise<boolean> => {
+      if (!project) {
+        setError("No project to duplicate")
+        return false
+      }
+
+      const fileName = storage.slugify(newName)
+
+      // Check if exists
+      if (await storage.projectExists(fileName)) {
+        setError(`Project "${newName}" already exists`)
+        return false
+      }
+
+      // Create a copy with the new name and fresh timestamps
+      const now = new Date().toISOString()
+      const duplicatedProject: Project = {
+        ...project,
+        name: newName,
+        createdAt: now,
+        updatedAt: now,
+        // Clear history for the new copy to save space
+        history: [],
+        future: [],
+      }
+
+      const result = await storage.saveProject(duplicatedProject)
+
+      if (result.success) {
+        setProject(duplicatedProject)
+        await refreshProjects()
+        setError(null)
+        return true
+      } else {
+        setError(result.error || "Failed to save project copy")
         return false
       }
     },
@@ -529,6 +573,7 @@ export function useProject(): UseProjectReturn {
     createProject,
     loadProject: loadProjectFn,
     deleteProject: deleteProjectFn,
+    duplicateProject,
     updateTree,
     setSelectedId,
     setCollapsed,

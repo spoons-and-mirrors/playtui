@@ -31,6 +31,7 @@ export function Builder({ width, height }: BuilderProps) {
     createProject,
     loadProject,
     deleteProject,
+    duplicateProject,
     updateTree,
     setSelectedId: setProjectSelectedId,
     setCollapsed: setProjectCollapsed,
@@ -54,7 +55,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [mode, setMode] = useState<ViewMode>("editor")
-  const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | null>(null)
+  const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
@@ -174,6 +175,11 @@ export function Builder({ width, height }: BuilderProps) {
     await deleteProject(fileName)
     await refreshProjects()
   }, [deleteProject, refreshProjects])
+
+  const handleSaveAsProject = useCallback(async (name: string) => {
+    const success = await duplicateProject(name)
+    if (success) setModalMode(null)
+  }, [duplicateProject])
 
   // Handle drag for absolute positioned elements
   const handleDragStart = useCallback((event: DragEvent) => {
@@ -358,6 +364,7 @@ export function Builder({ width, height }: BuilderProps) {
           onCreate={handleCreateProject}
           onLoad={handleLoadProject}
           onDelete={handleDeleteProject}
+          onSaveAs={handleSaveAsProject}
           width={width}
           height={height}
         />
