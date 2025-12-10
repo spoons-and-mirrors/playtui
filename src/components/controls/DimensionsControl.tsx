@@ -11,10 +11,13 @@ interface DimensionRowProps {
   value: SizeValue
   flexGrow?: number
   onChange: (value: SizeValue, flexGrow?: number) => void
+  onChangeEnd?: (value: SizeValue, flexGrow?: number) => void
   minValue?: number
   maxValue?: number
   onMinChange: (v: number | undefined) => void
   onMaxChange: (v: number | undefined) => void
+  onMinChangeEnd?: (v: number | undefined) => void
+  onMaxChangeEnd?: (v: number | undefined) => void
 }
 
 function getMode(value: SizeValue, flexGrow?: number): SizeMode {
@@ -38,7 +41,7 @@ function ModeButton({ id, label, active, onClick }: { id: string; label: string;
   )
 }
 
-function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue, onMinChange, onMaxChange }: DimensionRowProps) {
+function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minValue, maxValue, onMinChange, onMaxChange, onMinChangeEnd, onMaxChangeEnd }: DimensionRowProps) {
   const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
   const [dragging, setDragging] = useState(false)
   const dragStart = useRef<{ x: number; value: number } | null>(null)
@@ -92,6 +95,11 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
   }
 
   const handleValueDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      const isPercent = typeof value === "string" && value.endsWith("%")
+      const numVal = typeof value === "number" ? value : (isPercent ? parseInt(value as string) : 0)
+      onChangeEnd(isPercent ? `${numVal}%` : numVal, flexGrow)
+    }
     dragStart.current = null
     setDragging(false)
   }
@@ -161,6 +169,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
             enabled={hasMin}
             onToggle={() => onMinChange(hasMin ? undefined : 0)}
             onChange={onMinChange}
+            onChangeEnd={onMinChangeEnd}
           />
           <BoundToggle 
             id={`${id}-max`} 
@@ -169,6 +178,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
             enabled={hasMax}
             onToggle={() => onMaxChange(hasMax ? undefined : 0)}
             onChange={onMaxChange}
+            onChangeEnd={onMaxChangeEnd}
           />
         </box>
       )}
@@ -183,9 +193,10 @@ interface BoundToggleProps {
   enabled: boolean
   onToggle: () => void
   onChange: (v: number | undefined) => void
+  onChangeEnd?: (v: number | undefined) => void
 }
 
-function BoundToggle({ id, label, value, enabled, onToggle, onChange }: BoundToggleProps) {
+function BoundToggle({ id, label, value, enabled, onToggle, onChange, onChangeEnd }: BoundToggleProps) {
   const [dragging, setDragging] = useState(false)
   const dragStart = useRef<{ x: number; value: number } | null>(null)
 
@@ -204,6 +215,9 @@ function BoundToggle({ id, label, value, enabled, onToggle, onChange }: BoundTog
   }
 
   const handleDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      onChangeEnd(value)
+    }
     dragStart.current = null
     setDragging(false)
   }
@@ -249,14 +263,18 @@ export interface DimensionsControlProps {
   minHeight?: number
   maxHeight?: number
   onChange: (key: string, val: SizeValue | number | undefined) => void
+  onChangeEnd?: (key: string, val: SizeValue | number | undefined) => void
   onBatchUpdate?: (updates: Record<string, SizeValue | number | undefined>) => void
+  onBatchUpdateEnd?: (updates: Record<string, SizeValue | number | undefined>) => void
 }
 
 export function DimensionsControl({ 
   width, height, flexGrow,
   minWidth, maxWidth, minHeight, maxHeight,
   onChange,
-  onBatchUpdate
+  onChangeEnd,
+  onBatchUpdate,
+  onBatchUpdateEnd
 }: DimensionsControlProps) {
   return (
     <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingBottom: 1 }}>
@@ -274,10 +292,20 @@ export function DimensionsControl({
             if (fg !== undefined) onChange("flexGrow", fg)
           }
         }}
+        onChangeEnd={(v, fg) => {
+          if (onBatchUpdateEnd && fg !== undefined) {
+            onBatchUpdateEnd({ width: v, flexGrow: fg })
+          } else if (onChangeEnd) {
+            onChangeEnd("width", v)
+            if (fg !== undefined) onChangeEnd("flexGrow", fg)
+          }
+        }}
         minValue={minWidth}
         maxValue={maxWidth}
         onMinChange={(v) => onChange("minWidth", v)}
         onMaxChange={(v) => onChange("maxWidth", v)}
+        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minWidth", v) : undefined}
+        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxWidth", v) : undefined}
       />
       {/* Height */}
       <DimensionRow 
@@ -293,10 +321,20 @@ export function DimensionsControl({
             if (fg !== undefined) onChange("flexGrow", fg)
           }
         }}
+        onChangeEnd={(v, fg) => {
+          if (onBatchUpdateEnd && fg !== undefined) {
+            onBatchUpdateEnd({ height: v, flexGrow: fg })
+          } else if (onChangeEnd) {
+            onChangeEnd("height", v)
+            if (fg !== undefined) onChangeEnd("flexGrow", fg)
+          }
+        }}
         minValue={minHeight}
         maxValue={maxHeight}
         onMinChange={(v) => onChange("minHeight", v)}
         onMaxChange={(v) => onChange("maxHeight", v)}
+        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minHeight", v) : undefined}
+        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxHeight", v) : undefined}
       />
     </box>
   )

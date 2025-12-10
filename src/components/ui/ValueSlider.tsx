@@ -7,6 +7,7 @@ interface ValueSliderProps {
   label: string
   value: number
   onChange: (value: number) => void
+  onChangeEnd?: (value: number) => void
   resetTo?: number
 }
 
@@ -16,7 +17,7 @@ interface ValueSliderProps {
  * - Double click to reset to default
  * - Uses accent text on bg color styling
  */
-export function ValueSlider({ id, label, value, onChange, resetTo = 0 }: ValueSliderProps) {
+export function ValueSlider({ id, label, value, onChange, onChangeEnd, resetTo = 0 }: ValueSliderProps) {
   const [dragging, setDragging] = useState(false)
   const lastClickTime = useRef<number>(0)
   const dragStart = useRef<{ x: number; value: number } | null>(null)
@@ -45,6 +46,9 @@ export function ValueSlider({ id, label, value, onChange, resetTo = 0 }: ValueSl
   }
 
   const handleValueDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      onChangeEnd(value)
+    }
     dragStart.current = null
     setDragging(false)
   }

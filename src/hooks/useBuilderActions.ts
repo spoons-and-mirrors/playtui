@@ -121,15 +121,15 @@ export function useBuilderActions({
     if (newTree) updateTree(newTree, true)
   }, [selectedId, tree, updateTree])
 
-  const handleUpdate = useCallback((updates: Partial<ElementNode>) => {
+  const handleUpdate = useCallback((updates: Partial<ElementNode>, pushHistory = true) => {
     const currentSelectedId = selectedIdRef.current
-    log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId })
+    log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId, pushHistory })
     if (!tree || !currentSelectedId) return
     const node = findNode(tree, currentSelectedId)
     if (!node) return
     const updated = { ...node, ...updates } as ElementNode
     const newTree = updateNode(tree, currentSelectedId, updated)
-    updateTree(newTree)
+    updateTree(newTree, pushHistory)
   }, [tree, updateTree])
 
   const handleRename = useCallback((id: string, name: string) => {

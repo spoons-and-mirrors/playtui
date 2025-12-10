@@ -23,7 +23,7 @@ type AnyNodeProps = Record<string, unknown>
 
 interface PropertyPaneProps {
   node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  onUpdate: (updates: Partial<ElementNode>, pushHistory?: boolean) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   // Palette support
@@ -125,17 +125,22 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
     const handleChange = (key: "top" | "right" | "bottom" | "left", val: number) => {
       const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
-      onUpdate({ [propKey]: val } as Partial<ElementNode>)
+      onUpdate({ [propKey]: val } as Partial<ElementNode>, false)
+    }
+
+    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left", val: number) => {
+      const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
+      onUpdate({ [propKey]: val } as Partial<ElementNode>, true)
     }
 
     return (
       <box key="padding" id="section-padding" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
         <text fg={COLORS.text}><strong>Padding</strong></text>
         <box id="padding-sliders" flexDirection="row" gap={1}>
-          <ValueSlider id="padding-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
-          <ValueSlider id="padding-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
-          <ValueSlider id="padding-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
-          <ValueSlider id="padding-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
+          <ValueSlider id="padding-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} onChangeEnd={(v) => handleChangeEnd("top", v)} />
+          <ValueSlider id="padding-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} onChangeEnd={(v) => handleChangeEnd("right", v)} />
+          <ValueSlider id="padding-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} onChangeEnd={(v) => handleChangeEnd("bottom", v)} />
+          <ValueSlider id="padding-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} onChangeEnd={(v) => handleChangeEnd("left", v)} />
         </box>
       </box>
     )
@@ -151,20 +156,27 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     }
 
     const handleChange = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
-      if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>)
-      if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>)
-      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>)
-      if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>)
+      if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>, false)
+      if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>, false)
+      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>, false)
+      if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>, false)
+    }
+
+    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
+      if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>, true)
+      if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>, true)
+      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>, true)
+      if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>, true)
     }
 
     return (
       <box key="margin" id="section-margin" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
         <text fg={COLORS.text}><strong>Margin</strong></text>
         <box id="margin-sliders" flexDirection="row" gap={1}>
-          <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} />
-          <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} />
-          <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} />
-          <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} />
+          <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} onChangeEnd={(v) => handleChangeEnd("top", v)} />
+          <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} onChangeEnd={(v) => handleChangeEnd("right", v)} />
+          <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} onChangeEnd={(v) => handleChangeEnd("bottom", v)} />
+          <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} onChangeEnd={(v) => handleChangeEnd("left", v)} />
         </box>
       </box>
     )
@@ -185,8 +197,10 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             maxWidth={node.maxWidth}
             minHeight={node.minHeight}
             maxHeight={node.maxHeight}
-            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)}
-            onBatchUpdate={(updates) => onUpdate(updates as Partial<ElementNode>)}
+            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, false)}
+            onChangeEnd={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, true)}
+            onBatchUpdate={(updates) => onUpdate(updates as Partial<ElementNode>, false)}
+            onBatchUpdateEnd={(updates) => onUpdate(updates as Partial<ElementNode>, true)}
           />
         </box>
       </box>
@@ -259,9 +273,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         <box id="pos-row" flexDirection="row" alignItems="center" justifyContent="space-between">
           <text fg={COLORS.text}><strong>Position</strong></text>
           <box id="pos-xyz" flexDirection="row" gap={1}>
-            <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>)} />
-            <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>)} />
-            <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>)} />
+            <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ x: v } as Partial<ElementNode>, true)} />
+            <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ y: v } as Partial<ElementNode>, true)} />
+            <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, true)} />
           </box>
         </box>
       </box>

@@ -61,6 +61,8 @@ export function useProject(): UseProjectReturn {
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const projectRef = useRef<Project | null>(null)
+  // Track the state before a batch of non-history changes started
+  const batchStartStateRef = useRef<HistoryEntry | null>(null)
 
   // Keep ref in sync for use in callbacks
   useEffect(() => {
@@ -226,6 +228,17 @@ export function useProject(): UseProjectReturn {
       setProject((prev) => {
         if (!prev) return prev
 
+        // Track batch start state for drag operations
+        // When pushHistory=false, we're in a drag/batch operation
+        // Capture the state at the START of the batch, not during
+        if (!pushHistory && !batchStartStateRef.current) {
+          // First non-history update in a batch - capture current state
+          batchStartStateRef.current = {
+            tree: prev.tree,
+            selectedId: prev.selectedId,
+          }
+        }
+
         // Sync current tree to the frames array
         const newFrames = [...prev.animation.frames]
         // Ensure we have frames (migration safety)
@@ -254,11 +267,16 @@ export function useProject(): UseProjectReturn {
         }
 
         if (pushHistory) {
-          // Push current state to history
-          const historyEntry: HistoryEntry = {
+          // Use batch start state if available (for drag operations)
+          // Otherwise use the previous state (for single-click operations)
+          const historyEntry: HistoryEntry = batchStartStateRef.current ?? {
             tree: prev.tree,
             selectedId: prev.selectedId,
           }
+          
+          // Clear batch state
+          batchStartStateRef.current = null
+          
           const newHistory = [...prev.history, historyEntry]
           // Cap history at 10,000 entries
           if (newHistory.length > 10000) {
@@ -398,16 +416,15 @@ export function useProject(): UseProjectReturn {
     return proj
   }
 
-  // Update selected ID
+  // Update selected ID (UI state only, no save needed)
   const setSelectedId = useCallback(
     (id: string | null) => {
       setProject((prev) => {
         if (!prev) return prev
         return { ...prev, selectedId: id }
       })
-      scheduleSave()
     },
-    [scheduleSave]
+    []
   )
 
   // Update collapsed nodes

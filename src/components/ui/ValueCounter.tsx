@@ -7,11 +7,12 @@ interface ValueCounterProps {
   label: string
   value: number
   onChange: (value: number) => void
+  onChangeEnd?: (value: number) => void
   resetTo?: number
 }
 
 // Generic value counter: | - | label:value | + |
-export function ValueCounter({ id, label, value, onChange, resetTo = 0 }: ValueCounterProps) {
+export function ValueCounter({ id, label, value, onChange, onChangeEnd, resetTo = 0 }: ValueCounterProps) {
   const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
   const [dragging, setDragging] = useState(false)
   const lastClickTime = useRef<number>(0)
@@ -49,6 +50,9 @@ export function ValueCounter({ id, label, value, onChange, resetTo = 0 }: ValueC
   }
 
   const handleValueDragEnd = () => {
+    if (dragStart.current && onChangeEnd) {
+      onChangeEnd(value)
+    }
     dragStart.current = null
     setDragging(false)
   }
