@@ -1,10 +1,10 @@
 {
-  "name": "@playtui/player",
+  "name": "@playtui/flipbook",
   "version": "0.1.0",
   "type": "module",
-  "description": "Standalone player for TUI animations created with PlayTUI",
+  "description": "Terminal animation player for TUI animations created with PlayTUI",
   "bin": {
-    "playtui-player": "dist/cli.js"
+    "flipbook": "dist/cli.js"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -17,7 +17,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "demo.json"
   ],
   "scripts": {
     "build": "bun build src/cli.tsx src/index.ts --outdir dist --target bun --minify && bun run build:types",
@@ -27,9 +28,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/spoons-and-mirrors/playtui.git",
-    "directory": "packages/player"
+    "directory": "packages/flipbook"
   },
-  "homepage": "https://github.com/spoons-and-mirrors/playtui/tree/main/packages/player#readme",
+  "homepage": "https://github.com/spoons-and-mirrors/playtui/tree/main/packages/flipbook#readme",
   "bugs": {
     "url": "https://github.com/spoons-and-mirrors/playtui/issues"
   },
@@ -53,22 +54,6 @@
     "@types/bun": "^1.3.3",
     "@types/react": "^19.0.0",
     "typescript": "^5.9.3"
-  },
-  "peerDependencies": {
-    "@opentui/core": "*",
-    "@opentui/react": "*",
-    "react": ">=18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@opentui/core": {
-      "optional": true
-    },
-    "@opentui/react": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,15 +1,16 @@
 /**
- * PlayTUI Animation Player
+ * Flipbook - Terminal Animation Player
  * 
  * A standalone player for TUI animations created with PlayTUI.
  * 
  * @example
  * // CLI usage
- * npx @playtui/player animation.json
+ * npx @playtui/flipbook animation.json
+ * flipbook --demo
  * 
  * @example
  * // Library usage
- * import { AnimationPlayer, type AnimationData } from "@playtui/player"
+ * import { AnimationPlayer, type AnimationData } from "@playtui/flipbook"
  * 
  * const myAnimation: AnimationData = { ... }
  * <AnimationPlayer data={myAnimation} />
