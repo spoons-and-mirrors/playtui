@@ -133,7 +133,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
               onMouseDragEnd={handleValueDragEnd}
             >
               <text fg={COLORS.bg} selectable={false} onMouseDown={handleValueMouseDown}>
-                <strong>{numVal}{isPercent ? "%" : ""}</strong>
+                <strong>{numVal}</strong>
               </text>
             </box>
             <box
@@ -151,9 +151,9 @@ function DimensionRow({ id, label, value, flexGrow, onChange, minValue, maxValue
         )}
       </box>
 
-      {/* Row 2: Bounds toggles left-aligned (only for fixed/percent) */}
+      {/* Row 2: Bounds toggles centered (only for fixed/percent) */}
       {canAdjust && (
-        <box id={`${id}-bounds`} flexDirection="row" gap={1}>
+        <box id={`${id}-bounds`} flexDirection="row" gap={1} justifyContent="center">
           <BoundToggle 
             id={`${id}-min`} 
             label="min" 
