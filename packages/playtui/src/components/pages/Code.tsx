@@ -49,10 +49,10 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
     const tryInit = () => {
       log("CODE_PANEL_TRY_INIT", { hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length, codeRefPreview: codeRef.current.slice(0, 80) })
       if (textareaRef.current) {
-        textareaRef.current.setText(codeRef.current, { history: false })
+        ;(textareaRef.current as any).setText(codeRef.current, { history: false })
         initializedRef.current = true
         setTimeout(() => {
-          textareaRef.current?.setText(codeRef.current, { history: false })
+          ;(textareaRef.current as any)?.setText(codeRef.current, { history: false })
           textareaRef.current?.requestRender()
         }, 0)
         log("CODE_PANEL_INIT_DONE", { setText: codeRef.current.slice(0, 80) })
@@ -72,7 +72,7 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
     if (!initializedRef.current || !textareaRef.current) return
     const currentText = textareaRef.current.plainText
     if (code !== currentText) {
-      textareaRef.current.setText(code, { history: false })
+      ;(textareaRef.current as any).setText(code, { history: false })
     }
   }, [code])
 

@@ -10,12 +10,12 @@
  * 
  * @example
  * // Library usage
- * import { AnimationPlayer, type AnimationData } from "@playtui/flipbook"
+ * import { Flipbook, type FlipbookFrames } from "@playtui/flipbook"
  * 
- * const myAnimation: AnimationData = { ... }
- * <AnimationPlayer data={myAnimation} />
+ * const myAnimation: FlipbookFrames = { ... }
+ * <Flipbook data={myAnimation} />
  */
 
-export { AnimationPlayer } from "./player"
-export type { AnimationPlayerProps } from "./player"
-export type { AnimationData, ElementNode, ElementType, SizeValue } from "./types"
+export { Flipbook } from "./player"
+export type { FlipbookProps } from "./player"
+export type { FlipbookFrames, ElementNode, ElementType, SizeValue } from "./types"

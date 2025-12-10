@@ -13,8 +13,8 @@ import { createRoot, useKeyboard, useTerminalDimensions } from "@opentui/react"
 import { readFileSync, existsSync } from "fs"
 import { resolve, dirname } from "path"
 import { fileURLToPath } from "url"
-import { AnimationPlayer } from "./player"
-import type { AnimationData } from "./types"
+import { Flipbook } from "./player"
+import type { FlipbookFrames } from "./types"
 
 function getPackageDir(): string {
   const currentFile = fileURLToPath(import.meta.url)
@@ -71,7 +71,7 @@ Examples:
 `)
 }
 
-function loadAnimation(filePath: string): AnimationData {
+function loadAnimation(filePath: string): FlipbookFrames {
   const resolvedPath = resolve(process.cwd(), filePath)
   
   if (!existsSync(resolvedPath)) {
@@ -81,7 +81,7 @@ function loadAnimation(filePath: string): AnimationData {
 
   try {
     const content = readFileSync(resolvedPath, "utf-8")
-    const data = JSON.parse(content) as AnimationData
+    const data = JSON.parse(content) as FlipbookFrames
     
     if (!data.frames || !Array.isArray(data.frames)) {
       console.error("Error: Invalid animation file - missing 'frames' array")
@@ -100,7 +100,7 @@ function loadAnimation(filePath: string): AnimationData {
 }
 
 interface AppProps {
-  data: AnimationData
+  data: FlipbookFrames
   fpsOverride?: number
 }
 
@@ -118,7 +118,7 @@ function App({ data, fpsOverride }: AppProps) {
       id="player-root"
       style={{ width, height, alignItems: "center", justifyContent: "center" }}
     >
-      <AnimationPlayer data={data} fpsOverride={fpsOverride} />
+      <Flipbook data={data} fpsOverride={fpsOverride} />
     </box>
   )
 }

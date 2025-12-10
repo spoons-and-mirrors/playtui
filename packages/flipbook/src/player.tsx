@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from "react"
-import type { ElementNode, AnimationData } from "./types"
+import type { ElementNode, FlipbookFrames } from "./types"
 
 function renderNode(node: ElementNode): React.ReactNode {
   if (node.visible === false) return null
@@ -85,12 +85,12 @@ function renderNode(node: ElementNode): React.ReactNode {
   }
 }
 
-export interface AnimationPlayerProps {
-  data: AnimationData
+export interface FlipbookProps {
+  data: FlipbookFrames
   fpsOverride?: number
 }
 
-export function AnimationPlayer({ data, fpsOverride }: AnimationPlayerProps) {
+export function Flipbook({ data, fpsOverride }: FlipbookProps) {
   const [frameIndex, setFrameIndex] = useState(0)
   const fps = fpsOverride ?? data.fps
 

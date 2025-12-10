@@ -52,7 +52,7 @@ export interface ElementNode {
   color?: string
 }
 
-export interface AnimationData {
+export interface FlipbookFrames {
   frames: ElementNode[]
   fps: number
   name: string
