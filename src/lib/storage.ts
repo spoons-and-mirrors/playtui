@@ -97,7 +97,7 @@ export async function listProjects(): Promise<ProjectMeta[]> {
 }
 
 /**
- * Load a project by filename
+ * Open a project by filename
  */
 export async function loadProject(fileName: string): Promise<Project | null> {
   try {

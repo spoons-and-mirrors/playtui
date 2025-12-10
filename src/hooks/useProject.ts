@@ -43,6 +43,7 @@ export interface UseProjectReturn {
   duplicateFrame: () => void
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
+  importAnimation: (frames: ElementNode[], fps: number) => void
   
   // Palettes
   palettes: ColorPalette[]
@@ -114,7 +115,7 @@ export function useProject(): UseProjectReturn {
     }
   }, [])
 
-  // Load project list
+  // Open project list
   const refreshProjects = useCallback(async () => {
     const list = await storage.listProjects()
     setProjects(list)
@@ -129,7 +130,7 @@ export function useProject(): UseProjectReturn {
       setProjects(list)
 
       if (list.length > 0) {
-        // Load most recent project
+        // Open most recent project
         const loaded = await storage.loadProject(list[0].fileName)
         if (loaded) {
           const migrated = ensureProjectData(loaded)
@@ -182,7 +183,7 @@ export function useProject(): UseProjectReturn {
     [refreshProjects]
   )
 
-  // Load existing project
+  // Open existing project
   const loadProjectFn = useCallback(
     async (fileName: string): Promise<boolean> => {
       const loaded = await storage.loadProject(fileName)
@@ -426,6 +427,28 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
+  // Animation: Import animation data (frames + fps)
+  const importAnimation = useCallback((frames: ElementNode[], fps: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      if (frames.length === 0) return prev
+      
+      return {
+        ...prev,
+        tree: frames[0],
+        animation: {
+          fps,
+          frames,
+          currentFrameIndex: 0
+        },
+        // Clear history when importing
+        history: [],
+        future: []
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
   // Ensure project has required data on load (handles older project files)
   const ensureProjectData = (proj: Project): Project => {
     // Migration: convert old swatches to palettes
@@ -586,6 +609,7 @@ export function useProject(): UseProjectReturn {
     duplicateFrame,
     deleteFrame,
     setFps,
+    importAnimation,
     // Palette methods
     palettes,
     activePaletteIndex,

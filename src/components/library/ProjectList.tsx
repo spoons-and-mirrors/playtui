@@ -24,7 +24,7 @@ export function ProjectList({
   // Cache for loaded trees
   const [treeCache, setTreeCache] = useState<Record<string, ElementNode>>({})
 
-  // Load all project trees on mount
+  // Open all project trees on mount
   useEffect(() => {
     const loadAllTrees = async () => {
       for (const proj of projects) {

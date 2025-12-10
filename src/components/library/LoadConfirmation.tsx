@@ -33,7 +33,7 @@ export function LoadConfirmation({ project, onConfirm, onCancel, width, height }
         border
         borderStyle="rounded"
         borderColor={COLORS.accent}
-        title="Load Project"
+        title="Open Project"
         backgroundColor={COLORS.card}
         padding={1}
         flexDirection="column"
@@ -41,7 +41,7 @@ export function LoadConfirmation({ project, onConfirm, onCancel, width, height }
         onMouseDown={(e) => e.stopPropagation()}
       >
         <box alignItems="center" flexGrow={1} justifyContent="center">
-          <text>Load project</text>
+          <text>Open project</text>
           <text fg={COLORS.accent}><strong>"{project.name}"</strong></text>
           <text fg={COLORS.muted} marginTop={1}>Unsaved changes will be lost.</text>
         </box>
@@ -57,7 +57,7 @@ export function LoadConfirmation({ project, onConfirm, onCancel, width, height }
             onMouseDown={onConfirm}
             style={{ backgroundColor: COLORS.success, paddingLeft: 2, paddingRight: 2 }}
           >
-            <text fg={COLORS.bg}>Load</text>
+            <text fg={COLORS.bg}>Open</text>
           </box>
         </box>
       </box>
