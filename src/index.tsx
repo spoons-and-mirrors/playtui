@@ -266,7 +266,7 @@ export function Builder({ width, height }: BuilderProps) {
   return (
     <box id="builder" style={{ width, height, flexDirection: "column" }}>
       {/* Top Bar - Mode tabs spanning full width */}
-      <AppHeader mode={mode} width={width} projectName={project.name} onModeChange={setMode} />
+      <AppHeader mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
 
       {/* Main content area - horizontal panels */}
       <box id="builder-main" style={{ width, height: height - 1, flexDirection: "row" }}>
@@ -274,7 +274,7 @@ export function Builder({ width, height }: BuilderProps) {
         {showTree && (
           <box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
             style={{ width: treeWidth, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
-            <Title saveStatus={saveStatus} onLogoClick={() => setMode("docs")} />
+            <Title onLogoClick={() => setMode("docs")} />
             <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
               <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
                 onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />

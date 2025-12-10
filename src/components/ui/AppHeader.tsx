@@ -1,6 +1,42 @@
+import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
+import type { SaveStatus } from "../../hooks/useProject"
 
 export type ViewMode = "editor" | "code" | "play" | "library" | "docs"
+
+// ============================================================================
+// Save Indicator
+// ============================================================================
+
+const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
+
+function SaveIndicator({ status }: { status: SaveStatus }) {
+  const [frame, setFrame] = useState(0)
+
+  useEffect(() => {
+    if (status === "saving") {
+      const timer = setInterval(() => {
+        setFrame((f) => (f + 1) % SPINNER_FRAMES.length)
+      }, 100)
+      return () => clearInterval(timer)
+    }
+  }, [status])
+
+  if (status === "idle") return null
+
+  let text = ""
+  if (status === "saving") {
+    text = `${SPINNER_FRAMES[frame]}`
+  } else if (status === "saved") {
+    text = "●"
+  } else {
+    text = "!"
+  }
+
+  const color = status === "error" ? COLORS.danger : COLORS.accent
+
+  return <text fg={color}>{text}</text>
+}
 
 interface ModeTabProps {
   fKey: string
@@ -34,10 +70,11 @@ interface AppHeaderProps {
   mode: ViewMode
   width: number
   projectName?: string
+  saveStatus?: SaveStatus
   onModeChange: (mode: ViewMode) => void
 }
 
-export function AppHeader({ mode, width, projectName, onModeChange }: AppHeaderProps) {
+export function AppHeader({ mode, width, projectName, saveStatus, onModeChange }: AppHeaderProps) {
   return (
     <box
       id="app-header"
@@ -61,12 +98,15 @@ export function AppHeader({ mode, width, projectName, onModeChange }: AppHeaderP
         <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
       </box>
 
-      {/* Right: Project name in card */}
-      {projectName && (
-        <box id="app-header-project" backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
-          <text fg={COLORS.muted}>{projectName}</text>
-        </box>
-      )}
+      {/* Right: Save indicator + Project name in card */}
+      <box id="app-header-project-container" style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
+        {saveStatus && <SaveIndicator status={saveStatus} />}
+        {projectName && (
+          <box id="app-header-project" backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+            <text fg={COLORS.muted}>{projectName}</text>
+          </box>
+        )}
+      </box>
     </box>
   )
 }
