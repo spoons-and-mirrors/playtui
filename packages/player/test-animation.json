@@ -1,0 +1,58 @@
+{
+  "name": "Test Animation",
+  "fps": 4,
+  "frames": [
+    {
+      "id": "root",
+      "type": "box",
+      "children": [
+        {
+          "id": "spinner-1",
+          "type": "text",
+          "content": "⠋ Loading...",
+          "fg": "#7aa2f7",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "root",
+      "type": "box",
+      "children": [
+        {
+          "id": "spinner-2",
+          "type": "text",
+          "content": "⠙ Loading...",
+          "fg": "#7aa2f7",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "root",
+      "type": "box",
+      "children": [
+        {
+          "id": "spinner-3",
+          "type": "text",
+          "content": "⠹ Loading...",
+          "fg": "#7aa2f7",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "root",
+      "type": "box",
+      "children": [
+        {
+          "id": "spinner-4",
+          "type": "text",
+          "content": "⠸ Loading...",
+          "fg": "#7aa2f7",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
