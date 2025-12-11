@@ -3,7 +3,8 @@ import type { ScrollBoxRenderable } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
-import { generateAnimationData, type AnimationData } from "../../lib/codegen"
+import { generateAnimationModule } from "../../lib/codegen"
+import { parseAnimationModule } from "../../lib/parseCode"
 import { copyToClipboard, readFromClipboard } from "../../lib/clipboard"
 import { log } from "../../lib/logger"
 
@@ -54,9 +55,9 @@ export function FilmStrip({
   const [clipboardError, setClipboardError] = useState<string | null>(null)
 
   const copyAnimationCode = useCallback(async () => {
-    const data = generateAnimationData(frames, fps, "Animation")
+    const tsxCode = generateAnimationModule(frames, fps, "Animation")
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
-    const result = await copyToClipboard(data, { filename: `animation-${timestamp}.json` })
+    const result = await copyToClipboard(tsxCode, { filename: `animation-${timestamp}.tsx` })
     
     if (result.success) {
       setCopied(true)
@@ -84,19 +85,21 @@ export function FilmStrip({
       return
     }
 
-    try {
-      const data = JSON.parse(result.text || "") as AnimationData
-      if (data.frames && Array.isArray(data.frames) && data.frames.length > 0) {
-        onImport(data.frames, data.fps || 10)
-        setImported(true)
-        setClipboardError(null)
-        setTimeout(() => setImported(false), 1000)
-      }
-    } catch {
-      log("IMPORT_PARSE_ERROR", {})
-      setClipboardError("Invalid animation data in clipboard")
-      setTimeout(() => setClipboardError(null), 3000)
+    const text = result.text || ""
+    
+    // Try parsing as TSX animation module
+    const parseResult = parseAnimationModule(text)
+    if (parseResult.success && parseResult.frames) {
+      onImport(parseResult.frames, parseResult.fps || 10)
+      setImported(true)
+      setClipboardError(null)
+      setTimeout(() => setImported(false), 1000)
+      return
     }
+    
+    log("IMPORT_PARSE_ERROR", { error: parseResult.error })
+    setClipboardError(parseResult.error || "Invalid animation format")
+    setTimeout(() => setClipboardError(null), 3000)
   }, [onImport])
 
   // Auto-scroll to keep current frame centered

@@ -323,10 +323,8 @@ function applyStyle(node: Partial<ElementNode>, style: Record<string, unknown>):
   
   // Position
   if (style.position !== undefined) (node as any).position = style.position
-  if (style.top !== undefined) (node as any).top = style.top
-  if (style.right !== undefined) (node as any).right = style.right
-  if (style.bottom !== undefined) (node as any).bottom = style.bottom
-  if (style.left !== undefined) (node as any).left = style.left
+  if (style.top !== undefined) (node as any).y = style.top  // OpenTUI top → PlayTUI y
+  if (style.left !== undefined) (node as any).x = style.left  // OpenTUI left → PlayTUI x
   if (style.zIndex !== undefined) (node as any).zIndex = style.zIndex
   
   // Overflow
@@ -560,8 +558,10 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
   }
   
   if (token.type === "tagOpen") {
-    // Skip inline formatting tags - consume until matching close tag
+    // Handle inline formatting tags inside text - extract content and formatting
     if (token.name && INLINE_FORMATTING_TAGS.has(token.name)) {
+      // We need to collect the text content and return it with formatting info
+      // This is handled by parseTextContent when we encounter text tokens
       let i = index + 1
       let depth = 1
       while (i < tokens.length && depth > 0) {
@@ -588,8 +588,8 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
         return { node, nextIndex: i + 1 }
       }
       
+      // Text content for text element (plain text without formatting)
       if (child.type === "text" && node.type === "text") {
-        // Text content for text element
         const parsed = parseTextContent(child.content || "")
         ;(node as any).content = parsed.content
         if (parsed.bold) (node as any).bold = true
@@ -598,6 +598,33 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
         if (parsed.strikethrough) (node as any).strikethrough = true
         if (parsed.dim) (node as any).dim = true
         i++
+        continue
+      }
+      
+      // Handle inline formatting tags inside text element - extract content and apply formatting
+      if (child.type === "tagOpen" && child.name && INLINE_FORMATTING_TAGS.has(child.name) && node.type === "text") {
+        const formatTag = child.name
+        i++ // skip opening tag
+        
+        // Collect text content inside the formatting tag
+        let textContent = ""
+        while (i < tokens.length) {
+          const inner = tokens[i]
+          if (inner.type === "tagClose" && inner.name === formatTag) {
+            i++ // skip closing tag
+            break
+          }
+          if (inner.type === "text") {
+            textContent += inner.content || ""
+          }
+          i++
+        }
+        
+        // Apply formatting based on tag
+        ;(node as any).content = textContent
+        if (formatTag === "strong") (node as any).bold = true
+        if (formatTag === "em") (node as any).italic = true
+        if (formatTag === "u") (node as any).underline = true
         continue
       }
       
@@ -673,6 +700,72 @@ export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: ElementN
     }
     
     return { success: true, nodes, node: nodes[0] }
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Parse error" }
+  }
+}
+
+// Parse animation module TSX format
+// Extracts frames array and metadata from: export const animation = { name, fps, frames: [...] }
+export function parseAnimationModule(tsx: string): { success: boolean; frames?: ElementNode[]; fps?: number; name?: string; error?: string } {
+  try {
+    // Extract name
+    const nameMatch = tsx.match(/name:\s*"([^"]*)"/)
+    const name = nameMatch?.[1] || "Animation"
+    
+    // Extract fps
+    const fpsMatch = tsx.match(/fps:\s*(\d+)/)
+    const fps = fpsMatch ? parseInt(fpsMatch[1], 10) : 10
+    
+    // Extract frames array content
+    const framesMatch = tsx.match(/frames:\s*\[([\s\S]*)\]\s*\}/)
+    if (!framesMatch) {
+      return { success: false, error: "Could not find frames array" }
+    }
+    
+    const framesContent = framesMatch[1]
+    
+    // Split frames by "// Frame N" comments
+    const frameChunks = framesContent.split(/\/\/\s*Frame\s+\d+/).filter(chunk => chunk.trim())
+    
+    const frames: ElementNode[] = []
+    
+    for (const chunk of frameChunks) {
+      // Clean up the chunk - remove trailing comma
+      let frameJsx = chunk.trim()
+      if (frameJsx.endsWith(",")) {
+        frameJsx = frameJsx.slice(0, -1).trim()
+      }
+      
+      if (!frameJsx) continue
+      
+      // Parse the frame JSX
+      const result = parseCode(frameJsx)
+      if (result.success && result.node) {
+        // Wrap in root node structure expected by PlayTUI
+        const rootNode: ElementNode = {
+          id: "root",
+          type: "box",
+          name: "Root",
+          width: "auto",
+          height: "auto",
+          backgroundColor: "#1a1a2e",
+          flexDirection: "column",
+          padding: 2,
+          gap: 1,
+          children: [result.node],
+        } as ElementNode
+        frames.push(rootNode)
+      } else {
+        log("PARSE_ANIMATION_FRAME_ERROR", { error: result.error, chunk: frameJsx.slice(0, 100) })
+      }
+    }
+    
+    if (frames.length === 0) {
+      return { success: false, error: "No valid frames found" }
+    }
+    
+    return { success: true, frames, fps, name }
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Parse error" }
   }

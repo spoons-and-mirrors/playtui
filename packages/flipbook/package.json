@@ -21,10 +21,12 @@
   },
   "files": [
     "dist",
-    "demo.json"
+    "demo.tsx"
   ],
   "scripts": {
-    "build": "bun build src/cli.tsx src/index.ts --outdir dist --target bun --minify && bun run build:types",
+    "build": "bun run build:cli && bun run build:lib && bun run build:types",
+    "build:cli": "bun build src/cli.tsx --outdir dist --target bun --minify",
+    "build:lib": "bun build src/index.ts --outdir dist --target bun --minify --external react --external react/jsx-runtime --external react/jsx-dev-runtime",
     "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
     "prepublishOnly": "bun run build"
   },
@@ -50,7 +52,9 @@
   "license": "MIT",
   "dependencies": {
     "@opentui/core": "latest",
-    "@opentui/react": "latest",
+    "@opentui/react": "latest"
+  },
+  "peerDependencies": {
     "react": "^19.0.0"
   },
   "devDependencies": {

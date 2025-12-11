@@ -3,18 +3,18 @@
  * Flipbook - Terminal Animation Player
  * 
  * Usage:
- *   flipbook animation.json
- *   flipbook animation.json --fps 30
+ *   flipbook animation.tsx
+ *   flipbook animation.tsx --fps 30
  *   flipbook --demo
  */
 
 import { createCliRenderer } from "@opentui/core"
 import { createRoot, useKeyboard, useTerminalDimensions } from "@opentui/react"
-import { readFileSync, existsSync } from "fs"
+import { existsSync } from "fs"
 import { resolve, dirname } from "path"
 import { fileURLToPath } from "url"
 import { Flipbook } from "./player"
-import type { FlipbookFrames } from "./types"
+import type { Animation } from "./types"
 
 function getPackageDir(): string {
   const currentFile = fileURLToPath(import.meta.url)
@@ -53,7 +53,7 @@ function showHelp() {
 flipbook - Terminal animation player for PlayTUI animations
 
 Usage:
-  flipbook <animation.json> [options]
+  flipbook <animation.tsx> [options]
   flipbook --demo
 
 Options:
@@ -65,13 +65,13 @@ Controls:
   q, Esc, Ctrl+C       Exit
 
 Examples:
-  flipbook my-animation.json
-  flipbook loading.json --fps 30
+  flipbook my-animation.tsx
+  flipbook loading.tsx --fps 30
   flipbook --demo
 `)
 }
 
-function loadAnimation(filePath: string): FlipbookFrames {
+async function loadAnimation(filePath: string): Promise<Animation> {
   const resolvedPath = resolve(process.cwd(), filePath)
   
   if (!existsSync(resolvedPath)) {
@@ -80,31 +80,31 @@ function loadAnimation(filePath: string): FlipbookFrames {
   }
 
   try {
-    const content = readFileSync(resolvedPath, "utf-8")
-    const data = JSON.parse(content) as FlipbookFrames
+    const module = await import(resolvedPath) as { animation: Animation }
+    const anim = module.animation
     
-    if (!data.frames || !Array.isArray(data.frames)) {
-      console.error("Error: Invalid animation file - missing 'frames' array")
+    if (!anim || !anim.frames || !Array.isArray(anim.frames)) {
+      console.error("Error: Invalid animation file - missing 'animation.frames' export")
       process.exit(1)
     }
-    if (typeof data.fps !== "number") {
-      console.error("Error: Invalid animation file - missing 'fps' number")
+    if (typeof anim.fps !== "number") {
+      console.error("Error: Invalid animation file - missing 'animation.fps' export")
       process.exit(1)
     }
     
-    return data
+    return anim
   } catch (e) {
-    console.error(`Error: Failed to parse animation file: ${(e as Error).message}`)
+    console.error(`Error: Failed to load animation file: ${(e as Error).message}`)
     process.exit(1)
   }
 }
 
 interface AppProps {
-  data: FlipbookFrames
+  animation: Animation
   fpsOverride?: number
 }
 
-function App({ data, fpsOverride }: AppProps) {
+function App({ animation, fpsOverride }: AppProps) {
   const { width, height } = useTerminalDimensions()
 
   useKeyboard((key) => {
@@ -118,7 +118,7 @@ function App({ data, fpsOverride }: AppProps) {
       id="player-root"
       style={{ width, height, alignItems: "center", justifyContent: "center" }}
     >
-      <Flipbook data={data} fpsOverride={fpsOverride} />
+      <Flipbook animation={animation} fpsOverride={fpsOverride} />
     </box>
   )
 }
@@ -137,20 +137,17 @@ async function main() {
   }
 
   const animationPath = demo 
-    ? resolve(getPackageDir(), "demo.json")
+    ? resolve(getPackageDir(), "demo.tsx")
     : filePath!
   
-  const animationData = loadAnimation(animationPath)
+  const animation = await loadAnimation(animationPath)
   
-  console.log(`Playing: ${animationData.name || filePath}`)
-  console.log(`Frames: ${animationData.frames.length} @ ${fps ?? animationData.fps} FPS`)
+  console.log(`Playing: ${animation.name || filePath}`)
+  console.log(`Frames: ${animation.frames.length} @ ${fps ?? animation.fps} FPS`)
   console.log("Press q or Esc to exit\n")
 
-  // Small delay to let the user read the info
-  await new Promise(r => setTimeout(r, 500))
-
   const renderer = await createCliRenderer()
-  createRoot(renderer).render(<App data={animationData} fpsOverride={fps} />)
+  createRoot(renderer).render(<App animation={animation} fpsOverride={fps} />)
 }
 
 main()
