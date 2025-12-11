@@ -9,16 +9,16 @@ import { log } from "../../lib/logger"
 
 const FRAME_GAP = 1
 
-// Pad frame number with leading zeros based on total frames
+// Pad frame number with leading zeros based on total frames (minimum 2 digits)
 function formatFrameNum(index: number, total: number): string {
   const num = index + 1
-  const digits = total < 10 ? 1 : total < 100 ? 2 : total < 1000 ? 3 : 4
+  const digits = total < 100 ? 2 : total < 1000 ? 3 : 4
   return String(num).padStart(digits, "0")
 }
 
-// Calculate frame width based on total frames
+// Calculate frame width based on total frames (minimum 2 digits)
 function getFrameWidth(total: number): number {
-  const digits = total < 10 ? 1 : total < 100 ? 2 : total < 1000 ? 3 : 4
+  const digits = total < 100 ? 2 : total < 1000 ? 3 : 4
   return digits + 2 // padding left + right
 }
 
@@ -112,10 +112,25 @@ export function FilmStrip({
   return (
     <box
       id="film-strip"
-      height={clipboardError ? 6 : 5}
+      width="100%"
+      height={clipboardError ? 7 : 6}
       flexDirection="column"
       backgroundColor={COLORS.bgAlt}
+      paddingBottom={0}
+      // paddingLeft={1}
+      // paddingRight={1}
     >
+      {/* Top border separator */}
+      <box
+        id="film-strip-border"
+        width="100%"
+        height={1}
+        border={["top"]}
+        borderStyle="single"
+        borderColor={COLORS.border}
+        backgroundColor={COLORS.bg}
+      />
+
       {/* Notification bar */}
       {clipboardError && (
         <box
@@ -134,8 +149,6 @@ export function FilmStrip({
          height={1}
          flexDirection="row"
          alignItems="center"
-         paddingLeft={1}
-         paddingRight={1}
        >
          {/* Play/Stop Button */}
          <box
@@ -191,7 +204,6 @@ export function FilmStrip({
           {/* Import Button - Card style */}
           <box
             id="import-btn"
-            marginRight={1}
             paddingLeft={1}
             paddingRight={1}
             backgroundColor={imported ? COLORS.success : (clipboardError ? COLORS.danger : COLORS.muted)}
@@ -208,7 +220,6 @@ export function FilmStrip({
         id="film-strip-frames"
         flexGrow={1}
         overflow="hidden"
-        paddingLeft={1}
         paddingRight={1}
         marginTop={1}
       >
@@ -224,7 +235,7 @@ export function FilmStrip({
           }}
           style={{
             width: "100%",
-            height: 3,
+            height: 2,
             scrollbarOptions: {
               showArrows: false,
               trackOptions: {
@@ -241,23 +252,36 @@ export function FilmStrip({
         >
           {frames.map((_, index) => {
             const isActive = index === currentIndex
+            const label = formatFrameNum(index, frames.length)
             return (
               <box
                 key={index}
                 id={`frame-${index}`}
-                width={frameWidth}
-                height={2}
-                border={["bottom"]}
-                borderStyle="heavy"
-                borderColor={isActive ? COLORS.accent : COLORS.muted}
-                backgroundColor={COLORS.bgAlt}
-                alignItems="center"
-                justifyContent="center"
+                flexDirection="column"
                 onMouseDown={() => onSelectFrame(index)}
               >
-                <text fg={isActive ? COLORS.accent : COLORS.muted}>
-                  {isActive ? <strong>{formatFrameNum(index, frames.length)}</strong> : formatFrameNum(index, frames.length)}
-                </text>
+                {/* Number card */}
+                <box
+                  width={frameWidth}
+                  height={1}
+                  backgroundColor={isActive ? COLORS.accent : COLORS.bg}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <text fg={isActive ? COLORS.bg : COLORS.muted}>
+                    {isActive ? <strong>{label}</strong> : label}
+                  </text>
+                </box>
+                {/* Border box */}
+                <box
+                  width={label.length}
+                  height={1}
+                  border={["bottom"]}
+                  borderStyle="heavy"
+                  borderColor={isActive ? COLORS.accent : COLORS.border}
+                  backgroundColor={COLORS.bgAlt}
+                  alignSelf="center"
+                />
               </box>
             )
           })}
@@ -266,18 +290,27 @@ export function FilmStrip({
           <box
             id="add-frame-btn"
             width={3}
-            height={2}
-            border={["bottom"]}
-            borderStyle="heavy"
-            borderColor={COLORS.muted}
+            height={1}
+            backgroundColor={COLORS.bg}
             alignItems="center"
             justifyContent="center"
             onMouseDown={onDuplicateFrame}
           >
-            <text fg={COLORS.success}>+</text>
+            <text fg={COLORS.accent}>+</text>
           </box>
         </scrollbox>
       </box>
+
+      {/* Bottom border separator */}
+      <box
+        id="film-strip-border-bottom"
+        width="100%"
+        height={1}
+        border={["bottom"]}
+        borderStyle="single"
+        borderColor={COLORS.border}
+        backgroundColor={COLORS.bg}
+      />
     </box>
   )
 }

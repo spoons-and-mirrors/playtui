@@ -217,7 +217,7 @@ export function Header({
   const lastNameClickRef = useRef<number>(0)
 
   return (
-    <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0 }}>
+    <box id="header" style={{ flexDirection: "column", gap: 0, flexShrink: 0, paddingLeft: 2, paddingRight: 2 }}>
       {/* Row 1: File menu (left) + Animation (center) + Type/Name boxes (right) */}
       <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 1 }}>
         <FileMenu onAction={onFileAction} />

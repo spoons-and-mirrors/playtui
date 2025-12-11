@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react"
-import { FilmStrip } from "./FilmStrip"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
 
@@ -62,19 +61,6 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
 
   return (
     <box flexDirection="column" width="100%" height="100%">
-      <FilmStrip
-        frames={frames}
-        currentIndex={currentFrameIndex}
-        onSelectFrame={handleSelectFrame}
-        onDuplicateFrame={duplicateFrame}
-        onDeleteFrame={deleteFrame}
-        fps={fps}
-        onFpsChange={setFps}
-        isPlaying={isPlaying}
-        onTogglePlay={onTogglePlay}
-        onImport={importAnimation}
-      />
-
       <EditorPanel
         tree={tree}
         treeKey={currentFrameIndex}

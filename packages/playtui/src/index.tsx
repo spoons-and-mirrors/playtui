@@ -10,6 +10,7 @@ import { LibraryPage } from "./components/pages/Library"
 import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, AppHeader } from "./components/ui"
+import { FilmStrip } from "./components/play/FilmStrip"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
@@ -283,10 +284,16 @@ export function Builder({ width, height }: BuilderProps) {
     )
   }
 
+  const filmStripHeight = 6
+  const footerHeight = 1
+  const mainContentHeight = mode === "play" 
+    ? height - footerHeight - filmStripHeight 
+    : height - footerHeight
+
   return (
     <box id="builder" style={{ width, height, flexDirection: "column" }}>
       {/* Main content area - horizontal panels */}
-      <box id="builder-main" style={{ width, height: height - 1, flexDirection: "row" }}>
+      <box id="builder-main" style={{ width, height: mainContentHeight, flexDirection: "row" }}>
         {/* Left Panel - Tree */}
         {showTree && (
           <box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
@@ -300,7 +307,7 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Center Area - header, canvas */}
-        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", padding: 1 }}>
+        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}>
           <Header
           addMode={addMode}
           onFileAction={handleFileAction}
@@ -366,6 +373,23 @@ export function Builder({ width, height }: BuilderProps) {
       </box>
 
       {/* Bottom Bar - Mode tabs spanning full width */}
+      {mode === "play" && (
+        <FilmStrip
+          frames={animation?.frames ?? []}
+          currentIndex={animation?.currentFrameIndex ?? 0}
+          onSelectFrame={(index) => {
+            if (isPlaying) setIsPlaying(false)
+            setCurrentFrame(index)
+          }}
+          onDuplicateFrame={duplicateFrame}
+          onDeleteFrame={deleteFrame}
+          fps={animation?.fps ?? 10}
+          onFpsChange={setFps}
+          isPlaying={isPlaying}
+          onTogglePlay={() => setIsPlaying(p => !p)}
+          onImport={projectHook.importAnimation}
+        />
+      )}
       <AppHeader mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
 
       {/* Project Modal (for new/load/delete) */}

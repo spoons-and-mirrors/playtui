@@ -133,7 +133,6 @@ export function AppHeader({ mode, width, projectName, saveStatus, onModeChange }
         alignItems: "center",
         height: 1,
         flexShrink: 0,
-        paddingLeft: 1,
       }}
     >
       {/* Left: Mode tabs */}
