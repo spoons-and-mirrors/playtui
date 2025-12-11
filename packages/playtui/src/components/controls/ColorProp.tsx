@@ -160,9 +160,25 @@ export function FillColorProp({
   focused?: boolean
   onFocus?: () => void
 }) {
+  const handleInput = (v: string) => {
+    // Handle both typed and pasted input - strip # and non-hex chars
+    const hex = v.replace(/#/g, "").replace(/[^0-9a-fA-F]/g, "").slice(0, 8)
+    onChange(hex.length > 0 ? `#${hex}` : "")
+  }
+
+  const handlePaste = (e: { text: string; preventDefault: () => void }) => {
+    e.preventDefault()
+    const hex = e.text.trim().replace(/#/g, "").replace(/[^0-9a-fA-F]/g, "").slice(0, 8)
+    if (hex.length > 0) {
+      onChange(`#${hex}`)
+    }
+  }
+
   return (
     <PropRow label="Fill">
-      <box style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+      <box 
+        style={{ flexDirection: "row", alignItems: "center", gap: 1 }}
+      >
         <text fg={value || COLORS.muted}>██</text>
         <box
           onMouseDown={onFocus}
@@ -173,12 +189,8 @@ export function FillColorProp({
             value={(value || "").replace("#", "").slice(0, 8)}
             focused={focused}
             width={8}
-            onInput={(v) => {
-              const hex = v.replace("#", "").slice(0, 8)
-              if (/^[0-9a-fA-F]*$/.test(hex)) {
-                onChange(hex.length > 0 ? `#${hex}` : "")
-              }
-            }}
+            onInput={handleInput}
+            onPaste={handlePaste}
           />
         </box>
       </box>

@@ -44,73 +44,61 @@ export function FlexAlignmentGrid({
   align, 
   direction,
   onJustifyChange, 
-  onAlignChange 
+  onAlignChange,
+  onBothChange 
 }: {
   justify: JustifyContent | undefined
   align: AlignItems | undefined
   direction: FlexDirection | undefined
   onJustifyChange: (v: JustifyContent) => void
   onAlignChange: (v: AlignItems) => void
+  onBothChange: (j: JustifyContent, a: AlignItems) => void
 }) {
-  const justifyOpts: JustifyContent[] = ["flex-start", "center", "flex-end"]
-  const alignOpts: AlignItems[] = ["flex-start", "center", "flex-end"]
+  const opts: JustifyContent[] = ["flex-start", "center", "flex-end"]
   
-  const currentJ = justify || "flex-start"
-  const currentA = align || "stretch"
-  
-  const jIdx = justifyOpts.indexOf(currentJ)
-  const aIdx = alignOpts.indexOf(currentA === "stretch" ? "flex-start" : currentA)
+  const currentJ = justify ?? "flex-start"
+  const currentA = align ?? "flex-start"
   
   const isRow = direction === "row"
+  
+  const jIdx = opts.indexOf(currentJ)
+  const aIdx = opts.indexOf(currentA === "stretch" ? "flex-start" : currentA)
 
-  const renderCell = (jI: number, aI: number) => {
-    const isSelected = jIdx === jI && aIdx === aI
-    const cellJ = justifyOpts[jI]
-    const cellA = alignOpts[aI]
-    
-    const chars = isRow 
-      ? ["╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝"]
-      : ["╔", "╠", "╚", "╦", "╬", "╩", "╗", "╣", "╝"]
-    
-    const idx = isRow ? aI * 3 + jI : jI * 3 + aI
-    const char = chars[idx]
-    
-    return (
-      <box
-        key={`${jI}-${aI}`}
-        id={`align-${jI}-${aI}`}
-        onMouseDown={() => {
-          onJustifyChange(cellJ)
-          onAlignChange(cellA)
-        }}
-        style={{
-          width: 3, height: 1,
-          backgroundColor: isSelected ? COLORS.accent : COLORS.bgAlt,
-          alignItems: "center", justifyContent: "center"
-        }}
-      >
-        <text fg={isSelected ? COLORS.bg : COLORS.muted}>{char}</text>
-      </box>
-    )
-  }
-
+  // For row: cols = justify (X main), rows = align (Y cross)
+  // For column: cols = align (X cross), rows = justify (Y main)
   return (
     <box id="flex-align-grid" style={{ flexDirection: "column", gap: 0, marginTop: 1 }}>
       <text fg={COLORS.muted} style={{ marginBottom: 0 }}>Alignment</text>
-      <box style={{ flexDirection: "column", gap: 0 }}>
-        {[0, 1, 2].map(aI => (
-          <box key={aI} style={{ flexDirection: "row", gap: 0 }}>
-            {[0, 1, 2].map(jI => renderCell(jI, aI))}
+      <box id="align-matrix" style={{ flexDirection: "column", gap: 0 }}>
+        {[0, 1, 2].map(rowIdx => (
+          <box key={rowIdx} id={`align-row-${rowIdx}`} style={{ flexDirection: "row", gap: 1 }}>
+            {[0, 1, 2].map(colIdx => {
+              const cellJIdx = isRow ? colIdx : rowIdx
+              const cellAIdx = isRow ? rowIdx : colIdx
+              const isSelected = jIdx === cellJIdx && aIdx === cellAIdx
+              return (
+                <box
+                  key={`${colIdx}-${rowIdx}`}
+                  id={`align-cell-${colIdx}-${rowIdx}`}
+                  onMouseDown={() => {
+                    onBothChange(opts[cellJIdx], opts[cellAIdx] as AlignItems)
+                  }}
+                  style={{ width: 1, height: 1 }}
+                >
+                  <text fg={isSelected ? COLORS.accent : COLORS.border}>●</text>
+                </box>
+              )
+            })}
           </box>
         ))}
       </box>
       <box style={{ flexDirection: "row", gap: 1, marginTop: 1 }}>
         <text fg={COLORS.muted} style={{ width: 8 }}>Justify:</text>
-        <text fg={COLORS.accent}>{(currentJ || "start").replace("flex-", "")}</text>
+        <text fg={COLORS.accent}>{currentJ.replace("flex-", "")}</text>
       </box>
       <box style={{ flexDirection: "row", gap: 1 }}>
         <text fg={COLORS.muted} style={{ width: 8 }}>Align:</text>
-        <text fg={COLORS.accent}>{(currentA || "stretch").replace("flex-", "")}</text>
+        <text fg={COLORS.accent}>{currentA.replace("flex-", "")}</text>
       </box>
     </box>
   )

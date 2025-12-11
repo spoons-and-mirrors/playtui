@@ -273,7 +273,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             <FlexDirectionPicker value={container.flexDirection} onChange={(v) => onUpdate({ flexDirection: v } as Partial<ElementNode>)} />
             {wrapProp && renderProp(wrapProp)}
             <FlexAlignmentGrid justify={container.justifyContent} align={container.alignItems} direction={container.flexDirection}
-              onJustifyChange={(v) => onUpdate({ justifyContent: v } as Partial<ElementNode>)} onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<ElementNode>)} />
+              onJustifyChange={(v) => onUpdate({ justifyContent: v } as Partial<ElementNode>)} 
+              onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<ElementNode>)} 
+              onBothChange={(j, a) => onUpdate({ justifyContent: j, alignItems: a } as Partial<ElementNode>)} />
             {container.flexWrap === "wrap" && alignContentProp && renderProp(alignContentProp)}
             <GapControl gap={container.gap} rowGap={container.rowGap} colGap={container.columnGap}
               onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} />

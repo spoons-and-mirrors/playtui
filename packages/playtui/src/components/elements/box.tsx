@@ -14,6 +14,8 @@ export const BOX_DEFAULTS: Partial<BoxNode> = {
   height: 4,
   backgroundColor: COLORS.bgAlt,
   flexDirection: "column",
+  justifyContent: "flex-start",
+  alignItems: "flex-start",
   border: true,
   borderStyle: "single",
   borderColor: COLORS.border,
