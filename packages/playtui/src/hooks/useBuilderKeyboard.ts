@@ -19,6 +19,7 @@ interface UseBuilderKeyboardParams {
   // Modal/UI state
   modalMode: "new" | "load" | "delete" | "saveAs" | null
   mode: ViewMode
+  lastEditorPlayMode: "editor" | "play"
   focusedField: string | null
   addMode: boolean
 
@@ -54,6 +55,7 @@ interface UseBuilderKeyboardParams {
 export function useBuilderKeyboard({
   modalMode,
   mode,
+  lastEditorPlayMode,
   focusedField,
   addMode,
   setModalMode,
@@ -86,11 +88,16 @@ export function useBuilderKeyboard({
 
     // F-key mode switching (always available except in modal)
     if (!modalMode) {
-      if (key.name === "f1") { setMode("editor"); return }
-      if (key.name === "f2") { setMode("play"); return }
-      if (key.name === "f3") { setMode("code"); return }
-      if (key.name === "f4") { setMode("library"); return }
-      if (key.name === "f5") { setMode("docs"); return }
+      if (key.name === "f1") { 
+        // F1 toggles between editor and play, or restores last editor/play mode
+        if (mode === "editor") setMode("play")
+        else if (mode === "play") setMode("editor")
+        else setMode(lastEditorPlayMode)
+        return 
+      }
+      if (key.name === "f2") { setMode("code"); return }
+      if (key.name === "f3") { setMode("library"); return }
+      if (key.name === "f4") { setMode("docs"); return }
     }
 
     // Close modal on escape

@@ -54,12 +54,21 @@ export function Builder({ width, height }: BuilderProps) {
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
-  const [mode, setMode] = useState<ViewMode>("editor")
+  const [mode, _setMode] = useState<ViewMode>("editor")
+  
+  // Wrap setMode to track last editor/play mode
+  const setMode = useCallback((newMode: ViewMode) => {
+    if (newMode === "editor" || newMode === "play") {
+      setLastEditorPlayMode(newMode)
+    }
+    _setMode(newMode)
+  }, [])
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
@@ -122,6 +131,7 @@ export function Builder({ width, height }: BuilderProps) {
   useBuilderKeyboard({
     modalMode,
     mode,
+    lastEditorPlayMode,
     focusedField,
     addMode,
     setModalMode,
@@ -242,17 +252,19 @@ export function Builder({ width, height }: BuilderProps) {
   // Library Mode - Full Screen (hides tree and sidebar)
   if (mode === "library" || mode === "docs") {
     return (
-      <box id="builder" style={{ width, height, flexDirection: "column", paddingBottom: 1, paddingTop: 1, gap: 1 }}>
-        {mode === "library" ? (
-          <LibraryPage 
-            projectHook={projectHook} 
-            onLoadProject={() => setMode("editor")} 
-            width={width}
-            height={height - 3}
-          />
-        ) : (
-          <DocsPanel />
-        )}
+      <box id="builder" style={{ width, height, flexDirection: "column" }}>
+        <box style={{ flexGrow: 1, flexDirection: "column" }}>
+          {mode === "library" ? (
+            <LibraryPage 
+              projectHook={projectHook} 
+              onLoadProject={() => setMode("editor")} 
+              width={width}
+              height={height - 1}
+            />
+          ) : (
+            <DocsPanel />
+          )}
+        </box>
         <AppHeader mode={mode} width={width} onModeChange={setMode} />
       </box>
     )

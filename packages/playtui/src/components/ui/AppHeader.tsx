@@ -66,6 +66,53 @@ function ModeTab({ fKey, label, isActive, onPress }: ModeTabProps) {
   )
 }
 
+interface DualModeTabProps {
+  fKey: string
+  label1: string
+  label2: string
+  activeMode: "editor" | "play" | null
+  onPressLabel1: () => void
+  onPressLabel2: () => void
+}
+
+function DualModeTab({ fKey, label1, label2, activeMode, onPressLabel1, onPressLabel2 }: DualModeTabProps) {
+  const isLabel1Active = activeMode === "editor"
+  const isLabel2Active = activeMode === "play"
+  const isAnyActive = isLabel1Active || isLabel2Active
+  
+  return (
+    <box id="mode-tab-dual" style={{ flexDirection: "row" }}>
+      <box backgroundColor={isAnyActive ? COLORS.accentBright : COLORS.bg} paddingLeft={1} paddingRight={1}>
+        <text fg={isAnyActive ? COLORS.bg : COLORS.muted}>
+          {isAnyActive ? <strong>{fKey}</strong> : fKey}
+        </text>
+      </box>
+      <box 
+        id="mode-tab-dual-label1"
+        backgroundColor={isLabel1Active ? COLORS.accent : COLORS.bg} 
+        paddingLeft={1} 
+        paddingRight={1}
+        onMouseDown={onPressLabel1}
+      >
+        <text fg={isLabel1Active ? COLORS.bg : COLORS.muted}>
+          {isLabel1Active ? <strong>{label1}</strong> : label1}
+        </text>
+      </box>
+      <box 
+        id="mode-tab-dual-label2"
+        backgroundColor={isLabel2Active ? COLORS.accent : COLORS.bg} 
+        paddingLeft={1} 
+        paddingRight={1}
+        onMouseDown={onPressLabel2}
+      >
+        <text fg={isLabel2Active ? COLORS.bg : COLORS.muted}>
+          {isLabel2Active ? <strong>{label2}</strong> : label2}
+        </text>
+      </box>
+    </box>
+  )
+}
+
 interface AppHeaderProps {
   mode: ViewMode
   width: number
@@ -91,11 +138,17 @@ export function AppHeader({ mode, width, projectName, saveStatus, onModeChange }
     >
       {/* Left: Mode tabs */}
       <box id="app-header-tabs" style={{ flexDirection: "row", gap: 1 }}>
-        <ModeTab fKey="F1" label="Editor" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
-        <ModeTab fKey="F2" label="Play" isActive={mode === "play"} onPress={() => onModeChange("play")} />
-        <ModeTab fKey="F3" label="Code" isActive={mode === "code"} onPress={() => onModeChange("code")} />
-        <ModeTab fKey="F4" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
-        <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
+        <DualModeTab 
+          fKey="F1" 
+          label1="Edit" 
+          label2="Play" 
+          activeMode={mode === "editor" ? "editor" : mode === "play" ? "play" : null}
+          onPressLabel1={() => onModeChange("editor")} 
+          onPressLabel2={() => onModeChange("play")} 
+        />
+        <ModeTab fKey="F2" label="Code" isActive={mode === "code"} onPress={() => onModeChange("code")} />
+        <ModeTab fKey="F3" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
+        <ModeTab fKey="F4" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
       </box>
 
       {/* Right: Save indicator + Project name in card */}
