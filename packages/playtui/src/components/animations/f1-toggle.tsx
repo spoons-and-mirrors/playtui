@@ -12,12 +12,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#d8dce5" style={{ left: 0, top: 0 }}>P</text>
-        <text fg="#d8dce5" style={{ left: 1, top: -1 }}>l</text>
-        <text fg="#d8dce5" style={{ left: 2, top: -2 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: -2 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#d8dce5">P</text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: -1 }}>
+          <text fg="#d8dce5">l</text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -2 }}>
+          <text fg="#d8dce5">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -2 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 1
@@ -25,12 +33,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}>P</text>
-        <text fg="#d8dce5" style={{ left: 1, top: 0 }}>l</text>
-        <text fg="#d8dce5" style={{ left: 2, top: -2 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: -2 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22">P</text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#d8dce5">l</text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -2 }}>
+          <text fg="#d8dce5">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -2 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 2
@@ -38,12 +54,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#d8dce5" style={{ left: 1, top: 0 }}>l</text>
-        <text fg="#d8dce5" style={{ left: 2, top: -1 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: 5 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#d8dce5">l</text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#d8dce5">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: 5 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 3
@@ -51,12 +75,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#151a22" style={{ left: 1, top: 0 }}>l</text>
-        <text fg="#d8dce5" style={{ left: 2, top: -1 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: -1 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#151a22">l</text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#d8dce5">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -1 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 4
@@ -64,12 +96,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#151a22" style={{ left: 1, top: 0 }}><strong>l</strong></text>
-        <text fg="#d8dce5" style={{ left: 2, top: -1 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: -1 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#151a22"><strong>l</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#d8dce5">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -1 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 5
@@ -77,12 +117,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#151a22" style={{ left: 1, top: 0 }}><strong>l</strong></text>
-        <text fg="#151a22" style={{ left: 2, top: -1 }}>a</text>
-        <text fg="#d8dce5" style={{ left: 3, top: -1 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#151a22"><strong>l</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#151a22">a</text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -1 }}>
+          <text fg="#d8dce5">y</text>
+        </box>
       </box>
     </box>,
     // Frame 6
@@ -90,12 +138,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#151a22" style={{ left: 1, top: 0 }}><strong>l</strong></text>
-        <text fg="#151a22" style={{ left: 2, top: -1 }}><strong>a</strong></text>
-        <text fg="#151a22" style={{ left: 3, top: -1 }}>y</text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#151a22"><strong>l</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#151a22"><strong>a</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -1 }}>
+          <text fg="#151a22">y</text>
+        </box>
       </box>
     </box>,
     // Frame 7
@@ -103,12 +159,20 @@ export const animation = {
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", left: 0 }}>
+      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
         <text fg="#151a22"><strong>Edit</strong></text>
-        <text fg="#151a22" style={{ left: 0, top: 0 }}><strong>P</strong></text>
-        <text fg="#151a22" style={{ left: 1, top: 0 }}><strong>l</strong></text>
-        <text fg="#151a22" style={{ left: 2, top: -1 }}><strong>a</strong></text>
-        <text fg="#151a22" style={{ left: 3, top: -1 }}><strong>y</strong></text>
+        <box style={{ position: "relative", left: 0, top: 0 }}>
+          <text fg="#151a22"><strong>P</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 1, top: 0 }}>
+          <text fg="#151a22"><strong>l</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 2, top: -1 }}>
+          <text fg="#151a22"><strong>a</strong></text>
+        </box>
+        <box style={{ position: "relative", left: 3, top: -1 }}>
+          <text fg="#151a22"><strong>y</strong></text>
+        </box>
       </box>
     </box>
   ]
