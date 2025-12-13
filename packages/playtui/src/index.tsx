@@ -11,6 +11,7 @@ import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, AppHeader } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
+import { KeyframingContext } from "./components/contexts/KeyframingContext"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
@@ -38,6 +39,10 @@ export function Builder({ width, height }: BuilderProps) {
     setCollapsed: setProjectCollapsed,
     undo,
     redo,
+    // Keyframing
+    toggleAutoKey,
+    addKeyframe,
+    removeKeyframe,
     // Animation methods
     setCurrentFrame,
     duplicateFrame,
@@ -100,7 +105,23 @@ export function Builder({ width, height }: BuilderProps) {
     nodeY: number
   } | null>(null)
 
-  // Extract commonly used values from project
+  const keyframingContextValue = useMemo(() => {
+    if (!project || !project.animation.keyframing) return null
+    
+    return {
+      autoKeyEnabled: project.animation.keyframing.autoKeyEnabled,
+      currentFrame: project.animation.currentFrameIndex,
+      animatedProperties: project.animation.keyframing.animatedProperties,
+      hasKeyframe: (nodeId: string, property: string, frame: number) => {
+        const { hasKeyframeAt } = require("./lib/keyframing")
+        return hasKeyframeAt(project.animation.keyframing.animatedProperties, nodeId, property, frame)
+      },
+      addKeyframe,
+      removeKeyframe,
+      selectedId: project.selectedId
+    }
+  }, [project, addKeyframe, removeKeyframe])
+
   const tree = project?.tree ?? null
   const selectedId = project?.selectedId ?? null
   const collapsed = project?.collapsed ?? []
@@ -307,6 +328,7 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Center Area - header, canvas */}
+        <KeyframingContext.Provider value={keyframingContextValue}>
         <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}>
           <Header
           addMode={addMode}
@@ -370,12 +392,14 @@ export function Builder({ width, height }: BuilderProps) {
             )}
           </box>
         )}
+        </KeyframingContext.Provider>
       </box>
 
       {/* Bottom Bar - Mode tabs spanning full width */}
       {mode === "play" && (
         <FilmStrip
           frames={animation?.frames ?? []}
+          animatedProperties={animation?.keyframing.animatedProperties ?? []}
           currentIndex={animation?.currentFrameIndex ?? 0}
           onSelectFrame={(index) => {
             if (isPlaying) setIsPlaying(false)

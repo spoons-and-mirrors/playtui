@@ -118,18 +118,24 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <NumberProp
+                id="slider-min"
                 label="Min"
                 value={min}
                 min={0}
+
+
                 max={1000}
                 onChange={(v) => onUpdate({ min: v })}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
               <NumberProp
+                id="slider-max"
                 label="Max"
                 value={max}
                 min={0}
+
+
                 max={1000}
                 onChange={(v) => onUpdate({ max: v })}
               />
@@ -137,6 +143,7 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
           </box>
 
           <NumberProp
+            id="slider-val"
             label="Value"
             value={node.value ?? 50}
             min={min}
@@ -145,6 +152,7 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
           />
 
           <NumberProp
+            id="slider-viewport"
             label="Viewport"
             value={node.viewPortSize ?? Math.max(1, (max - min) * 0.1)}
             min={1}

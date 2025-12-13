@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
+import { bakeFrame } from "../../lib/keyframing"
 
 interface PlayPanelProps {
   projectHook: UseProjectReturn
@@ -26,7 +27,19 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
   if (!project) return null
 
   const { animation, tree } = project
-  const { fps, frames, currentFrameIndex } = animation
+  const { fps, frames, currentFrameIndex, keyframing } = animation
+
+  // Create a stable key for keyframing state to detect deep changes
+  // This ensures curve edits trigger re-baking
+  const keyframingKey = useMemo(() => {
+    return JSON.stringify(keyframing.animatedProperties)
+  }, [keyframing.animatedProperties])
+
+  // Use the snapshot from frames array as the base, then bake driven values
+  const displayTree = useMemo(() => {
+    const snapshotTree = frames[currentFrameIndex] ?? tree
+    return bakeFrame(snapshotTree, keyframing.animatedProperties, currentFrameIndex)
+  }, [frames, currentFrameIndex, keyframing.animatedProperties, tree, keyframingKey])
 
   // Keep ref in sync
   frameIndexRef.current = currentFrameIndex
@@ -62,7 +75,7 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
   return (
     <box flexDirection="column" width="100%" height="100%">
       <EditorPanel
-        tree={tree}
+        tree={displayTree}
         treeKey={currentFrameIndex}
         selectedId={project.selectedId}
         hoveredId={null}

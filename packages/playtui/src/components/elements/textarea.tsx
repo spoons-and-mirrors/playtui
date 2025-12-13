@@ -121,10 +121,12 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
 
           {/* Scroll margin */}
           <NumberProp
+            id="textarea-scroll-margin"
             label="Scroll Margin"
             value={node.scrollMargin ?? 0}
             min={0}
             max={10}
+
             onChange={(v) => onUpdate({ scrollMargin: v || undefined })}
           />
 

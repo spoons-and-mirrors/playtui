@@ -97,8 +97,10 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
 
           {/* Max length */}
           <NumberProp
+            id="input-max-len"
             label="Max Len"
             value={node.maxLength ?? 0}
+
             min={1}
             max={1000}
             onChange={(v) => onUpdate({ maxLength: v || undefined })}

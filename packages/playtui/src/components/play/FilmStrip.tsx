@@ -3,6 +3,8 @@ import type { ScrollBoxRenderable } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
+import type { AnimatedProperty } from "../../lib/keyframing"
+import { bakeKeyframedFrames } from "../../lib/keyframing"
 import { generateAnimationModule } from "../../lib/codegen"
 import { parseAnimationModule } from "../../lib/parseCode"
 import { copyToClipboard, readFromClipboard } from "../../lib/clipboard"
@@ -25,6 +27,7 @@ function getFrameWidth(total: number): number {
 
 interface FilmStripProps {
   frames: ElementNode[]
+  animatedProperties: AnimatedProperty[]
   currentIndex: number
   onSelectFrame: (index: number) => void
   onDuplicateFrame: () => void
@@ -38,6 +41,7 @@ interface FilmStripProps {
 
 export function FilmStrip({
   frames,
+  animatedProperties,
   currentIndex,
   onSelectFrame,
   onDuplicateFrame,
@@ -55,7 +59,8 @@ export function FilmStrip({
   const [clipboardError, setClipboardError] = useState<string | null>(null)
 
   const copyAnimationCode = useCallback(async () => {
-    const tsxCode = generateAnimationModule(frames, fps, "Animation")
+    const bakedFrames = bakeKeyframedFrames(frames, animatedProperties)
+    const tsxCode = generateAnimationModule(bakedFrames, fps, "Animation")
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
     const result = await copyToClipboard(tsxCode, { filename: `animation-${timestamp}.tsx` })
     
@@ -73,7 +78,7 @@ export function FilmStrip({
       setClipboardError(result.error || "Failed to export")
       setTimeout(() => setClipboardError(null), 3000)
     }
-  }, [frames, fps])
+  }, [frames, animatedProperties, fps])
 
   const importFromClipboard = useCallback(async () => {
     const result = await readFromClipboard()

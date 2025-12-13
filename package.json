@@ -5,6 +5,7 @@
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --cwd packages/playtui dev",
+    "flipbook:demo": "bun run --cwd packages/flipbook/src cli.tsx --demo",
     "pub:flipbook": "cd packages/flipbook && npm publish",
     "pub:playtui": "cd packages/playtui && npm publish"
   },

@@ -1,6 +1,8 @@
+import { useState } from "react"
+import { useKeyboard } from "@opentui/react"
 import { PlayPanel } from "../play/PlayPanel"
+import { TimelinePanel } from "../timeline/TimelinePanel"
 import type { UseProjectReturn } from "../../hooks/useProject"
-import { COLORS } from "../../theme"
 
 interface PlayPageProps {
   projectHook: UseProjectReturn
@@ -9,13 +11,27 @@ interface PlayPageProps {
 }
 
 export function PlayPage({ projectHook, isPlaying, onTogglePlay }: PlayPageProps) {
+  const [showTimeline, setShowTimeline] = useState(false)
+
+  useKeyboard((key) => {
+    if (key.name === "t") {
+      setShowTimeline((v) => !v)
+    }
+  })
+
   return (
-    <box width="100%" height="100%" backgroundColor={COLORS.bg}>
-      <PlayPanel 
-        projectHook={projectHook} 
-        isPlaying={isPlaying}
-        onTogglePlay={onTogglePlay}
-      />
+    <box flexDirection="column" flexGrow={1}>
+      {/* Main Play Area */}
+      <box flexGrow={1}>
+        <PlayPanel projectHook={projectHook} isPlaying={isPlaying} onTogglePlay={onTogglePlay} />
+      </box>
+
+      {/* Timeline Panel Overlay/Section */}
+      {showTimeline && (
+        <box height={14} flexShrink={0}>
+          <TimelinePanel onClose={() => setShowTimeline(false)} />
+        </box>
+      )}
     </box>
   )
 }

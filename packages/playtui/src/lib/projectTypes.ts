@@ -1,6 +1,8 @@
 // Project system types
 
 import type { ElementNode, HistoryEntry } from "./types"
+import type { KeyframingState } from "./keyframing"
+import { createDefaultKeyframingState } from "./keyframing"
 
 // Color swatch - reusable color variable
 export interface ColorSwatch {
@@ -35,6 +37,7 @@ export interface Project {
     fps: number
     frames: ElementNode[] // Array of root trees, one per frame
     currentFrameIndex: number
+    keyframing: KeyframingState
   }
 
   // Undo history (persisted, capped at 10,000 entries)
@@ -126,7 +129,8 @@ export function createNewProject(name: string): Project {
     animation: {
       fps: 12,
       frames: [defaultTree],
-      currentFrameIndex: 0
+      currentFrameIndex: 0,
+      keyframing: createDefaultKeyframingState(),
     },
     history: [],
     future: [],

@@ -4,6 +4,14 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import type { Project, ProjectMeta, ColorPalette } from "../lib/projectTypes"
 import { createNewProject } from "../lib/projectTypes"
 import type { ElementNode, HistoryEntry } from "../lib/types"
+import {
+  createDefaultKeyframingState,
+  shiftKeyframesOnDelete,
+  shiftKeyframesOnInsert,
+  upsertKeyframe as upsertDomainKeyframe,
+  removeKeyframe as removeDomainKeyframe,
+  setKeyframeHandle as setDomainKeyframeHandle,
+} from "../lib/keyframing"
 import { syncIdCounter } from "../lib/tree"
 import { log } from "../lib/logger"
 import * as storage from "../lib/storage"
@@ -44,7 +52,13 @@ export interface UseProjectReturn {
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
   importAnimation: (frames: ElementNode[], fps: number) => void
-  
+
+  // Keyframing
+  toggleAutoKey: () => void
+  addKeyframe: (nodeId: string, property: string, value: number) => void
+  removeKeyframe: (nodeId: string, property: string) => void
+  setKeyframeHandle: (nodeId: string, property: string, frame: number, handleX: number, handleY: number) => void
+
   // Palettes
   palettes: ColorPalette[]
   activePaletteIndex: number
@@ -120,6 +134,52 @@ export function useProject(): UseProjectReturn {
     const list = await storage.listProjects()
     setProjects(list)
   }, [])
+
+  // Ensure project has required data on load (handles older project files)
+  const ensureProjectData = (proj: Project): Project => {
+    // Migration: convert old swatches to palettes
+    const legacyProject = proj as Project & { swatches?: Array<{ id: string; color: string }> }
+    if (legacyProject.swatches && !proj.palettes) {
+      return {
+        ...proj,
+        palettes: [{
+          id: "palette-migrated",
+          name: "Migrated",
+          swatches: legacyProject.swatches
+        }],
+        activePaletteIndex: 0,
+        animation: proj.animation ?? {
+          fps: 12,
+          frames: [proj.tree],
+          currentFrameIndex: 0,
+          keyframing: createDefaultKeyframingState(),
+        },
+      }
+    }
+    // Animation data migration (for older projects before animation feature)
+    if (!proj.animation) {
+      return {
+        ...proj,
+        animation: {
+          fps: 12,
+          frames: [proj.tree],
+          currentFrameIndex: 0,
+          keyframing: createDefaultKeyframingState(),
+        },
+      }
+    }
+    // Keyframing migration (for projects before keyframing feature)
+    if (!proj.animation.keyframing) {
+      return {
+        ...proj,
+        animation: {
+          ...proj.animation,
+          keyframing: createDefaultKeyframingState(),
+        },
+      }
+    }
+    return proj
+  }
 
   // Initialize: load projects and open most recent or create default
   useEffect(() => {
@@ -269,7 +329,6 @@ export function useProject(): UseProjectReturn {
   // Update tree with optional history push and optional selectedId (atomic update)
   const updateTree = useCallback(
     (tree: ElementNode, pushHistory = true, selectedId?: string | null) => {
-      // log("UPDATE_TREE_CALLED", { treeRootChildren: tree.children.length, pushHistory, selectedId })
       setProject((prev) => {
         if (!prev) return prev
 
@@ -279,8 +338,10 @@ export function useProject(): UseProjectReturn {
         if (!pushHistory && !batchStartStateRef.current) {
           // First non-history update in a batch - capture current state
           batchStartStateRef.current = {
+            frameIndex: prev.animation.currentFrameIndex,
             tree: prev.tree,
             selectedId: prev.selectedId,
+            keyframing: prev.animation.keyframing,
           }
         }
 
@@ -303,8 +364,6 @@ export function useProject(): UseProjectReturn {
             currentFrameIndex: safeIndex
           }
         }
-        
-        // log("UPDATE_TREE_INSIDE_SET", { prevTreeChildren: prev.tree.children.length, newTreeChildren: tree.children.length })
 
         // If selectedId is explicitly provided (including null), update it atomically
         if (selectedId !== undefined) {
@@ -315,8 +374,10 @@ export function useProject(): UseProjectReturn {
           // Use batch start state if available (for drag operations)
           // Otherwise use the previous state (for single-click operations)
           const historyEntry: HistoryEntry = batchStartStateRef.current ?? {
+            frameIndex: prev.animation.currentFrameIndex,
             tree: prev.tree,
             selectedId: prev.selectedId,
+            keyframing: prev.animation.keyframing,
           }
           
           // Clear batch state
@@ -356,7 +417,6 @@ export function useProject(): UseProjectReturn {
         // Preserve selectedId across frame changes
       }
     })
-    // scheduleSave() // No need to save on simple navigation? Maybe yes to persist "open on this frame"
   }, [])
 
   // Animation: Duplicate current frame
@@ -374,13 +434,23 @@ export function useProject(): UseProjectReturn {
       // Insert after current
       newFrames.splice(currentIndex + 1, 0, treeClone)
       
+      // Shift keyframes
+      const shiftedKeyframing = {
+        ...prev.animation.keyframing,
+        animatedProperties: shiftKeyframesOnInsert(
+          prev.animation.keyframing.animatedProperties,
+          currentIndex + 1
+        ),
+      }
+      
       return {
         ...prev,
         tree: treeClone,
         animation: {
           ...prev.animation,
           frames: newFrames,
-          currentFrameIndex: currentIndex + 1
+          currentFrameIndex: currentIndex + 1,
+          keyframing: shiftedKeyframing,
         }
       }
     })
@@ -399,13 +469,23 @@ export function useProject(): UseProjectReturn {
         newIndex = Math.max(0, prev.animation.currentFrameIndex - 1)
       }
       
+      // Shift keyframes
+      const shiftedKeyframing = {
+        ...prev.animation.keyframing,
+        animatedProperties: shiftKeyframesOnDelete(
+          prev.animation.keyframing.animatedProperties,
+          index
+        ),
+      }
+      
       return {
         ...prev,
         tree: newFrames[newIndex],
         animation: {
           ...prev.animation,
           frames: newFrames,
-          currentFrameIndex: newIndex
+          currentFrameIndex: newIndex,
+          keyframing: shiftedKeyframing,
         }
       }
     })
@@ -439,7 +519,8 @@ export function useProject(): UseProjectReturn {
         animation: {
           fps,
           frames,
-          currentFrameIndex: 0
+          currentFrameIndex: 0,
+          keyframing: createDefaultKeyframingState(),
         },
         // Clear history when importing
         history: [],
@@ -449,39 +530,100 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
-  // Ensure project has required data on load (handles older project files)
-  const ensureProjectData = (proj: Project): Project => {
-    // Migration: convert old swatches to palettes
-    const legacyProject = proj as Project & { swatches?: Array<{ id: string; color: string }> }
-    if (legacyProject.swatches && !proj.palettes) {
+  // Keyframing: Toggle auto-key mode
+  const toggleAutoKey = useCallback(() => {
+    setProject((prev) => {
+      if (!prev) return prev
       return {
-        ...proj,
-        palettes: [{
-          id: "palette-migrated",
-          name: "Migrated",
-          swatches: legacyProject.swatches
-        }],
-        activePaletteIndex: 0,
-        animation: proj.animation ?? {
-          fps: 12,
-          frames: [proj.tree],
-          currentFrameIndex: 0
-        },
-      }
-    }
-    // Animation data migration (for older projects before animation feature)
-    if (!proj.animation) {
-      return {
-        ...proj,
+        ...prev,
         animation: {
-          fps: 12,
-          frames: [proj.tree],
-          currentFrameIndex: 0
+          ...prev.animation,
+          keyframing: {
+            ...prev.animation.keyframing,
+            autoKeyEnabled: !prev.animation.keyframing.autoKeyEnabled,
+          },
         },
       }
-    }
-    return proj
-  }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Keyframing: Add or update keyframe at current frame
+  const addKeyframe = useCallback((nodeId: string, property: string, value: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      const frame = prev.animation.currentFrameIndex
+      const nextAnimated = upsertDomainKeyframe(
+        prev.animation.keyframing.animatedProperties,
+        nodeId,
+        property,
+        frame,
+        value
+      )
+      return {
+        ...prev,
+        animation: {
+          ...prev.animation,
+          keyframing: {
+            ...prev.animation.keyframing,
+            animatedProperties: nextAnimated,
+          },
+        },
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Keyframing: Remove keyframe at current frame
+  const removeKeyframe = useCallback((nodeId: string, property: string) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      const frame = prev.animation.currentFrameIndex
+      const nextAnimated = removeDomainKeyframe(
+        prev.animation.keyframing.animatedProperties,
+        nodeId,
+        property,
+        frame
+      )
+      return {
+        ...prev,
+        animation: {
+          ...prev.animation,
+          keyframing: {
+            ...prev.animation.keyframing,
+            animatedProperties: nextAnimated,
+          },
+        },
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
+  // Keyframing: Set bezier handle for a keyframe
+  const setKeyframeHandle = useCallback((nodeId: string, property: string, frame: number, handleX: number, handleY: number) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      const nextAnimated = setDomainKeyframeHandle(
+        prev.animation.keyframing.animatedProperties,
+        nodeId,
+        property,
+        frame,
+        handleX,
+        handleY
+      )
+      return {
+        ...prev,
+        animation: {
+          ...prev.animation,
+          keyframing: {
+            ...prev.animation.keyframing,
+            animatedProperties: nextAnimated,
+          },
+        },
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
 
   // Update selected ID (UI state only, no save needed)
   const setSelectedId = useCallback(
@@ -516,14 +658,26 @@ export function useProject(): UseProjectReturn {
 
       // Push current state to future
       const futureEntry: HistoryEntry = {
+        frameIndex: prev.animation.currentFrameIndex,
         tree: prev.tree,
         selectedId: prev.selectedId,
+        keyframing: prev.animation.keyframing,
       }
+
+      // Restore frames with the old tree at the old frame index
+      const restoredFrames = [...prev.animation.frames]
+      restoredFrames[last.frameIndex] = last.tree
 
       return {
         ...prev,
         tree: last.tree,
         selectedId: last.selectedId,
+        animation: {
+          ...prev.animation,
+          frames: restoredFrames,
+          currentFrameIndex: last.frameIndex,
+          keyframing: last.keyframing,
+        },
         history,
         future: [...prev.future, futureEntry],
       }
@@ -541,14 +695,26 @@ export function useProject(): UseProjectReturn {
 
       // Push current state to history
       const historyEntry: HistoryEntry = {
+        frameIndex: prev.animation.currentFrameIndex,
         tree: prev.tree,
         selectedId: prev.selectedId,
+        keyframing: prev.animation.keyframing,
       }
+
+      // Restore frames with the next tree at the next frame index
+      const restoredFrames = [...prev.animation.frames]
+      restoredFrames[next.frameIndex] = next.tree
 
       return {
         ...prev,
         tree: next.tree,
         selectedId: next.selectedId,
+        animation: {
+          ...prev.animation,
+          frames: restoredFrames,
+          currentFrameIndex: next.frameIndex,
+          keyframing: next.keyframing,
+        },
         history: [...prev.history, historyEntry],
         future,
       }
@@ -610,6 +776,11 @@ export function useProject(): UseProjectReturn {
     deleteFrame,
     setFps,
     importAnimation,
+    // Keyframing methods
+    toggleAutoKey,
+    addKeyframe,
+    removeKeyframe,
+    setKeyframeHandle,
     // Palette methods
     palettes,
     activePaletteIndex,

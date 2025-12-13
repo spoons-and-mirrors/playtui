@@ -104,9 +104,12 @@ export function TabSelectProperties({ node: genericNode, onUpdate, focusedField,
 
           {/* Tab width */}
           <NumberProp
+            id="tab-width"
             label="Width"
             value={node.tabWidth ?? 12}
             min={5}
+
+
             max={40}
             onChange={(v) => onUpdate({ tabWidth: v })}
           />

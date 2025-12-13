@@ -120,7 +120,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
     if (prop.type === "number") {
       return (
-        <NumberProp key={key} label={prop.label} value={typeof val === "number" ? val : 0}
+        <NumberProp key={key} id={`prop-${prop.key}`} label={prop.label} value={typeof val === "number" ? val : 0}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} min={prop.min} max={prop.max} />
       )
     }
@@ -186,11 +186,40 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       <box key="padding" id="section-padding" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
         <text fg={COLORS.text}><strong>Padding</strong></text>
         <box id="padding-sliders" flexDirection="row" gap={1}>
-          <ValueSlider id="padding-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} onChangeEnd={(v) => handleChangeEnd("top", v)} />
-          <ValueSlider id="padding-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} onChangeEnd={(v) => handleChangeEnd("right", v)} />
-          <ValueSlider id="padding-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} onChangeEnd={(v) => handleChangeEnd("bottom", v)} />
-          <ValueSlider id="padding-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} onChangeEnd={(v) => handleChangeEnd("left", v)} />
+          <ValueSlider
+            id="padding-t"
+            label="t"
+            property="paddingTop"
+            value={values.top}
+            onChange={(v) => handleChange("top", v)}
+            onChangeEnd={(v) => handleChangeEnd("top", v)}
+          />
+          <ValueSlider
+            id="padding-r"
+            label="r"
+            property="paddingRight"
+            value={values.right}
+            onChange={(v) => handleChange("right", v)}
+            onChangeEnd={(v) => handleChangeEnd("right", v)}
+          />
+          <ValueSlider
+            id="padding-b"
+            label="b"
+            property="paddingBottom"
+            value={values.bottom}
+            onChange={(v) => handleChange("bottom", v)}
+            onChangeEnd={(v) => handleChangeEnd("bottom", v)}
+          />
+          <ValueSlider
+            id="padding-l"
+            label="l"
+            property="paddingLeft"
+            value={values.left}
+            onChange={(v) => handleChange("left", v)}
+            onChangeEnd={(v) => handleChangeEnd("left", v)}
+          />
         </box>
+
       </box>
     )
   }
@@ -222,11 +251,40 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       <box key="margin" id="section-margin" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
         <text fg={COLORS.text}><strong>Margin</strong></text>
         <box id="margin-sliders" flexDirection="row" gap={1}>
-          <ValueSlider id="margin-t" label="t" value={values.top} onChange={(v) => handleChange("top", v)} onChangeEnd={(v) => handleChangeEnd("top", v)} />
-          <ValueSlider id="margin-r" label="r" value={values.right} onChange={(v) => handleChange("right", v)} onChangeEnd={(v) => handleChangeEnd("right", v)} />
-          <ValueSlider id="margin-b" label="b" value={values.bottom} onChange={(v) => handleChange("bottom", v)} onChangeEnd={(v) => handleChangeEnd("bottom", v)} />
-          <ValueSlider id="margin-l" label="l" value={values.left} onChange={(v) => handleChange("left", v)} onChangeEnd={(v) => handleChangeEnd("left", v)} />
+          <ValueSlider
+            id="margin-t"
+            label="t"
+            property="marginTop"
+            value={values.top}
+            onChange={(v) => handleChange("top", v)}
+            onChangeEnd={(v) => handleChangeEnd("top", v)}
+          />
+          <ValueSlider
+            id="margin-r"
+            label="r"
+            property="marginRight"
+            value={values.right}
+            onChange={(v) => handleChange("right", v)}
+            onChangeEnd={(v) => handleChangeEnd("right", v)}
+          />
+          <ValueSlider
+            id="margin-b"
+            label="b"
+            property="marginBottom"
+            value={values.bottom}
+            onChange={(v) => handleChange("bottom", v)}
+            onChangeEnd={(v) => handleChangeEnd("bottom", v)}
+          />
+          <ValueSlider
+            id="margin-l"
+            label="l"
+            property="marginLeft"
+            value={values.left}
+            onChange={(v) => handleChange("left", v)}
+            onChangeEnd={(v) => handleChangeEnd("left", v)}
+          />
         </box>
+
       </box>
     )
   }
@@ -277,8 +335,29 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
               onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<ElementNode>)} 
               onBothChange={(j, a) => onUpdate({ justifyContent: j, alignItems: a } as Partial<ElementNode>)} />
             {container.flexWrap === "wrap" && alignContentProp && renderProp(alignContentProp)}
-            <GapControl gap={container.gap} rowGap={container.rowGap} colGap={container.columnGap}
-              onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>)} />
+            <box id="flex-gap-sliders" flexDirection="column" gap={1} marginTop={1}>
+              <GapControl
+                label="gap"
+                property="gap"
+                value={container.gap}
+                onChange={(v) => onUpdate({ gap: v } as Partial<ElementNode>)}
+                onChangeEnd={(v) => onUpdate({ gap: v } as Partial<ElementNode>, true)}
+              />
+              <GapControl
+                label="rowGap"
+                property="rowGap"
+                value={container.rowGap}
+                onChange={(v) => onUpdate({ rowGap: v } as Partial<ElementNode>)}
+                onChangeEnd={(v) => onUpdate({ rowGap: v } as Partial<ElementNode>, true)}
+              />
+              <GapControl
+                label="colGap"
+                property="columnGap"
+                value={container.columnGap}
+                onChange={(v) => onUpdate({ columnGap: v } as Partial<ElementNode>)}
+                onChangeEnd={(v) => onUpdate({ columnGap: v } as Partial<ElementNode>, true)}
+              />
+            </box>
           </box>
         )}
       </box>
@@ -324,9 +403,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         <box id="pos-row" flexDirection="row" alignItems="center" justifyContent="space-between">
           <text fg={COLORS.text}><strong>Position</strong></text>
           <box id="pos-xyz" flexDirection="row" gap={1}>
-            <ValueSlider id="pos-x" label="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ x: v } as Partial<ElementNode>, true)} />
-            <ValueSlider id="pos-y" label="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ y: v } as Partial<ElementNode>, true)} />
-            <ValueSlider id="pos-z" label="z" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, true)} />
+            <ValueSlider id="pos-x" label="x" property="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ x: v } as Partial<ElementNode>, true)} />
+            <ValueSlider id="pos-y" label="y" property="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ y: v } as Partial<ElementNode>, true)} />
+            <ValueSlider id="pos-z" label="z" property="zIndex" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, true)} />
           </box>
         </box>
       </box>

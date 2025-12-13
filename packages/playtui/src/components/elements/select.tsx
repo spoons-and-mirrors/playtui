@@ -134,19 +134,26 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
           {/* Spacing controls */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <NumberProp
-                label="Spacing"
-                value={node.itemSpacing ?? 0}
-                min={0}
+          <NumberProp
+            id="select-spacing"
+            label="Spacing"
+            value={node.itemSpacing ?? 0}
+            min={0}
+
+
+
                 max={10}
                 onChange={(v) => onUpdate({ itemSpacing: v || undefined })}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
               <NumberProp
+                id="select-fast-step"
                 label="Fast Step"
                 value={node.fastScrollStep ?? 5}
                 min={1}
+
+
                 max={20}
                 onChange={(v) => onUpdate({ fastScrollStep: v })}
               />
