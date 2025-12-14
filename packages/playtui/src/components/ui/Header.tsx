@@ -43,12 +43,12 @@ interface ElementOption {
 const ELEMENT_OPTIONS: ElementOption[] = [
   { type: "box", icon: "□", label: "Box", shortcut: "B" },
   { type: "text", icon: "T", label: "Text", shortcut: "T" },
+  { type: "ascii-font", icon: "A", label: "ASCII", shortcut: "F" },
   { type: "scrollbox", icon: "⊟", label: "Scroll", shortcut: "S" },
   { type: "input", icon: "▭", label: "Input", shortcut: "I" },
   { type: "textarea", icon: "▤", label: "Textarea", shortcut: "X" },
   { type: "select", icon: "▼", label: "Select", shortcut: "E" },
   { type: "slider", icon: "═", label: "Slider", shortcut: "L" },
-  { type: "ascii-font", icon: "A", label: "ASCII", shortcut: "F" },
   { type: "tab-select", icon: "⊞", label: "Tabs", shortcut: "W" },
 ]
 
