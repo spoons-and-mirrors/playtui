@@ -2,19 +2,23 @@ import { useEffect, useMemo, useRef } from "react"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import type { DragEvent } from "../Renderer"
+import type { CanvasOffset } from "../pages/Editor"
 import { bakeFrame } from "../../lib/keyframing"
 
 interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
   autoLayout: boolean
+  canvasOffset: CanvasOffset
+  canvasOffsetAdjustY?: number
+  onCanvasOffsetChange: (offset: CanvasOffset) => void
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
   onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, autoLayout, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
+export function PlayPanel({ projectHook, isPlaying, autoLayout, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 
@@ -85,6 +89,9 @@ export function PlayPanel({ projectHook, isPlaying, autoLayout, onTogglePlay, on
         selectedId={project.selectedId}
         hoveredId={null}
         autoLayout={autoLayout}
+        canvasOffset={canvasOffset}
+        canvasOffsetAdjustY={canvasOffsetAdjustY}
+        onCanvasOffsetChange={onCanvasOffsetChange}
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}

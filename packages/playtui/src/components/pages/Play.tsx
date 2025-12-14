@@ -4,18 +4,22 @@ import { PlayPanel } from "../play/PlayPanel"
 import { TimelinePanel } from "../timeline/TimelinePanel"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import type { DragEvent } from "../Renderer"
+import type { CanvasOffset } from "./Editor"
 
 interface PlayPageProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
   autoLayout: boolean
+  canvasOffset: CanvasOffset
+  canvasOffsetAdjustY?: number
+  onCanvasOffsetChange: (offset: CanvasOffset) => void
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
   onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPage({ projectHook, isPlaying, autoLayout, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
+export function PlayPage({ projectHook, isPlaying, autoLayout, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
   const [showTimeline, setShowTimeline] = useState(false)
 
   useKeyboard((key) => {
@@ -32,6 +36,9 @@ export function PlayPage({ projectHook, isPlaying, autoLayout, onTogglePlay, onD
           projectHook={projectHook} 
           isPlaying={isPlaying} 
           autoLayout={autoLayout}
+          canvasOffset={canvasOffset}
+          canvasOffsetAdjustY={canvasOffsetAdjustY}
+          onCanvasOffsetChange={onCanvasOffsetChange}
           onTogglePlay={onTogglePlay}
           onDragStart={onDragStart}
           onDragMove={onDragMove}

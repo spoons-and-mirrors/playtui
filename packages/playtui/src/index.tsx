@@ -16,6 +16,7 @@ import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
 import type { DragEvent } from "./components/Renderer"
+import type { CanvasOffset } from "./components/pages/Editor"
 
 interface BuilderProps {
   width: number
@@ -76,6 +77,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
+  const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
@@ -380,18 +382,23 @@ export function Builder({ width, height }: BuilderProps) {
              projectHook={projectHook} 
              isPlaying={isPlaying}
              autoLayout={autoLayout}
+             canvasOffset={canvasOffset}
+             canvasOffsetAdjustY={filmStripHeight}
+             onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
              onDragMove={handleDragMove}
              onDragEnd={handleDragEnd}
            />
-        ) : (
+         ) : (
           <EditorPanel
             tree={tree}
             treeKey={treeKey}
             selectedId={selectedId}
             hoveredId={hoveredId}
             autoLayout={autoLayout}
+            canvasOffset={canvasOffset}
+            onCanvasOffsetChange={setCanvasOffset}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
             onHover={setHoveredId}
             onBackgroundClick={() => setFocusedField(null)}

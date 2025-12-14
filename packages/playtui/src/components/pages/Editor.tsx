@@ -14,8 +14,8 @@
  * Elements only report drag start (via onMouseDown), then the canvas tracks all movement.
  * 
  * CANVAS PANNING:
- * Middle-mouse drag pans the canvas viewport. This is handled entirely within
- * EditorPanel using local state, separate from element dragging.
+ * Middle-mouse drag pans the canvas viewport. The offset state is managed by the parent
+ * and passed down, allowing the canvas position to persist across mode switches.
  */
 
 import type { MouseEvent } from "@opentui/core"
@@ -23,10 +23,15 @@ import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
 import { Renderer, type DragEvent } from "../Renderer"
-import { useRef, useState } from "react"
+import { useRef } from "react"
 
 // Re-export Renderer for consumers who need direct access
 export { Renderer } from "../Renderer"
+
+export interface CanvasOffset {
+  x: number
+  y: number
+}
 
 interface EditorPanelProps {
   tree: ElementNode
@@ -34,6 +39,9 @@ interface EditorPanelProps {
   selectedId: string | null
   hoveredId: string | null
   autoLayout: boolean
+  canvasOffset: CanvasOffset
+  canvasOffsetAdjustY?: number
+  onCanvasOffsetChange: (offset: CanvasOffset) => void
   onSelect: (id: string | null) => void
   onHover: (id: string | null) => void
   onBackgroundClick: () => void
@@ -48,6 +56,9 @@ export function EditorPanel({
   selectedId,
   hoveredId,
   autoLayout,
+  canvasOffset,
+  canvasOffsetAdjustY = 0,
+  onCanvasOffsetChange,
   onSelect,
   onHover,
   onBackgroundClick,
@@ -58,8 +69,7 @@ export function EditorPanel({
   // Track which node is being dragged (captured at canvas level)
   const draggingNodeId = useRef<string | null>(null)
 
-  // Canvas pan state - separate from element dragging
-  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 })
+  // Track pan start position
   const panStartRef = useRef<{ mouseX: number; mouseY: number; offsetX: number; offsetY: number } | null>(null)
 
   // Handle drag start from an element - store the node ID for canvas-level tracking
@@ -74,7 +84,7 @@ export function EditorPanel({
     if (panStartRef.current) {
       const deltaX = e.x - panStartRef.current.mouseX
       const deltaY = e.y - panStartRef.current.mouseY
-      setCanvasOffset({
+      onCanvasOffsetChange({
         x: panStartRef.current.offsetX + deltaX,
         y: panStartRef.current.offsetY + deltaY,
       })
@@ -150,7 +160,7 @@ export function EditorPanel({
           id="canvas-viewport"
           position="relative"
           left={canvasOffset.x}
-          top={canvasOffset.y}
+          top={canvasOffset.y + canvasOffsetAdjustY/2}
         >
           <Renderer
             key={treeKey}
