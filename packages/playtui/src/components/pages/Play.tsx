@@ -1,11 +1,7 @@
-import { useState } from "react"
-import { useKeyboard } from "@opentui/react"
 import { PlayPanel } from "../play/PlayPanel"
-import { TimelinePanel } from "../timeline/TimelinePanel"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import type { DragEvent } from "../Renderer"
 import type { CanvasOffset } from "./Editor"
-import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface PlayPageProps {
   projectHook: UseProjectReturn
@@ -20,14 +16,6 @@ interface PlayPageProps {
 }
 
 export function PlayPage({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
-  const [showTimeline, setShowTimeline] = useState(false)
-
-  useKeyboard((key) => {
-    if (isKeybind(key, Bind.TOGGLE_TIMELINE)) {
-      setShowTimeline((v) => !v)
-    }
-  })
-
   return (
     <box flexDirection="column" flexGrow={1}>
       {/* Main Play Area */}
@@ -44,16 +32,6 @@ export function PlayPage({ projectHook, isPlaying, canvasOffset, canvasOffsetAdj
           onDragEnd={onDragEnd}
         />
       </box>
-
-      {/* Timeline Panel Overlay/Section */}
-      {showTimeline && (
-        <box height={14} flexShrink={0}>
-          <TimelinePanel 
-            projectHook={projectHook}
-            onClose={() => setShowTimeline(false)} 
-          />
-        </box>
-      )}
     </box>
   )
 }

@@ -11,6 +11,7 @@ import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
+import { TimelinePanel } from "./components/timeline/TimelinePanel"
 import { KeyframingContext } from "./components/contexts/KeyframingContext"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
@@ -62,22 +63,16 @@ export function Builder({ width, height }: BuilderProps) {
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
-  const [mode, _setMode] = useState<ViewMode>("editor")
-  
-  // Wrap setMode to track last editor/play mode
-  const setMode = useCallback((newMode: ViewMode) => {
-    if (newMode === "editor" || newMode === "play") {
-      setLastEditorPlayMode(newMode)
-    }
-    _setMode(newMode)
-  }, [])
+  const [mode, setMode] = useState<ViewMode>("editor")
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showCodePanel, setShowCodePanel] = useState(false)
-  const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
+  const [codePanelExpanded, setCodePanelExpanded] = useState(false)
+  const [showTimeline, setShowTimeline] = useState(true) // Default to true in play mode
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
+  const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
@@ -155,9 +150,9 @@ export function Builder({ width, height }: BuilderProps) {
   useBuilderKeyboard({
     modalMode,
     mode,
-    lastEditorPlayMode,
     focusedField,
     addMode,
+    filmStripEditing,
     setModalMode,
     setMode,
     setFocusedField,
@@ -180,6 +175,8 @@ export function Builder({ width, height }: BuilderProps) {
     onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
     onTogglePanels: togglePanels,
     onToggleCode: () => setShowCodePanel(v => !v),
+    onToggleTimeline: () => setShowTimeline(v => !v),
+    onShowTimeline: () => setShowTimeline(true),
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -293,11 +290,13 @@ export function Builder({ width, height }: BuilderProps) {
   const treeWidth = 27
   const sidebarWidth = 35
   const filmStripHeight = 6
-  const codePanelHeight = 12
+  const codePanelHeight = codePanelExpanded ? Math.floor(height / 2) : 12
+  const timelineHeight = 14
   const footerHeight = 1
   const mainContentHeight = height - footerHeight 
     - (mode === "play" ? filmStripHeight : 0)
     - (showCodePanel ? codePanelHeight : 0)
+    - (mode === "play" && showTimeline ? timelineHeight : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -317,11 +316,74 @@ export function Builder({ width, height }: BuilderProps) {
     
     // The root is centered by flexbox. To center a specific element,
     // offset by the negative of its position (plus half its size to center it)
+    // We also need to account for the bottom panel which shifts the viewport center
+    
+    // Calculate total bottom panel height
+    const bottomPanelHeight = 
+      (mode === "play" ? filmStripHeight : 0) +
+      (showCodePanel ? codePanelHeight : 0) +
+      (mode === "play" && showTimeline ? timelineHeight : 0)
+
+    // The canvas is vertically centered in the remaining space *above* the bottom panels.
+    // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
+    // visual center down to account for this.
+    // 
+    // Let's look at EditorPanel:
+    // top={canvasOffset.y + canvasOffsetAdjustY / 2}
+    //
+    // So if we have a bottom panel of height H, the canvas visual center is shifted down by H/2.
+    // This means the coordinate (0,0) which was at the physical center is now at physical center + H/2.
+    //
+    // Wait, if the canvas size *shrinks* because of bottom panels (flex layout), 
+    // the flexbox centering moves the physical center UP by H/2.
+    // To keep the visual content stable, we add H/2 to the top offset.
+    //
+    // So, effectively, (0,0) remains visually in the center of the *original* full height area
+    // (minus footer/header/etc).
+    //
+    // If we want to center an element, we want its center to be at the new physical center 
+    // of the VISIBLE canvas area.
+    //
+    // The visible canvas area has height: TotalHeight - TopBar - BottomPanels.
+    // The physical center is at (TotalHeight - TopBar - BottomPanels) / 2.
+    //
+    // Relative to the "stable" (0,0) point (which is centered in the full area?), where is the new center?
+    // 
+    // Let's assume the previous logic was trying to maintain a stable world coordinate system.
+    // 
+    // If we want to center the element in the *visible* area:
+    // We simply need the element's position relative to the world origin (0,0) to be offset such that
+    // it aligns with the center of the visible area.
+    //
+    // The `canvasOffset` shifts the world origin.
+    // If offset is (0,0), the world origin is at the *visual* center (which is shifted by `canvasOffsetAdjustY`).
+    //
+    // `canvasOffsetAdjustY` is typically passed as `bottomPanelHeight`.
+    // So origin is at `PhysicalCenter + BottomPanelHeight / 2`.
+    //
+    // We want the element center `(pos.y + h/2)` to be at the `PhysicalCenter`.
+    //
+    // Current Y = `PhysicalCenter + BottomPanelHeight/2 + offset.y + pos.y + h/2`  (Wait, strictly, it's `top` relative to container)
+    //
+    // Let's trace EditorPanel render:
+    // Container is flex-centered.
+    // Inner box `canvas-viewport` has `top={canvasOffset.y + canvasOffsetAdjustY / 2}`
+    //
+    // So `canvas-viewport` origin (0,0) is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2`.
+    // The element is at `(pos.x, pos.y)` inside `canvas-viewport`.
+    // So element top-left is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y`.
+    // Element center is at `... + pos.y + h/2`.
+    //
+    // We want Element Center to be at `PhysicalCenter`.
+    // So: `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = PhysicalCenter`
+    // => `canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = 0`
+    // => `canvasOffset.y = -(pos.y + h/2) - canvasOffsetAdjustY / 2`
+    
     const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
-    const newOffsetY = Math.round(-pos.y - nodeHeight / 2)
+    const newOffsetY = Math.round(-pos.y - nodeHeight / 2 - bottomPanelHeight / 2)
     
     setCanvasOffset({ x: newOffsetX, y: newOffsetY })
-  }, [tree])
+  }, [tree, mode, showCodePanel, showTimeline])
 
   // Loading state
   if (isLoading) { // Allow project to be null if we are in library mode?
@@ -349,7 +411,7 @@ export function Builder({ width, height }: BuilderProps) {
             <DocsPanel />
           )}
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
       </box>
     )
   }
@@ -362,7 +424,7 @@ export function Builder({ width, height }: BuilderProps) {
         <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
       </box>
     )
   }
@@ -385,7 +447,19 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Center Area - header, canvas */}
         <KeyframingContext.Provider value={keyframingContextValue}>
-        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}>
+        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}
+        onMouseDown={() => {
+            // Clicking anywhere in the main area (outside specific panels that handle stopPropagation)
+            // should blur focused fields
+            if (focusedField === "code-panel") {
+                // We need to notify CodePanel to blur? 
+                // CodePanel's focus state is internal.
+                // But we can just clear the global focus lock.
+                // Actually, if we click canvas, CodePanel should lose focus.
+                setFocusedField(null)
+            }
+        }}
+      >
           <Header
           addMode={addMode}
           onFileAction={handleFileAction}
@@ -403,7 +477,7 @@ export function Builder({ width, height }: BuilderProps) {
              projectHook={projectHook} 
              isPlaying={isPlaying}
              canvasOffset={canvasOffset}
-             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0)}
+             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
@@ -473,17 +547,38 @@ export function Builder({ width, height }: BuilderProps) {
           isPlaying={isPlaying}
           onTogglePlay={() => setIsPlaying(p => !p)}
           onImport={projectHook.importAnimation}
+          onEditingChange={setFilmStripEditing}
         />
       )}
       
+      {/* Timeline Panel - visible in play mode, toggleable with F2 */}
+      {mode === "play" && showTimeline && (
+        <box height={timelineHeight} width={width} flexShrink={0} overflow="hidden">
+          <TimelinePanel projectHook={projectHook} width={width} />
+        </box>
+      )}
+
       {/* Code Panel - bottom panel toggled with F2 */}
       {showCodePanel && (
-        <box height={codePanelHeight} flexShrink={0}>
-          <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setShowCodePanel(false)} />
+        <box height={codePanelHeight} flexShrink={0} onMouseDown={(e) => {
+            e.stopPropagation()
+        }}>
+          <CodePanel 
+            code={code} 
+            tree={tree} 
+            updateTree={updateTree} 
+            onClose={() => setShowCodePanel(false)}
+            onFocusChange={(focused) => {
+                if (focused) setFocusedField("code-panel")
+                else if (focusedField === "code-panel") setFocusedField(null)
+            }}
+            isExpanded={codePanelExpanded}
+            onToggleExpand={() => setCodePanelExpanded(v => !v)}
+          />
         </box>
       )}
       
-      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { if (mode !== "play") { setMode("play"); setShowTimeline(true) } else { setShowTimeline(v => !v) } }} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

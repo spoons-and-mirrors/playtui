@@ -40,6 +40,7 @@ interface FilmStripProps {
   isPlaying: boolean
   onTogglePlay: () => void
   onImport: (frames: ElementNode[], fps: number) => void
+  onEditingChange?: (editing: boolean) => void
 }
 
 export function FilmStrip({
@@ -55,6 +56,7 @@ export function FilmStrip({
   isPlaying,
   onTogglePlay,
   onImport,
+  onEditingChange,
 }: FilmStripProps) {
   const scrollRef = useRef<ScrollBoxRenderable>(null)
   const frameWidth = getFrameWidth(frames.length)
@@ -65,6 +67,11 @@ export function FilmStrip({
   // Editable field state: "fps" | "frameCount" | null
   const [editingField, setEditingField] = useState<"fps" | "frameCount" | null>(null)
   const [editValue, setEditValue] = useState("")
+  
+  // Notify parent when editing state changes
+  useEffect(() => {
+    onEditingChange?.(editingField !== null)
+  }, [editingField, onEditingChange])
   
   // Double-click detection
   const lastClickRef = useRef<{ field: string; time: number } | null>(null)
@@ -327,17 +334,17 @@ export function FilmStrip({
         overflow="hidden"
         paddingRight={1}
         marginTop={1}
+        onMouseScroll={(e) => {
+          const sb = scrollRef.current
+          if (!sb || !e.scroll) return
+          const delta = e.scroll.direction === "up" ? -1 : 1
+          sb.scrollBy({ x: delta * frameWidth * 5, y: 0 })
+        }}
       >
         <scrollbox
           ref={scrollRef}
           scrollX
           scrollY={false}
-          onMouseScroll={(e) => {
-            const sb = scrollRef.current
-            if (!sb || !e.scroll) return
-            const delta = e.scroll.direction === "up" ? -1 : 1
-            sb.scrollBy({ x: delta * frameWidth * 5, y: 0 })
-          }}
           style={{
             width: "100%",
             height: 2,

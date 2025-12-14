@@ -1,26 +1,44 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { TextAttributes } from "@opentui/core"
 import type { TextareaRenderable } from "@opentui/core"
+import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import { log } from "../../lib/logger"
 import type { ElementNode } from "../../lib/types"
 import { parseCodeMultiple } from "../../lib/parseCode"
 import { copyToClipboard } from "../../lib/clipboard"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface CodePanelProps {
   code: string
   tree: ElementNode
   updateTree: (tree: ElementNode) => void
   onClose: () => void
+  onFocusChange?: (focused: boolean) => void
+  isExpanded?: boolean
+  onToggleExpand?: () => void
 }
 
-export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
+export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isExpanded, onToggleExpand }: CodePanelProps) {
+  const [isFocused, setIsFocused] = useState(true) // Start focused since panel is open
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
   const initializedRef = useRef(false)
+  const isUserEditingRef = useRef(false) // Track if user is actively typing
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  log("CODE_PANEL_RENDER", { codeLength: code.length, codePreview: code.slice(0, 80), initialized: initializedRef.current })
+  // Notify parent of focus changes
+  useEffect(() => {
+    onFocusChange?.(isFocused)
+  }, [isFocused, onFocusChange])
+
+  // Handle ESC to blur the code editor
+  useKeyboard((key) => {
+    if (isFocused && isKeybind(key, Bind.BLUR_INPUT)) {
+      setIsFocused(false)
+    }
+  })
 
   // Handle live code editing - parse code and update tree
   const handleCodeChange = useCallback((newCode: string) => {
@@ -45,10 +63,8 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   }, [tree, updateTree])
 
   useEffect(() => {
-    log("CODE_PANEL_INIT_EFFECT", { initialized: initializedRef.current, hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length })
     if (initializedRef.current) return
     const tryInit = () => {
-      log("CODE_PANEL_TRY_INIT", { hasRef: !!textareaRef.current, codeRefLen: codeRef.current.length, codeRefPreview: codeRef.current.slice(0, 80) })
       if (textareaRef.current) {
         ;(textareaRef.current as any).setText(codeRef.current, { history: false })
         initializedRef.current = true
@@ -56,7 +72,6 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
           ;(textareaRef.current as any)?.setText(codeRef.current, { history: false })
           textareaRef.current?.requestRender()
         }, 0)
-        log("CODE_PANEL_INIT_DONE", { setText: codeRef.current.slice(0, 80) })
       } else {
         requestAnimationFrame(tryInit)
       }
@@ -65,12 +80,13 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   }, [])
 
   useEffect(() => {
-    log("CODE_PANEL_SYNC_REF", { oldLen: codeRef.current.length, newLen: code.length })
     codeRef.current = code
   }, [code])
 
   useEffect(() => {
     if (!initializedRef.current || !textareaRef.current) return
+    // Don't overwrite the textarea if the user is actively editing
+    if (isUserEditingRef.current) return
     const currentText = textareaRef.current.plainText
     if (code !== currentText) {
       ;(textareaRef.current as any).setText(code, { history: false })
@@ -80,13 +96,16 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   const handleContentChange = useCallback(() => {
     const newCode = textareaRef.current?.plainText
     if (newCode !== undefined && newCode !== codeRef.current) {
+      isUserEditingRef.current = true // Mark that user is editing
       codeRef.current = newCode
       handleCodeChange(newCode)
+      // Reset the flag after a short delay (user stopped typing)
+      setTimeout(() => {
+        isUserEditingRef.current = false
+      }, 100)
     }
   }, [handleCodeChange])
 
-  const [copied, setCopied] = useState(false)
-  
   const copyCode = useCallback(async () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
     const result = await copyToClipboard(code, { filename: `code-${timestamp}.tsx` })
@@ -94,14 +113,22 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
     if (result.success) {
       setCopied(true)
       setTimeout(() => setCopied(false), 1000)
-    } else {
-      log("CODE_COPY_ERROR", { error: result.error })
     }
   }, [code])
 
+  // Handle blur when clicking outside
+  const handleBlur = useCallback(() => {
+    setIsFocused(false)
+  }, [])
+
   return (
-    <box id="code-panel" flexDirection="column" flexGrow={1} backgroundColor={COLORS.bg}>
-      {/* Header row - matches CurveEditor style */}
+    <box id="code-panel" flexDirection="column" flexGrow={1} backgroundColor={COLORS.bg}
+      onMouseDown={(e) => {
+        e.stopPropagation() // Prevent parent from blurring us
+        setIsFocused(true)
+      }}
+    >
+      {/* Header row */}
       <box 
         id="code-header" 
         flexDirection="row" 
@@ -110,9 +137,20 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
         backgroundColor={COLORS.bgAlt}
       >
         {/* Left: Label */}
-        <box paddingLeft={1} paddingRight={2}>
-          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>JSX Code</text>
+        <box paddingLeft={1} paddingRight={1}>
+          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>Code</text>
         </box>
+        
+        {/* Expand/Collapse button */}
+        {onToggleExpand && (
+          <box 
+            id="code-expand-btn" 
+            onMouseDown={onToggleExpand} 
+            paddingRight={1}
+          >
+            <text fg={isExpanded ? COLORS.accent : COLORS.muted} selectable={false}>⛶</text>
+          </box>
+        )}
         
         {/* Error indicator */}
         {error && (
@@ -150,13 +188,25 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
         <textarea
           ref={textareaRef}
           placeholder="Paste or edit JSX code here..."
-          focused
+          focused={isFocused}
           textColor={COLORS.text}
           backgroundColor="transparent"
           focusedBackgroundColor="transparent"
           cursorColor={COLORS.accent}
           style={{ flexGrow: 1, width: "100%" }}
           onContentChange={handleContentChange}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            setIsFocused(true)
+            
+            // Click-to-position cursor
+            if (textareaRef.current && textareaRef.current.editBuffer) {
+              const relX = e.x - textareaRef.current.x
+              const relY = e.y - textareaRef.current.y
+              textareaRef.current.editBuffer.setCursor(relY, relX)
+              textareaRef.current.requestRender()
+            }
+          }}
         />
       </box>
     </box>

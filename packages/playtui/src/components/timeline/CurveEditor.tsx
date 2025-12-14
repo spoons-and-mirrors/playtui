@@ -40,11 +40,13 @@ const GRAPH_HEIGHT = 12
 
 export function ValueGraph({ 
   projectHook,
+  width,
   nodeId, 
   property,
   onBack
 }: { 
   projectHook: UseProjectReturn
+  width: number
   nodeId: string
   property: string
   onBack: () => void
@@ -190,7 +192,7 @@ export function ValueGraph({
   const cellWidth = zoom2x ? 2 : 1
 
   return (
-    <box id="curve-editor" flexDirection="column" flexGrow={1}>
+    <box id="curve-editor" flexDirection="column" width={width} overflow="hidden">
       {/* Header row */}
       <box 
         id="curve-header" 
@@ -200,7 +202,7 @@ export function ValueGraph({
         backgroundColor={COLORS.bgAlt}
       >
         {/* Left: Element:property name */}
-        <box paddingLeft={1} paddingRight={2}>
+        <box paddingLeft={0} paddingRight={2}>
           <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getElementName(project.tree, nodeId)}:{property}</text>
         </box>
         
@@ -261,32 +263,34 @@ export function ValueGraph({
       {/* Border separator */}
       <box height={1} border={["top"]} borderColor={COLORS.border} borderStyle="single" />
       
-      <box id="curve-body" flexDirection="row" height={GRAPH_HEIGHT + 1} backgroundColor={COLORS.bg}>
+      <box id="curve-body" flexDirection="row" height={GRAPH_HEIGHT + 1} backgroundColor={COLORS.bg} overflow="hidden">
         {/* Y Axis Labels */}
-        <box id="curve-y-axis" width={5} flexDirection="column" justifyContent="space-between" paddingRight={1}>
+        <box id="curve-y-axis" width={5} flexDirection="column" justifyContent="space-between" paddingRight={1} flexShrink={0}>
           <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{maxValue}</text>
           <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{Math.round((maxValue + minValue) / 2)}</text>
           <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{minValue}</text>
         </box>
 
         {/* Graph Area with ScrollBox */}
-        <box id="curve-graph-container" flexGrow={1} overflow="hidden">
+        <box id="curve-graph-container" flexGrow={1} flexShrink={1} overflow="hidden">
           <scrollbox
             ref={scrollRef}
             scrollX
             scrollY={false}
+            height={GRAPH_HEIGHT + 1}
+            scrollbarOptions={{
+              showArrows: false,
+              trackOptions: {
+                foregroundColor: "transparent",
+                backgroundColor: "transparent",
+              },
+            }}
             style={{
-              width: "100%",
-              height: GRAPH_HEIGHT + 1,
-              scrollbarOptions: {
-                showArrows: false,
-                trackOptions: {
-                  foregroundColor: "transparent",
-                  backgroundColor: "transparent",
-                },
+              rootOptions: {
+                overflow: "hidden",
               },
               contentOptions: {
-                flexDirection: "column", // Rows stack vertically
+                flexDirection: "column",
                 flexShrink: 0,
               }
             }}
@@ -298,7 +302,7 @@ export function ValueGraph({
             }}
           >
             {Array.from({ length: GRAPH_HEIGHT }).map((_, row) => (
-              <box id={`curve-row-${row}`} key={row} flexDirection="row" height={1} width={frameCount * cellWidth}>
+              <box id={`curve-row-${row}`} key={row} flexDirection="row" height={1} flexShrink={0}>
                 {Array.from({ length: frameCount }).map((_, frame) => {
                   const percent = getPercentAtFrame(frame)
                   const targetRow = percentToRow(percent)
