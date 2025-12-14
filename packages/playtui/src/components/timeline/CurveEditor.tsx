@@ -1,6 +1,6 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { TextAttributes } from "@opentui/core"
-import type { MouseEvent } from "@opentui/core"
+import type { MouseEvent, ScrollBoxRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import type { UseProjectReturn } from "../../hooks/useProject"
@@ -51,7 +51,10 @@ export function ValueGraph({
   const { project, setCurrentFrame, setKeyframeHandle, addKeyframe } = projectHook
   const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
   const [zoom2x, setZoom2x] = useState(true)
+  const scrollRef = useRef<ScrollBoxRenderable>(null)
   const handleRef = useRef({ x: 33, y: 0 })
+
+  const currentFrame = project?.animation.currentFrameIndex ?? 0
 
   // J/K shortcuts for prev/next keyframe (J=prev, K=next)
   useKeyboard((key) => {
@@ -59,7 +62,7 @@ export function ValueGraph({
     const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, nodeId, property)
     if (!animProp) return
     
-    const currentFrame = project.animation.currentFrameIndex
+    // Use the variable from outer scope
     
     if (key.name === "j") {
       // J = previous keyframe
@@ -72,9 +75,30 @@ export function ValueGraph({
     }
   })
 
+  // Auto-scroll logic
+  useEffect(() => {
+    const sb = scrollRef.current
+    if (!sb) return
+    const cellW = zoom2x ? 2 : 1
+    const framePos = currentFrame * cellW
+    const viewportWidth = sb.width ?? 0
+    const scrollLeft = sb.scrollLeft ?? 0
+    
+    const playheadLeft = framePos
+    const playheadRight = framePos + cellW
+    
+    // If playhead is left of viewport, scroll to it
+    if (playheadLeft < scrollLeft) {
+      sb.scrollTo({ x: playheadLeft, y: 0 })
+    // If playhead is right of viewport, scroll so it's visible at the end
+    } else if (playheadRight > scrollLeft + viewportWidth) {
+      sb.scrollTo({ x: playheadRight - viewportWidth + 4, y: 0 }) // +4 for padding
+    }
+  }, [currentFrame, zoom2x])
+
   if (!project) return null
   
-  const currentFrame = project.animation.currentFrameIndex
+  // Removed redundant definition of currentFrame
   
   const animatedProp = getAnimatedProperty(
     project.animation.keyframing.animatedProperties, 
@@ -147,6 +171,12 @@ export function ValueGraph({
 
   // Current value at this frame (for ValueSlider)
   const currentValue = getDrivenValue(animatedProp, currentFrame)
+  
+  // Calculate value at hovered frame (if any)
+  const hoveredValue = hoveredFrame !== null ? getDrivenValue(animatedProp, hoveredFrame) : null
+  
+  // Value to display in the slider (hovered takes precedence for display)
+  const displayValue = hoveredValue !== null ? hoveredValue : currentValue
 
   // Handle value change from the slider
   const handleValueChange = (newValue: number) => {
@@ -186,7 +216,7 @@ export function ValueGraph({
         <ValueSlider
           id="curve-value"
           label="val"
-          value={Math.round(currentValue)}
+          value={Math.round(displayValue)}
           onChange={handleValueChange}
         />
         
@@ -234,7 +264,7 @@ export function ValueGraph({
       {/* Border separator */}
       <box height={1} border={["top"]} borderColor={COLORS.border} borderStyle="single" />
       
-      <box id="curve-body" flexDirection="row" height={GRAPH_HEIGHT} backgroundColor={COLORS.bg}>
+      <box id="curve-body" flexDirection="row" height={GRAPH_HEIGHT + 1} backgroundColor={COLORS.bg}>
         {/* Y Axis Labels */}
         <box id="curve-y-axis" width={5} flexDirection="column" justifyContent="space-between" paddingRight={1}>
           <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{maxValue}</text>
@@ -242,73 +272,100 @@ export function ValueGraph({
           <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{minValue}</text>
         </box>
 
-        {/* Graph Area */}
-        <box id="curve-graph" flexDirection="column" flexGrow={1}>
-          {Array.from({ length: GRAPH_HEIGHT }).map((_, row) => (
-            <box id={`curve-row-${row}`} key={row} flexDirection="row" height={1}>
-              {Array.from({ length: visibleFrames }).map((_, frame) => {
-                const percent = getPercentAtFrame(frame)
-                const targetRow = percentToRow(percent)
-                const isKeyframe = keyframes.some(k => k.frame === frame)
-                const isCurrent = frame === currentFrame
-                const isHovered = frame === hoveredFrame
-                
-                // Determine cell content
-                let char = " "
-                let fg = COLORS.muted
-                let bg = "transparent"
-                
-                // Grid lines
-                if (row === 0 || row === GRAPH_HEIGHT - 1 || row === Math.floor(GRAPH_HEIGHT / 2)) {
-                  char = "·"
-                  fg = COLORS.border
-                }
-                
-                // Current frame highlight
-                if (isCurrent) {
-                  bg = COLORS.bgAlt
-                }
-                
-                // Plot the value
-                if (row === targetRow) {
-                  if (isKeyframe) {
-                    char = "◆"
-                    fg = COLORS.danger
-                  } else {
-                    char = "●"
-                    fg = COLORS.accent
+        {/* Graph Area with ScrollBox */}
+        <box id="curve-graph-container" flexGrow={1} overflow="hidden">
+          <scrollbox
+            ref={scrollRef}
+            scrollX
+            scrollY={false}
+            style={{
+              width: "100%",
+              height: GRAPH_HEIGHT + 1,
+              scrollbarOptions: {
+                showArrows: false,
+                trackOptions: {
+                  foregroundColor: "transparent",
+                  backgroundColor: "transparent",
+                },
+              },
+              contentOptions: {
+                flexDirection: "column", // Rows stack vertically
+                flexShrink: 0,
+              }
+            }}
+            onMouseScroll={(e) => {
+              const sb = scrollRef.current
+              if (!sb || !e.scroll) return
+              const delta = e.scroll.direction === "up" ? -1 : 1
+              sb.scrollBy({ x: delta * (zoom2x ? 10 : 5), y: 0 })
+            }}
+          >
+            {Array.from({ length: GRAPH_HEIGHT }).map((_, row) => (
+              <box id={`curve-row-${row}`} key={row} flexDirection="row" height={1} width={frameCount * cellWidth}>
+                {Array.from({ length: frameCount }).map((_, frame) => {
+                  const percent = getPercentAtFrame(frame)
+                  const targetRow = percentToRow(percent)
+                  const isKeyframe = keyframes.some(k => k.frame === frame)
+                  const isCurrent = frame === currentFrame
+                  const isHovered = frame === hoveredFrame
+                  
+                  // Determine cell content
+                  let char = " "
+                  let fg = COLORS.muted
+                  let bg = "transparent"
+                  
+                  // Grid lines
+                  if (row === 0 || row === GRAPH_HEIGHT - 1 || row === Math.floor(GRAPH_HEIGHT / 2)) {
+                    char = "·"
+                    fg = COLORS.border
                   }
-                }
-                
-                // Draw vertical line connecting to value - FULL HEIGHT for cursor/keyframe
-                if (isKeyframe || isHovered) {
-                  // Only draw line if NOT the value point itself
-                  if (row !== targetRow) {
-                     // Determine color based on if it's keyframe or just hover
-                     fg = isKeyframe ? COLORS.danger : COLORS.muted
-                     
-                     // Draw full line
-                     char = "│"
+                  
+                  // Current frame highlight
+                  if (isCurrent) {
+                    bg = COLORS.bgAlt
                   }
-                }
+                  
+                  // Plot the value
+                  if (row === targetRow) {
+                    if (isKeyframe) {
+                      char = "◆"
+                      fg = COLORS.danger
+                    } else {
+                      char = "●"
+                      fg = COLORS.accent
+                    }
+                  }
+                  
+                  // Draw vertical line connecting to value - FULL HEIGHT for cursor/keyframe
+                  if (isKeyframe || isHovered) {
+                    // Only draw line if NOT the value point itself
+                    if (row !== targetRow) {
+                       // Determine color based on if it's keyframe or just hover
+                       fg = isKeyframe ? COLORS.danger : COLORS.muted
+                       
+                       // Draw full line
+                       char = "│"
+                    }
+                  }
 
-                return (
-                  <box
-                    id={`curve-cell-${frame}-${row}`}
-                    key={frame}
-                    width={cellWidth}
-                    height={1}
-                    backgroundColor={bg}
-                    onMouseMove={(e) => handleMouseMove(e, frame)}
-                    onMouseOut={handleMouseLeave}
-                    onMouseDown={(e) => handleCellClick(e, frame)}
-                  >
-                    <text fg={fg} selectable={false}>{zoom2x ? char + " " : char}</text>
-                  </box>
-                )
-              })}
-            </box>
-          ))}
+                  return (
+                    <box
+                      id={`curve-cell-${frame}-${row}`}
+                      key={frame}
+                      width={cellWidth}
+                      height={1}
+                      backgroundColor={bg}
+                      onMouseMove={(e) => handleMouseMove(e, frame)}
+                      onMouseOut={handleMouseLeave}
+                      onMouseDown={(e) => handleCellClick(e, frame)}
+                    >
+                      <text fg={fg} selectable={false}>{zoom2x ? char + " " : char}</text>
+                    </box>
+                  )
+                })}
+              </box>
+            ))}
+          </scrollbox>
         </box>
       </box>
     </box>
