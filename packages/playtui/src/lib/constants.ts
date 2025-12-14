@@ -132,22 +132,4 @@ export const COLOR_PALETTE = [
   { name: "transparent", value: "transparent" },
 ]
 
-export const SHORTCUTS = [
-  { key: "Del", desc: "delete" },
-  { key: "D", desc: "duplicate" },
-  { key: "B", desc: "add box" },
-  { key: "T", desc: "add text" },
-  { key: "S", desc: "add scrollbox" },
-  { key: "I", desc: "add input" },
-  { key: "A", desc: "add textarea" },
-  { key: "E", desc: "add select" },
-  { key: "L", desc: "add slider" },
-  { key: "F", desc: "add ascii-font" },
-  { key: "W", desc: "add tab-select" },
-  { key: "↑↓/jk", desc: "navigate" },
-  { key: "C", desc: "view code" },
-  { key: "Z", desc: "undo" },
-  { key: "Y", desc: "redo" },
-  { key: "Esc", desc: "deselect" },
-  { key: "^Q", desc: "quit" },
-]
+// SHORTCUTS are now defined in shortcuts.ts - use KEYBOARD_SHORTCUTS from there

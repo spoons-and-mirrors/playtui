@@ -7,6 +7,7 @@ import type { UseProjectReturn } from "../../hooks/useProject"
 import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle } from "../../lib/keyframing"
 import { ValueSlider } from "../ui/ValueSlider"
 import { findNode } from "../../lib/tree"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 // Get display name for an element (capitalize type)
 function getElementName(tree: any, nodeId: string): string {
@@ -56,20 +57,16 @@ export function ValueGraph({
 
   const currentFrame = project?.animation.currentFrameIndex ?? 0
 
-  // J/K shortcuts for prev/next keyframe (J=prev, K=next)
+  // J/K shortcuts for prev/next keyframe
   useKeyboard((key) => {
     if (!project) return
     const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, nodeId, property)
     if (!animProp) return
     
-    // Use the variable from outer scope
-    
-    if (key.name === "j") {
-      // J = previous keyframe
+    if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
       const prev = findPrevKeyframe(animProp.keyframes, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
-    } else if (key.name === "k") {
-      // K = next keyframe
+    } else if (isKeybind(key, Bind.TIMELINE_NEXT_KEYFRAME)) {
       const next = findNextKeyframe(animProp.keyframes, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }

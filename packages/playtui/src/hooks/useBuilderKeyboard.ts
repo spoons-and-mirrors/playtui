@@ -1,18 +1,20 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
 import type { ViewMode } from "../components/ui/AppHeader"
+import { Bind, isKeybind } from "../lib/shortcuts"
 
 // Keyboard shortcut to element type mapping
-const ADD_SHORTCUTS: Record<string, ElementType> = {
-  b: "box",
-  t: "text",
-  s: "scrollbox",
-  i: "input",
-  x: "textarea",
-  e: "select",
-  l: "slider",
-  f: "ascii-font",
-  w: "tab-select",
+// This maps Bind to ElementType for the "Add Mode"
+const ADD_ACTION_MAP: Partial<Record<Bind, ElementType>> = {
+  [Bind.ADD_BOX]: "box",
+  [Bind.ADD_TEXT]: "text",
+  [Bind.ADD_SCROLLBOX]: "scrollbox",
+  [Bind.ADD_INPUT]: "input",
+  [Bind.ADD_TEXTAREA]: "textarea",
+  [Bind.ADD_SELECT]: "select",
+  [Bind.ADD_SLIDER]: "slider",
+  [Bind.ADD_ASCII_FONT]: "ascii-font",
+  [Bind.ADD_TAB_SELECT]: "tab-select",
 }
 
 interface UseBuilderKeyboardParams {
@@ -81,34 +83,34 @@ export function useBuilderKeyboard({
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
-    if (key.name === "tab" && onTogglePanels) {
+    if (isKeybind(key, Bind.TOGGLE_PANELS) && onTogglePanels) {
       onTogglePanels()
       return
     }
 
     // F-key mode switching (always available except in modal)
     if (!modalMode) {
-      if (key.name === "f1") { 
+      if (isKeybind(key, Bind.VIEW_SWITCH_EDITOR_PLAY)) { 
         // F1 toggles between editor and play, or restores last editor/play mode
         if (mode === "editor") setMode("play")
         else if (mode === "play") setMode("editor")
         else setMode(lastEditorPlayMode)
         return 
       }
-      if (key.name === "f2") { setMode("code"); return }
-      if (key.name === "f3") { setMode("library"); return }
-      if (key.name === "f4") { setMode("docs"); return }
+      if (isKeybind(key, Bind.VIEW_CODE)) { setMode("code"); return }
+      if (isKeybind(key, Bind.VIEW_LIBRARY)) { setMode("library"); return }
+      if (isKeybind(key, Bind.VIEW_DOCS)) { setMode("docs"); return }
     }
 
     // Close modal on escape
     if (modalMode) {
-      if (key.name === "escape") setModalMode(null)
+      if (isKeybind(key, Bind.MODAL_CLOSE)) setModalMode(null)
       return
     }
 
     // Non-editor modes (no editor shortcuts)
     if (mode === "docs" || mode === "library") {
-      if (key.name === "escape") { setSelectedId(null); return }
+      if (isKeybind(key, Bind.CANCEL_SELECTION)) { setSelectedId(null); return }
       return
     }
 
@@ -119,41 +121,47 @@ export function useBuilderKeyboard({
 
     // Play mode - frame shortcuts, then fall through to editor shortcuts
     if (mode === "play") {
-      if (key.name === "space" && onAnimPlayToggle) { onAnimPlayToggle(); return }
+      if (isKeybind(key, Bind.ANIM_PLAY_TOGGLE) && onAnimPlayToggle) { onAnimPlayToggle(); return }
       if (!focusedField && !addMode) {
-        if (key.name === "e" && onAnimPrevFrame) { onAnimPrevFrame(); return }
-        if (key.name === "r" && onAnimNextFrame) { onAnimNextFrame(); return }
-        if (key.name === "f" && onAnimDuplicateFrame) { onAnimDuplicateFrame(); return }
-        if (key.name === "x" && onAnimDeleteFrame) { onAnimDeleteFrame(); return }
+        if (isKeybind(key, Bind.ANIM_PREV_FRAME) && onAnimPrevFrame) { onAnimPrevFrame(); return }
+        if (isKeybind(key, Bind.ANIM_NEXT_FRAME) && onAnimNextFrame) { onAnimNextFrame(); return }
+        if (isKeybind(key, Bind.ANIM_DUPLICATE_FRAME) && onAnimDuplicateFrame) { onAnimDuplicateFrame(); return }
+        if (isKeybind(key, Bind.ANIM_DELETE_FRAME) && onAnimDeleteFrame) { onAnimDeleteFrame(); return }
       }
       // Fall through to editor shortcuts below
     }
 
     if (focusedField) {
-      if (key.name === "escape" || key.name === "return") setFocusedField(null)
+      if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.CONFIRM)) setFocusedField(null)
       return
     }
 
-    // Add mode: A toggles out, other keys add components using ADD_SHORTCUTS mapping
+    // Add mode: A toggles out, other keys add components
     if (addMode) {
-      if (key.name === "escape" || key.name === "a") { setAddMode(false); return }
-      const elementType = ADD_SHORTCUTS[key.name as string]
-      if (elementType) onAddElement(elementType)
+      if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) { setAddMode(false); return }
+      
+      // Check all add shortcuts
+      for (const [bind, type] of Object.entries(ADD_ACTION_MAP)) {
+        if (isKeybind(key, bind as Bind)) {
+          onAddElement(type)
+          return
+        }
+      }
       return
     }
 
     // Main shortcuts (editor mode only)
-    if (key.name === "delete") onDelete()
-    else if (key.name === "d") onDuplicate()
-    else if (key.name === "a") setAddMode(true)
-    else if (key.name === "c" && key.shift) onCopy()
-    else if (key.name === "v" && !key.ctrl) onPaste()
-    else if (key.name === "z" && !key.shift) onUndo()
-    else if (key.name === "y" || (key.name === "z" && key.shift)) onRedo()
-    else if (key.option && key.name === "up") onMoveNode("up")
-    else if (key.option && key.name === "down") onMoveNode("down")
-    else if (key.name === "up") onNavigateTree("up")
-    else if (key.name === "down") onNavigateTree("down")
-    else if (key.name === "escape") setSelectedId(null)
+    if (isKeybind(key, Bind.EDITOR_DELETE)) onDelete()
+    else if (isKeybind(key, Bind.EDITOR_DUPLICATE)) onDuplicate()
+    else if (isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) setAddMode(true)
+    else if (isKeybind(key, Bind.EDITOR_COPY)) onCopy()
+    else if (isKeybind(key, Bind.EDITOR_PASTE)) onPaste()
+    else if (isKeybind(key, Bind.EDITOR_UNDO)) onUndo()
+    else if (isKeybind(key, Bind.EDITOR_REDO)) onRedo()
+    else if (isKeybind(key, Bind.EDITOR_MOVE_UP)) onMoveNode("up")
+    else if (isKeybind(key, Bind.EDITOR_MOVE_DOWN)) onMoveNode("down")
+    else if (isKeybind(key, Bind.NAV_TREE_UP)) onNavigateTree("up")
+    else if (isKeybind(key, Bind.NAV_TREE_DOWN)) onNavigateTree("down")
+    else if (isKeybind(key, Bind.CANCEL_SELECTION)) setSelectedId(null)
   })
 }

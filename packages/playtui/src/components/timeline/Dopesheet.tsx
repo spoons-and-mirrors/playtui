@@ -4,6 +4,7 @@ import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import { findNode } from "../../lib/tree"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 // Get display name for an element (capitalize type)
 function getElementName(tree: any, nodeId: string): string {
@@ -69,21 +70,17 @@ export function Dopesheet({
     grouped[prop.nodeId].push(prop)
   }
 
-  // J/K shortcuts for prev/next keyframe (J=prev, K=next)
+  // J/K shortcuts for prev/next keyframe
   useKeyboard((key) => {
-    // If we have a selected element, use that. Otherwise try the first node in the dopesheet
-    // or maybe check all properties? "Nearest keyframe for the select element" was the request.
     if (!selectedId) return
 
     const props = grouped[selectedId]
     if (!props || props.length === 0) return
 
-    if (key.name === "j") {
-      // J = previous keyframe
+    if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
       const prev = findPrevKeyframeForNode(props, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
-    } else if (key.name === "k") {
-      // K = next keyframe
+    } else if (isKeybind(key, Bind.TIMELINE_NEXT_KEYFRAME)) {
       const next = findNextKeyframeForNode(props, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }

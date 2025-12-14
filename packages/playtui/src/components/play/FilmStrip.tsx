@@ -9,6 +9,7 @@ import { generateAnimationModule } from "../../lib/codegen"
 import { parseAnimationModule } from "../../lib/parseCode"
 import { copyToClipboard, readFromClipboard } from "../../lib/clipboard"
 import { log } from "../../lib/logger"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 const FRAME_GAP = 1
 const DOUBLE_CLICK_MS = 300
@@ -254,7 +255,7 @@ export function FilmStrip({
                   textColor={COLORS.text}
                   onInput={setEditValue}
                   onSubmit={submitEdit}
-                  onKeyDown={(key) => { if (key.name === "escape") cancelEdit() }}
+                  onKeyDown={(key) => { if (isKeybind(key, Bind.MODAL_CLOSE)) cancelEdit() }}
                 />
               ) : (
                 <text fg={COLORS.text} onMouseDown={() => handleFieldClick("fps")}><strong>{fps}</strong></text>
@@ -278,7 +279,7 @@ export function FilmStrip({
                 textColor={COLORS.text}
                 onInput={setEditValue}
                 onSubmit={submitEdit}
-                onKeyDown={(key) => { if (key.name === "escape") cancelEdit() }}
+                onKeyDown={(key) => { if (isKeybind(key, Bind.MODAL_CLOSE)) cancelEdit() }}
               />
             ) : (
               <text fg={COLORS.muted} onMouseDown={() => handleFieldClick("frameCount")}>

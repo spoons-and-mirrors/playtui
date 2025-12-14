@@ -5,6 +5,7 @@ import { TimelinePanel } from "../timeline/TimelinePanel"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import type { DragEvent } from "../Renderer"
 import type { CanvasOffset } from "./Editor"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface PlayPageProps {
   projectHook: UseProjectReturn
@@ -22,7 +23,7 @@ export function PlayPage({ projectHook, isPlaying, canvasOffset, canvasOffsetAdj
   const [showTimeline, setShowTimeline] = useState(false)
 
   useKeyboard((key) => {
-    if (key.name === "t") {
+    if (isKeybind(key, Bind.TOGGLE_TIMELINE)) {
       setShowTimeline((v) => !v)
     }
   })

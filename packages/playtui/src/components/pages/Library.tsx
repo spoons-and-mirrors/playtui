@@ -7,6 +7,7 @@ import type { UseProjectReturn } from "../../hooks/useProject"
 import * as storage from "../../lib/storage"
 import type { ProjectMeta } from "../../lib/projectTypes"
 import type { ElementNode } from "../../lib/types"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface LibraryPageProps {
   projectHook: UseProjectReturn
@@ -36,19 +37,20 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
 
   useKeyboard((key) => {
     if (confirmingProject) {
-      if (key.name === "escape") {
+      if (isKeybind(key, Bind.MODAL_CLOSE)) {
         setConfirmingProject(null)
-      } else if (key.name === "return") {
+      } else if (isKeybind(key, Bind.CONFIRM)) {
         handleConfirmLoad()
       }
       return
     }
 
-    if (key.name === "up" || key.name === "k") {
+    // List navigation
+    if (isKeybind(key, Bind.NAV_TREE_UP)) {
       setSelectedIndex((prev) => Math.max(0, prev - 1))
-    } else if (key.name === "down" || key.name === "j") {
+    } else if (isKeybind(key, Bind.NAV_TREE_DOWN)) {
       setSelectedIndex((prev) => Math.min(projects.length - 1, prev + 1))
-    } else if (key.name === "return") {
+    } else if (isKeybind(key, Bind.CONFIRM)) {
       const proj = projects[selectedIndex]
       if (proj) setConfirmingProject(proj)
     }

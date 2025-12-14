@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
 import type { ElementNode, ElementType } from "../../lib/types"
+import { Bind, isKeybind } from "../../lib/shortcuts"
 
 const TYPE_ICONS: Record<ElementType, string> = {
   box: "□",
@@ -87,7 +88,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
               textColor={COLORS.bg}
               onSubmit={(val) => onRename(node.id, val)}
               onKeyDown={(key) => {
-                if (key.name === "escape") onRename(node.id, node.name || "")
+                if (isKeybind(key, Bind.MODAL_CLOSE)) onRename(node.id, node.name || "")
               }}
             />
           </box>
