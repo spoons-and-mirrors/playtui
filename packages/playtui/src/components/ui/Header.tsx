@@ -27,9 +27,6 @@ interface HeaderProps {
   onUpdateNode?: (updates: Partial<ElementNode>) => void
   focusedField?: string | null
   setFocusedField?: (field: string | null) => void
-  // Auto layout toggle
-  autoLayout?: boolean
-  onToggleAutoLayout?: () => void
 }
 
 // ============================================================================
@@ -211,8 +208,6 @@ export function Header({
   onUpdateNode,
   focusedField,
   setFocusedField,
-  autoLayout,
-  onToggleAutoLayout,
 }: HeaderProps) {
   const lastNameClickRef = useRef<number>(0)
 
@@ -271,22 +266,9 @@ export function Header({
         )}
       </box>
 
-      {/* Row 2: Element toolbar (left) + Auto button (right) */}
+      {/* Row 2: Element toolbar */}
       <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddElement={onAddElement} />
-        {onToggleAutoLayout && (
-          <box
-            id="auto-layout-toggle"
-            onMouseDown={onToggleAutoLayout}
-            style={{
-              backgroundColor: autoLayout ? COLORS.accent : COLORS.card,
-              paddingLeft: 1,
-              paddingRight: 1,
-            }}
-          >
-            <text fg={autoLayout ? COLORS.bg : COLORS.muted}>Auto</text>
-          </box>
-        )}
       </box>
 
       {/* Separator line */}

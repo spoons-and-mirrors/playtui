@@ -38,7 +38,6 @@ interface EditorPanelProps {
   treeKey: number
   selectedId: string | null
   hoveredId: string | null
-  autoLayout: boolean
   canvasOffset: CanvasOffset
   canvasOffsetAdjustY?: number
   onCanvasOffsetChange: (offset: CanvasOffset) => void
@@ -55,7 +54,6 @@ export function EditorPanel({
   treeKey,
   selectedId,
   hoveredId,
-  autoLayout,
   canvasOffset,
   canvasOffsetAdjustY = 0,
   onCanvasOffsetChange,
@@ -152,8 +150,8 @@ export function EditorPanel({
         style={{
           flexGrow: 1,
           overflow: "hidden",
-          justifyContent: autoLayout ? "center" : "flex-start",
-          alignItems: autoLayout ? "center" : "flex-start",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <box

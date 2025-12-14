@@ -8,7 +8,6 @@ import { bakeFrame } from "../../lib/keyframing"
 interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
-  autoLayout: boolean
   canvasOffset: CanvasOffset
   canvasOffsetAdjustY?: number
   onCanvasOffsetChange: (offset: CanvasOffset) => void
@@ -18,7 +17,7 @@ interface PlayPanelProps {
   onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, autoLayout, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
+export function PlayPanel({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 
@@ -88,7 +87,6 @@ export function PlayPanel({ projectHook, isPlaying, autoLayout, canvasOffset, ca
         treeKey={currentFrameIndex}
         selectedId={project.selectedId}
         hoveredId={null}
-        autoLayout={autoLayout}
         canvasOffset={canvasOffset}
         canvasOffsetAdjustY={canvasOffsetAdjustY}
         onCanvasOffsetChange={onCanvasOffsetChange}

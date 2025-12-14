@@ -74,7 +74,6 @@ export function Builder({ width, height }: BuilderProps) {
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
-  const [autoLayout, setAutoLayout] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
@@ -314,9 +313,8 @@ export function Builder({ width, height }: BuilderProps) {
     const nodeWidth = typeof node.width === "number" ? node.width : 10
     const nodeHeight = typeof node.height === "number" ? node.height : 3
     
-    // When autoLayout is on, the root is already centered by flexbox.
-    // To center a specific element, we offset by the negative of its position
-    // (plus half its size to center the element itself, not its top-left corner)
+    // The root is centered by flexbox. To center a specific element,
+    // offset by the negative of its position (plus half its size to center it)
     const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
     const newOffsetY = Math.round(-pos.y - nodeHeight / 2)
     
@@ -395,8 +393,6 @@ export function Builder({ width, height }: BuilderProps) {
           onUpdateNode={handleUpdate}
           focusedField={focusedField}
           setFocusedField={setFocusedField}
-          autoLayout={autoLayout}
-          onToggleAutoLayout={() => setAutoLayout(!autoLayout)}
         />
 
         {/* Canvas or Code Panel - grows to fill middle */}
@@ -406,7 +402,6 @@ export function Builder({ width, height }: BuilderProps) {
            <PlayPage 
              projectHook={projectHook} 
              isPlaying={isPlaying}
-             autoLayout={autoLayout}
              canvasOffset={canvasOffset}
              canvasOffsetAdjustY={filmStripHeight}
              onCanvasOffsetChange={setCanvasOffset}
@@ -421,7 +416,6 @@ export function Builder({ width, height }: BuilderProps) {
             treeKey={treeKey}
             selectedId={selectedId}
             hoveredId={hoveredId}
-            autoLayout={autoLayout}
             canvasOffset={canvasOffset}
             onCanvasOffsetChange={setCanvasOffset}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
