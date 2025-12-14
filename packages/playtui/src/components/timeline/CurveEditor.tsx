@@ -200,7 +200,7 @@ export function ValueGraph({
         backgroundColor={COLORS.bgAlt}
       >
         {/* Left: Element:property name */}
-        <box paddingLeft={1} paddingRight={2}>
+        <box paddingLeft={3} paddingRight={2}>
           <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getElementName(project.tree, nodeId)}:{property}</text>
         </box>
         
@@ -253,7 +253,7 @@ export function ValueGraph({
         </box>
         
         {/* Back button */}
-        <box id="curve-back-btn" onMouseDown={onBack} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+        <box id="curve-back-btn" onMouseDown={onBack} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={4}>
           <text fg={COLORS.accent} selectable={false}>Back</text>
         </box>
       </box>
