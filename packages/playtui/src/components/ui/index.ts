@@ -3,6 +3,9 @@ export { AppHeader, Footer, ModeTabBar, type ViewMode } from "./AppHeader"
 export { ProjectModal } from "./ProjectModal"
 export { ValueSlider } from "./ValueSlider"
 
+export { KeyframeDiamond } from "./KeyframeDiamond"
+export { KeyframeContextMenu } from "./KeyframeContextMenu"
+
 // Re-export panels for convenience
 export { CodePanel } from "../pages/Code"
 export { DocsPanel } from "../pages/Docs"

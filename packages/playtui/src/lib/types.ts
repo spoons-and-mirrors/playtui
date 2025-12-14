@@ -347,4 +347,11 @@ export type PropertySection =
   | "tabSelect"
   | "scrollbox"
 
-export type HistoryEntry = { tree: ElementNode; selectedId: string | null }
+import type { KeyframingState } from "./keyframing"
+
+export type HistoryEntry = {
+  frameIndex: number
+  tree: ElementNode
+  selectedId: string | null
+  keyframing: KeyframingState
+}

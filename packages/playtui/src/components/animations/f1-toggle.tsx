@@ -8,7 +8,7 @@ export const animation = {
   fps: 10,
   frames: [
     // Frame 0
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -29,7 +29,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 1
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -50,7 +50,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 2
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -71,7 +71,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 3
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -92,7 +92,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 4
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -113,7 +113,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 5
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -134,7 +134,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 6
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>
@@ -155,7 +155,7 @@ export const animation = {
       </box>
     </box>,
     // Frame 7
-      <box shouldFill={false} backgroundColor="#4a5568" style={{ width: 16, height: "auto", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
       <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
         <text fg="#151a22"><strong>F1</strong></text>
       </box>

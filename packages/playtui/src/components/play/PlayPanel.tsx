@@ -1,14 +1,20 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
+import type { DragEvent } from "../Renderer"
+import { bakeFrame } from "../../lib/keyframing"
 
 interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
+  autoLayout: boolean
   onTogglePlay: () => void
+  onDragStart?: (event: DragEvent) => void
+  onDragMove?: (event: DragEvent) => void
+  onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelProps) {
+export function PlayPanel({ projectHook, isPlaying, autoLayout, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 
@@ -26,7 +32,19 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
   if (!project) return null
 
   const { animation, tree } = project
-  const { fps, frames, currentFrameIndex } = animation
+  const { fps, frames, currentFrameIndex, keyframing } = animation
+
+  // Create a stable key for keyframing state to detect deep changes
+  // This ensures curve edits trigger re-baking
+  const keyframingKey = useMemo(() => {
+    return JSON.stringify(keyframing.animatedProperties)
+  }, [keyframing.animatedProperties])
+
+  // Use the snapshot from frames array as the base, then bake driven values
+  const displayTree = useMemo(() => {
+    const snapshotTree = frames[currentFrameIndex] ?? tree
+    return bakeFrame(snapshotTree, keyframing.animatedProperties, currentFrameIndex)
+  }, [frames, currentFrameIndex, keyframing.animatedProperties, tree, keyframingKey])
 
   // Keep ref in sync
   frameIndexRef.current = currentFrameIndex
@@ -62,14 +80,17 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
   return (
     <box flexDirection="column" width="100%" height="100%">
       <EditorPanel
-        tree={tree}
+        tree={displayTree}
         treeKey={currentFrameIndex}
         selectedId={project.selectedId}
         hoveredId={null}
-        autoLayout={true}
+        autoLayout={autoLayout}
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}
+        onDragStart={onDragStart}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
       />
     </box>
   )

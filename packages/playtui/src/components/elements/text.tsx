@@ -34,8 +34,8 @@ interface TextRendererProps {
 export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextRendererProps) {
   const node = genericNode as TextNode
   
-  // Only enable dragging for absolute positioned elements
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
   
   // Build text attributes bitmask
   let attrs = 0

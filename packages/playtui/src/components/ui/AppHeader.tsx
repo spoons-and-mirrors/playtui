@@ -79,21 +79,17 @@ interface DualModeTabProps {
 }
 
 function DualModeTab({ fKey, label1, label2, activeMode, onPressLabel1, onPressLabel2, isAnimating }: DualModeTabProps) {
-  if (isAnimating) {
-    return <Flipbook animation={f1ToggleAnim} />
-  }
-
   const isLabel1Active = activeMode === "editor"
   const isLabel2Active = activeMode === "play"
   const isAnyActive = isLabel1Active || isLabel2Active
   
-  // Swap order: if Play is active, show [F1 Play Edit], else show [F1 Edit Play]
-  const firstLabel = isLabel2Active ? label2 : label1
-  const secondLabel = isLabel2Active ? label1 : label2
-  const firstIsActive = isLabel2Active ? isLabel2Active : isLabel1Active
-  const secondIsActive = isLabel2Active ? isLabel1Active : isLabel2Active
-  const firstOnPress = isLabel2Active ? onPressLabel2 : onPressLabel1
-  const secondOnPress = isLabel2Active ? onPressLabel1 : onPressLabel2
+  // Show only the active label, or first label if neither active
+  const activeLabel = isLabel2Active ? label2 : label1
+  const activeOnPress = isLabel2Active ? onPressLabel2 : onPressLabel1
+  
+  if (isAnimating) {
+    return <Flipbook animation={f1ToggleAnim} />
+  }
   
   return (
     <box id="mode-tab-dual" style={{ flexDirection: "row" }}>
@@ -103,25 +99,14 @@ function DualModeTab({ fKey, label1, label2, activeMode, onPressLabel1, onPressL
         </text>
       </box>
       <box 
-        id="mode-tab-dual-label-first"
-        backgroundColor={firstIsActive ? COLORS.accent : COLORS.bg} 
+        id="mode-tab-dual-label"
+        backgroundColor={isAnyActive ? COLORS.accent : COLORS.bg} 
         paddingLeft={1} 
         paddingRight={1}
-        onMouseDown={firstOnPress}
+        onMouseDown={activeOnPress}
       >
-        <text fg={firstIsActive ? COLORS.bg : COLORS.muted}>
-          {firstIsActive ? <strong>{firstLabel}</strong> : firstLabel}
-        </text>
-      </box>
-      <box 
-        id="mode-tab-dual-label-second"
-        backgroundColor={secondIsActive ? COLORS.accent : COLORS.bg} 
-        paddingLeft={1} 
-        paddingRight={1}
-        onMouseDown={secondOnPress}
-      >
-        <text fg={secondIsActive ? COLORS.bg : COLORS.muted}>
-          {secondIsActive ? <strong>{secondLabel}</strong> : secondLabel}
+        <text fg={isAnyActive ? COLORS.bg : COLORS.muted}>
+          {isAnyActive ? <strong>{activeLabel}</strong> : activeLabel}
         </text>
       </box>
     </box>

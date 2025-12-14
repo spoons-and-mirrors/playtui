@@ -45,8 +45,8 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
   const node = genericNode as BoxNode
   const hasBorder = node.border === true
   
-  // Only enable dragging for absolute positioned elements
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const boxStyle = {
     // Sizing

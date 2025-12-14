@@ -1,5 +1,6 @@
 import { COLORS } from "../../theme"
 import { ValueCounter } from "../ui/ValueCounter"
+import { useKeyframing } from "../contexts/KeyframingContext"
 
 interface PositionControlProps {
   x?: number
@@ -11,10 +12,11 @@ interface PositionControlProps {
 
 export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEnd }: PositionControlProps) {
   return (
-    <box id="position-control" flexDirection="column" gap={1} marginTop={1}>
+    <box id="position-control" style={{ flexDirection: "row", gap: 1 }}>
       <ValueCounter
         id="pos-x"
         label="x"
+        property="x"
         value={x}
         onChange={(v) => onChange("x", v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd("x", v) : undefined}
@@ -22,6 +24,7 @@ export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEn
       <ValueCounter
         id="pos-y"
         label="y"
+        property="y"
         value={y}
         onChange={(v) => onChange("y", v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd("y", v) : undefined}
@@ -29,6 +32,7 @@ export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEn
       <ValueCounter
         id="pos-z"
         label="z"
+        property="zIndex"
         value={zIndex}
         onChange={(v) => onChange("zIndex", v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd("zIndex", v) : undefined}

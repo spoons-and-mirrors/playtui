@@ -11,6 +11,7 @@ import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, AppHeader } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
+import { KeyframingContext } from "./components/contexts/KeyframingContext"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
@@ -38,11 +39,16 @@ export function Builder({ width, height }: BuilderProps) {
     setCollapsed: setProjectCollapsed,
     undo,
     redo,
+    // Keyframing
+    toggleAutoKey,
+    addKeyframe,
+    removeKeyframe,
     // Animation methods
     setCurrentFrame,
     duplicateFrame,
     deleteFrame,
     setFps,
+    setFrameCount,
     // Palette methods
     palettes,
     activePaletteIndex,
@@ -91,7 +97,7 @@ export function Builder({ width, height }: BuilderProps) {
     }))
   }, [mode])
 
-  // Track dragging state for absolute positioned elements
+  // Track dragging state for positioned elements
   const dragStartRef = useRef<{
     nodeId: string
     mouseX: number
@@ -100,7 +106,23 @@ export function Builder({ width, height }: BuilderProps) {
     nodeY: number
   } | null>(null)
 
-  // Extract commonly used values from project
+  const keyframingContextValue = useMemo(() => {
+    if (!project || !project.animation.keyframing) return null
+    
+    return {
+      autoKeyEnabled: project.animation.keyframing.autoKeyEnabled,
+      currentFrame: project.animation.currentFrameIndex,
+      animatedProperties: project.animation.keyframing.animatedProperties,
+      hasKeyframe: (nodeId: string, property: string, frame: number) => {
+        const { hasKeyframeAt } = require("./lib/keyframing")
+        return hasKeyframeAt(project.animation.keyframing.animatedProperties, nodeId, property, frame)
+      },
+      addKeyframe,
+      removeKeyframe,
+      selectedId: project.selectedId
+    }
+  }, [project, addKeyframe, removeKeyframe])
+
   const tree = project?.tree ?? null
   const selectedId = project?.selectedId ?? null
   const collapsed = project?.collapsed ?? []
@@ -192,11 +214,11 @@ export function Builder({ width, height }: BuilderProps) {
     if (success) setModalMode(null)
   }, [duplicateProject])
 
-  // Handle drag for absolute positioned elements
+  // Handle drag for positioned elements (both absolute and relative)
   const handleDragStart = useCallback((event: DragEvent) => {
     if (!tree) return
     const node = findNode(tree, event.nodeId)
-    if (!node || !("position" in node) || node.position !== "absolute") return
+    if (!node) return
     
     // Store initial mouse position and node position
     dragStartRef.current = {
@@ -226,16 +248,44 @@ export function Builder({ width, height }: BuilderProps) {
     const updated = { ...node, x: newX, y: newY } as ElementNode
     const newTree = updateNode(tree, event.nodeId, updated)
     updateTree(newTree, false) // false = don't add to history
-  }, [tree, updateTree])
+    
+    // If in play mode and properties are keyframed, update keyframes during drag
+    // This ensures the baked display tree shows the dragged position
+    if (mode === "play" && project?.animation.keyframing.animatedProperties) {
+      const animProps = project.animation.keyframing.animatedProperties
+      const hasXKeyframe = animProps.some(p => p.nodeId === event.nodeId && p.property === "x")
+      const hasYKeyframe = animProps.some(p => p.nodeId === event.nodeId && p.property === "y")
+      
+      if (hasXKeyframe) addKeyframe(event.nodeId, "x", newX)
+      if (hasYKeyframe) addKeyframe(event.nodeId, "y", newY)
+    }
+  }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
 
   const handleDragEnd = useCallback((nodeId: string) => {
+    if (!dragStartRef.current) return
+    
+    const node = tree ? findNode(tree, nodeId) : null
+    const finalX = node ? (node as any).x ?? 0 : dragStartRef.current.nodeX
+    const finalY = node ? (node as any).y ?? 0 : dragStartRef.current.nodeY
+    
+    // If in play mode and properties are keyframed, ensure final keyframe is set
+    if (mode === "play" && project?.animation.keyframing.animatedProperties) {
+      const animProps = project.animation.keyframing.animatedProperties
+      const hasXKeyframe = animProps.some(p => p.nodeId === nodeId && p.property === "x")
+      const hasYKeyframe = animProps.some(p => p.nodeId === nodeId && p.property === "y")
+      
+      if (hasXKeyframe) addKeyframe(nodeId, "x", finalX)
+      if (hasYKeyframe) addKeyframe(nodeId, "y", finalY)
+    }
+    
     // Reset drag start position
     dragStartRef.current = null
+    
     // Add final state to history
     if (tree) {
       updateTree(tree, true) // true = add to history
     }
-  }, [tree, updateTree])
+  }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
 
   const treeWidth = 27
   const sidebarWidth = 35
@@ -307,6 +357,7 @@ export function Builder({ width, height }: BuilderProps) {
         )}
 
         {/* Center Area - header, canvas */}
+        <KeyframingContext.Provider value={keyframingContextValue}>
         <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}>
           <Header
           addMode={addMode}
@@ -328,7 +379,11 @@ export function Builder({ width, height }: BuilderProps) {
            <PlayPage 
              projectHook={projectHook} 
              isPlaying={isPlaying}
+             autoLayout={autoLayout}
              onTogglePlay={() => setIsPlaying(p => !p)}
+             onDragStart={handleDragStart}
+             onDragMove={handleDragMove}
+             onDragEnd={handleDragEnd}
            />
         ) : (
           <EditorPanel
@@ -370,12 +425,14 @@ export function Builder({ width, height }: BuilderProps) {
             )}
           </box>
         )}
+        </KeyframingContext.Provider>
       </box>
 
       {/* Bottom Bar - Mode tabs spanning full width */}
       {mode === "play" && (
         <FilmStrip
           frames={animation?.frames ?? []}
+          animatedProperties={animation?.keyframing.animatedProperties ?? []}
           currentIndex={animation?.currentFrameIndex ?? 0}
           onSelectFrame={(index) => {
             if (isPlaying) setIsPlaying(false)
@@ -385,6 +442,7 @@ export function Builder({ width, height }: BuilderProps) {
           onDeleteFrame={deleteFrame}
           fps={animation?.fps ?? 10}
           onFpsChange={setFps}
+          onFrameCountChange={setFrameCount}
           isPlaying={isPlaying}
           onTogglePlay={() => setIsPlaying(p => !p)}
           onImport={projectHook.importAnimation}

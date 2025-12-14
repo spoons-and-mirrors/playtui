@@ -1,8 +1,37 @@
 import { COLORS } from "../../theme"
+import { ValueCounter } from "../ui/ValueCounter"
 import { PropRow } from "./PropRow"
 import type { FlexDirection, JustifyContent, AlignItems, Overflow } from "../../lib/types"
 
+export function GapControl({
+  label,
+  value,
+  property,
+  onChange,
+  onChangeEnd,
+}: {
+  label: string
+  value: number | undefined
+  property: string
+  onChange: (v: number) => void
+  onChangeEnd?: (v: number) => void
+}) {
+  const val = value ?? 0
+
+  return (
+    <ValueCounter
+      id={`gap-${label}`}
+      label={label}
+      property={property}
+      value={val}
+      onChange={onChange}
+      onChangeEnd={onChangeEnd}
+    />
+  )
+}
+
 export function FlexDirectionPicker({ value, onChange }: {
+
   value: FlexDirection | undefined
   onChange: (v: FlexDirection) => void
 }) {
@@ -104,67 +133,7 @@ export function FlexAlignmentGrid({
   )
 }
 
-export function GapControl({ gap, rowGap, colGap, onChange }: {
-  gap?: number
-  rowGap?: number
-  colGap?: number
-  onChange: (key: "gap" | "rowGap" | "columnGap", val: number | undefined) => void
-}) {
-  const hasIndividual = rowGap !== undefined || colGap !== undefined
-  const displayGap = gap ?? 0
-  const displayRow = rowGap ?? gap ?? 0
-  const displayCol = colGap ?? gap ?? 0
-
-  const toggleMode = () => {
-    if (hasIndividual) {
-      const v = rowGap ?? colGap ?? 0
-      onChange("gap", v)
-      onChange("rowGap", undefined)
-      onChange("columnGap", undefined)
-    } else {
-      onChange("rowGap", displayGap)
-      onChange("columnGap", displayGap)
-      onChange("gap", undefined)
-    }
-  }
-
-  const renderGapVal = (label: string, key: "gap" | "rowGap" | "columnGap", val: number) => (
-    <box style={{ flexDirection: "row", alignItems: "center", gap: 0 }}>
-      <text fg={COLORS.muted} style={{ width: 2 }}>{label}</text>
-      <box id={`gap-${key}-dec`} onMouseDown={() => onChange(key, Math.max(0, val - 1))}
-        style={{ paddingLeft: 1, paddingRight: 1 }}>
-        <text fg={COLORS.warning}>‹</text>
-      </box>
-      <text fg={COLORS.text} style={{ width: 2 }}>{val}</text>
-      <box id={`gap-${key}-inc`} onMouseDown={() => onChange(key, Math.min(20, val + 1))}
-        style={{ paddingLeft: 1, paddingRight: 1 }}>
-        <text fg={COLORS.success}>›</text>
-      </box>
-    </box>
-  )
-
-  return (
-    <box id="gap-ctrl" style={{ flexDirection: "column", marginTop: 1 }}>
-      <box style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
-        <text fg={COLORS.muted}>Gap</text>
-        <box id="gap-mode" onMouseDown={toggleMode}
-          style={{ backgroundColor: COLORS.card, paddingLeft: 1, paddingRight: 1 }}>
-          <text fg={COLORS.accent}>{hasIndividual ? "⊟" : "⊞"}</text>
-        </box>
-      </box>
-      <box style={{ flexDirection: hasIndividual ? "column" : "row", gap: 1, marginTop: 0 }}>
-        {hasIndividual ? (
-          <>
-            {renderGapVal("R:", "rowGap", displayRow)}
-            {renderGapVal("C:", "columnGap", displayCol)}
-          </>
-        ) : (
-          renderGapVal("", "gap", displayGap)
-        )}
-      </box>
-    </box>
-  )
-}
+// Removed duplicate GapControl
 
 export function OverflowPicker({ value, onChange }: {
   value: Overflow | undefined

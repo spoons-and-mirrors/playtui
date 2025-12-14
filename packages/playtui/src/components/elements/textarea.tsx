@@ -32,7 +32,8 @@ interface TextareaRendererProps {
 
 export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
   const node = genericNode as TextareaNode
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const handleMouseDown = (e: MouseEvent) => {
     e.stopPropagation()
@@ -121,10 +122,12 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
 
           {/* Scroll margin */}
           <NumberProp
+            id="textarea-scroll-margin"
             label="Scroll Margin"
             value={node.scrollMargin ?? 0}
             min={0}
             max={10}
+
             onChange={(v) => onUpdate({ scrollMargin: v || undefined })}
           />
 
