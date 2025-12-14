@@ -1,6 +1,8 @@
 # PlayTUI Documentation
 
-A native TUI design tool built on sst/opentui. Create, animate, and export terminal user interfaces visually.
+A native TUI design and animation tool built on sst/opentui.
+
+> WARNING: PLAYTUI is pre-alpha, riddled with bugs, and feature implementations evolveing on a whim. Very much vibe coded.
 
 ## Getting Started
 
