@@ -83,7 +83,7 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay, onDragStart, o
         treeKey={currentFrameIndex}
         selectedId={project.selectedId}
         hoveredId={null}
-        autoLayout={true}
+        autoLayout={false}
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}
