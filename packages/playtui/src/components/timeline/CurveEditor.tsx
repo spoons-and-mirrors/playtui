@@ -50,7 +50,7 @@ export function ValueGraph({
 }) {
   const { project, setCurrentFrame, setKeyframeHandle, addKeyframe } = projectHook
   const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
-  const [zoom2x, setZoom2x] = useState(false)
+  const [zoom2x, setZoom2x] = useState(true)
   const handleRef = useRef({ x: 33, y: 0 })
 
   // J/K shortcuts for prev/next keyframe (J=prev, K=next)

@@ -6,18 +6,24 @@
  * - Selection/hover visual feedback
  * - Auto-layout centering
  * - Background click handling
+ * - Canvas panning (middle-mouse drag)
  * 
  * DRAG ARCHITECTURE:
  * Drag events are captured at the CANVAS level, not the element level.
  * This ensures smooth dragging even when the mouse moves outside an element's bounds.
  * Elements only report drag start (via onMouseDown), then the canvas tracks all movement.
+ * 
+ * CANVAS PANNING:
+ * Middle-mouse drag pans the canvas viewport. This is handled entirely within
+ * EditorPanel using local state, separate from element dragging.
  */
 
 import type { MouseEvent } from "@opentui/core"
+import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { ElementNode } from "../../lib/types"
 import { Renderer, type DragEvent } from "../Renderer"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 
 // Re-export Renderer for consumers who need direct access
 export { Renderer } from "../Renderer"
@@ -52,6 +58,10 @@ export function EditorPanel({
   // Track which node is being dragged (captured at canvas level)
   const draggingNodeId = useRef<string | null>(null)
 
+  // Canvas pan state - separate from element dragging
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 })
+  const panStartRef = useRef<{ mouseX: number; mouseY: number; offsetX: number; offsetY: number } | null>(null)
+
   // Handle drag start from an element - store the node ID for canvas-level tracking
   const handleElementDragStart = (event: DragEvent) => {
     draggingNodeId.current = event.nodeId
@@ -60,7 +70,20 @@ export function EditorPanel({
 
   // Canvas-level drag handler - fires for all mouse drags on the canvas
   const handleCanvasDrag = (e: MouseEvent) => {
+    // Handle canvas panning (middle-mouse)
+    if (panStartRef.current) {
+      const deltaX = e.x - panStartRef.current.mouseX
+      const deltaY = e.y - panStartRef.current.mouseY
+      setCanvasOffset({
+        x: panStartRef.current.offsetX + deltaX,
+        y: panStartRef.current.offsetY + deltaY,
+      })
+      return
+    }
+
+    // Handle element dragging
     if (!draggingNodeId.current || !onDragMove) return
+
     e.stopPropagation()
     onDragMove({
       nodeId: draggingNodeId.current,
@@ -71,7 +94,15 @@ export function EditorPanel({
 
   // Canvas-level drag end handler
   const handleCanvasDragEnd = (e: MouseEvent) => {
+    // End canvas panning
+    if (panStartRef.current) {
+      panStartRef.current = null
+      return
+    }
+
+    // End element dragging
     if (!draggingNodeId.current || !onDragEnd) return
+
     e.stopPropagation()
     const nodeId = draggingNodeId.current
     draggingNodeId.current = null
@@ -90,24 +121,47 @@ export function EditorPanel({
       {/* Canvas area - captures drag events at this level for smooth dragging */}
       <box
         id="editor-canvas"
-        onMouseDown={onBackgroundClick}
+        onMouseDown={(e: MouseEvent) => {
+          // Middle-mouse: start canvas panning
+          if (e.button === MouseButton.MIDDLE) {
+            panStartRef.current = {
+              mouseX: e.x,
+              mouseY: e.y,
+              offsetX: canvasOffset.x,
+              offsetY: canvasOffset.y,
+            }
+            e.stopPropagation()
+            return
+          }
+
+          // Left-click on background: deselect
+          onBackgroundClick()
+        }}
         onMouseDrag={handleCanvasDrag}
         onMouseDragEnd={handleCanvasDragEnd}
         style={{
           flexGrow: 1,
+          overflow: "hidden",
           justifyContent: autoLayout ? "center" : "flex-start",
           alignItems: autoLayout ? "center" : "flex-start",
         }}
       >
-        <Renderer
-          key={treeKey}
-          node={tree}
-          selectedId={selectedId}
-          hoveredId={hoveredId}
-          onSelect={onSelect}
-          onHover={onHover}
-          onDragStart={handleElementDragStart}
-        />
+        <box
+          id="canvas-viewport"
+          position="relative"
+          left={canvasOffset.x}
+          top={canvasOffset.y}
+        >
+          <Renderer
+            key={treeKey}
+            node={tree}
+            selectedId={selectedId}
+            hoveredId={hoveredId}
+            onSelect={onSelect}
+            onHover={onHover}
+            onDragStart={handleElementDragStart}
+          />
+        </box>
       </box>
     </box>
   )
