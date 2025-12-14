@@ -40,7 +40,8 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
   const pct = Math.round(((val - min) / (max - min)) * 100)
   const trackChar = isHorizontal ? "─" : "│"
   const thumbChar = "●"
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const handleMouseDown = (e: MouseEvent) => {
     e.stopPropagation()

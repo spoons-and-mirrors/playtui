@@ -30,7 +30,8 @@ interface TabSelectRendererProps {
 export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TabSelectRendererProps) {
   const node = genericNode as TabSelectNode
   const options = node.options || ["Tab 1", "Tab 2"]
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const handleMouseDown = (e: MouseEvent) => {
     e.stopPropagation()

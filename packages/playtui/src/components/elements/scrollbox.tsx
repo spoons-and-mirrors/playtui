@@ -84,7 +84,8 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     },
   } : undefined
 
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const handleMouseDown = (e: MouseEvent) => {
     e.stopPropagation()

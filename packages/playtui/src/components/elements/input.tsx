@@ -30,7 +30,8 @@ interface InputRendererProps {
 
 export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
   const node = genericNode as InputNode
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   const handleMouseDown = (e: MouseEvent) => {
     e.stopPropagation()

@@ -96,7 +96,7 @@ export function Builder({ width, height }: BuilderProps) {
     }))
   }, [mode])
 
-  // Track dragging state for absolute positioned elements
+  // Track dragging state for positioned elements
   const dragStartRef = useRef<{
     nodeId: string
     mouseX: number
@@ -213,11 +213,11 @@ export function Builder({ width, height }: BuilderProps) {
     if (success) setModalMode(null)
   }, [duplicateProject])
 
-  // Handle drag for absolute positioned elements
+  // Handle drag for positioned elements (both absolute and relative)
   const handleDragStart = useCallback((event: DragEvent) => {
     if (!tree) return
     const node = findNode(tree, event.nodeId)
-    if (!node || !("position" in node) || node.position !== "absolute") return
+    if (!node || !("position" in node)) return
     
     // Store initial mouse position and node position
     dragStartRef.current = {

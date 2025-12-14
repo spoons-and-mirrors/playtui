@@ -31,8 +31,8 @@ interface AsciiFontRendererProps {
 export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: AsciiFontRendererProps) {
   const node = genericNode as AsciiFontNode
   
-  // Only enable dragging for absolute positioned elements
-  const isDraggable = node.position === "absolute"
+  // Enable dragging for all positioned elements
+  const isDraggable = true
 
   // Drag start handler - canvas handles move/end
   const handleMouseDown = (e: MouseEvent) => {
