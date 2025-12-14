@@ -8,13 +8,14 @@ import type { DragEvent } from "../Renderer"
 interface PlayPageProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
+  autoLayout: boolean
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
   onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPage({ projectHook, isPlaying, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
+export function PlayPage({ projectHook, isPlaying, autoLayout, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
   const [showTimeline, setShowTimeline] = useState(false)
 
   useKeyboard((key) => {
@@ -30,6 +31,7 @@ export function PlayPage({ projectHook, isPlaying, onTogglePlay, onDragStart, on
         <PlayPanel 
           projectHook={projectHook} 
           isPlaying={isPlaying} 
+          autoLayout={autoLayout}
           onTogglePlay={onTogglePlay}
           onDragStart={onDragStart}
           onDragMove={onDragMove}

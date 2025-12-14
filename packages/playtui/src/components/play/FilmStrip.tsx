@@ -157,14 +157,31 @@ export function FilmStrip({
     }
   }, [startEditing])
 
-  // Auto-scroll to keep current frame centered
+  // Auto-scroll with pagination - only scroll when playhead goes out of view
+  // When it does, jump a full "page" so playhead appears on the left side
   useEffect(() => {
     const sb = scrollRef.current
     if (!sb) return
     const framePos = currentIndex * (frameWidth + FRAME_GAP)
     const viewportWidth = sb.width ?? 0
-    const targetScroll = framePos - viewportWidth / 2 + frameWidth / 2
-    sb.scrollTo(Math.max(0, targetScroll))
+    const scrollLeft = sb.scrollLeft ?? 0
+    
+    // Calculate which "page" the current frame should be on
+    // Each page shows viewportWidth worth of frames
+    const playheadLeft = framePos
+    const playheadRight = framePos + frameWidth
+    
+    // If playhead is left of viewport, page backward
+    if (playheadLeft < scrollLeft) {
+      // Scroll so playhead is at the right edge of the viewport
+      const targetScroll = Math.max(0, playheadRight - viewportWidth)
+      sb.scrollTo({ x: targetScroll, y: 0 })
+    // If playhead is right of viewport, page forward
+    } else if (playheadRight > scrollLeft + viewportWidth) {
+      // Scroll so playhead is at the left edge of the viewport
+      sb.scrollTo({ x: playheadLeft, y: 0 })
+    }
+    // Otherwise, do not scroll - let playhead move within the viewport
   }, [currentIndex, frameWidth])
 
   return (
@@ -316,9 +333,9 @@ export function FilmStrip({
           scrollY={false}
           onMouseScroll={(e) => {
             const sb = scrollRef.current
-            if (!sb) return
-            const delta = e.button === MouseButton.WHEEL_UP ? -3 : 3
-            sb.scrollBy(delta * frameWidth)
+            if (!sb || !e.scroll) return
+            const delta = e.scroll.direction === "up" ? -1 : 1
+            sb.scrollBy({ x: delta * frameWidth * 5, y: 0 })
           }}
           style={{
             width: "100%",
@@ -326,14 +343,15 @@ export function FilmStrip({
             scrollbarOptions: {
               showArrows: false,
               trackOptions: {
-                foregroundColor: COLORS.accent,
-                backgroundColor: COLORS.bgAlt,
+                foregroundColor: "transparent",
+                backgroundColor: "transparent",
               },
             },
             contentOptions: {
               flexDirection: "row",
               gap: 1,
               alignItems: "flex-start",
+              flexShrink: 0,
             }
           }}
         >
@@ -345,6 +363,7 @@ export function FilmStrip({
                 key={index}
                 id={`frame-${index}`}
                 flexDirection="column"
+                flexShrink={0}
                 onMouseDown={() => onSelectFrame(index)}
               >
                 {/* Number card */}
@@ -355,7 +374,7 @@ export function FilmStrip({
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <text fg={isActive ? COLORS.bg : COLORS.muted}>
+                  <text fg={isActive ? COLORS.bg : COLORS.muted} selectable={false}>
                     {isActive ? <strong>{label}</strong> : label}
                   </text>
                 </box>
@@ -378,6 +397,7 @@ export function FilmStrip({
             id="add-frame-btn"
             width={3}
             height={1}
+            flexShrink={0}
             backgroundColor={COLORS.bg}
             alignItems="center"
             justifyContent="center"

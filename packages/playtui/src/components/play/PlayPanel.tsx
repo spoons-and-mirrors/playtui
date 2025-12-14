@@ -7,13 +7,14 @@ import { bakeFrame } from "../../lib/keyframing"
 interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
+  autoLayout: boolean
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
   onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
+export function PlayPanel({ projectHook, isPlaying, autoLayout, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 
@@ -83,7 +84,7 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay, onDragStart, o
         treeKey={currentFrameIndex}
         selectedId={project.selectedId}
         hoveredId={null}
-        autoLayout={false}
+        autoLayout={autoLayout}
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}

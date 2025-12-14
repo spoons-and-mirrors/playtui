@@ -1,5 +1,5 @@
 import { useState, useRef, createContext, useContext } from "react"
-import type { MouseEvent } from "@opentui/core"
+import { MouseButton, type MouseEvent, type ScrollBoxRenderable } from "@opentui/core"
 import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
@@ -56,6 +56,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     })
     return initial
   })
+
+  const scrollRef = useRef<ScrollBoxRenderable>(null)
 
   // Drag capture system for value controls (sliders, counters)
   // This allows drag to continue even when mouse leaves the control bounds
@@ -497,9 +499,16 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     <DragCaptureContext.Provider value={registerDrag}>
       <scrollbox 
         id="prop-pane-scroll" 
+        ref={scrollRef}
         style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}
         scrollbarOptions={{
           trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
+        }}
+        onMouseScroll={(e) => {
+          const sb = scrollRef.current
+          if (!sb || !e.scroll) return
+          const delta = e.scroll.direction === "up" ? -1 : 1
+          sb.scrollBy(delta * 6)
         }}
         onMouseDrag={handlePanelDrag}
         onMouseDragEnd={handlePanelDragEnd}

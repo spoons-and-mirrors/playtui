@@ -379,6 +379,7 @@ export function Builder({ width, height }: BuilderProps) {
            <PlayPage 
              projectHook={projectHook} 
              isPlaying={isPlaying}
+             autoLayout={autoLayout}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
              onDragMove={handleDragMove}
