@@ -24,6 +24,7 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
   const initializedRef = useRef(false)
+  const isUserEditingRef = useRef(false) // Track if user is actively typing
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -84,6 +85,8 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
 
   useEffect(() => {
     if (!initializedRef.current || !textareaRef.current) return
+    // Don't overwrite the textarea if the user is actively editing
+    if (isUserEditingRef.current) return
     const currentText = textareaRef.current.plainText
     if (code !== currentText) {
       ;(textareaRef.current as any).setText(code, { history: false })
@@ -93,8 +96,13 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
   const handleContentChange = useCallback(() => {
     const newCode = textareaRef.current?.plainText
     if (newCode !== undefined && newCode !== codeRef.current) {
+      isUserEditingRef.current = true // Mark that user is editing
       codeRef.current = newCode
       handleCodeChange(newCode)
+      // Reset the flag after a short delay (user stopped typing)
+      setTimeout(() => {
+        isUserEditingRef.current = false
+      }, 100)
     }
   }, [handleCodeChange])
 
