@@ -1,9 +1,17 @@
 import { TextAttributes } from "@opentui/core"
 import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
-import { FrameRuler } from "./FrameRuler"
 import { useKeyframing } from "../contexts/KeyframingContext"
 import { useProject } from "../../hooks/useProject"
+import { findNode } from "../../lib/tree"
+
+// Get display name for an element (capitalize type)
+function getElementName(tree: any, nodeId: string): string {
+  const node = findNode(tree, nodeId)
+  if (!node) return nodeId
+  const type = node.type as string
+  return type.charAt(0).toUpperCase() + type.slice(1)
+}
 
 export function Dopesheet({ 
   onSelectProperty 
@@ -17,6 +25,7 @@ export function Dopesheet({
   
   const animatedProperties = project.animation.keyframing.animatedProperties
   const frameCount = project.animation.frames.length
+  const tree = project.tree
   
   // Group by Node ID
   const grouped: Record<string, typeof animatedProperties> = {}
@@ -27,18 +36,12 @@ export function Dopesheet({
 
   return (
     <box flexDirection="column" flexGrow={1}>
-      <FrameRuler 
-        frameCount={frameCount} 
-        currentFrame={keyframing.currentFrame} 
-        width={100} 
-        onSeek={setCurrentFrame}
-      />
       <box flexDirection="column" overflow="scroll">
         {Object.entries(grouped).map(([nodeId, props]) => (
           <box key={nodeId} flexDirection="column">
             {/* Node Header */}
             <box height={1} backgroundColor={COLORS.bgAlt} paddingLeft={1}>
-              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>Node {nodeId.slice(0, 4)}</text>
+              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>{getElementName(tree, nodeId)}</text>
             </box>
             {/* Properties */}
             {props.map(prop => (

@@ -20,6 +20,8 @@ export interface Keyframe {
   value: number
   // Bezier handle for the curve going OUT of this keyframe (toward next keyframe)
   handleOut: BezierHandle
+  // Bezier handle for the curve coming INTO this keyframe (from previous keyframe)
+  handleIn: BezierHandle
 }
 
 export interface AnimatedProperty {
@@ -186,7 +188,12 @@ export function upsertKeyframe(
     const newProp: AnimatedProperty = {
       nodeId,
       property,
-      keyframes: [{ frame, value, handleOut: createDefaultHandle() }],
+      keyframes: [{ 
+        frame, 
+        value, 
+        handleOut: createDefaultHandle(),
+        handleIn: createDefaultHandle()
+      }],
     }
     return [...animated, newProp]
   }
@@ -202,7 +209,12 @@ export function upsertKeyframe(
     )
   } else {
     // Add new keyframe
-    nextKeyframes = [...existing.keyframes, { frame, value, handleOut: createDefaultHandle() }]
+    nextKeyframes = [...existing.keyframes, { 
+      frame, 
+      value, 
+      handleOut: createDefaultHandle(),
+      handleIn: createDefaultHandle()
+    }]
   }
   
   nextKeyframes = sortKeyframes(nextKeyframes)
@@ -237,7 +249,7 @@ export function removeKeyframe(
   })
 }
 
-// Update bezier handle for a keyframe
+// Update bezier handle for a keyframe (updates both In and Out symmetrically)
 export function setKeyframeHandle(
   animated: AnimatedProperty[],
   nodeId: string,
@@ -257,6 +269,10 @@ export function setKeyframeHandle(
         x: clamp(handleX, 0, 100),
         y: clamp(handleY, -100, 100),
       },
+      handleIn: {
+        x: clamp(handleX, 0, 100),
+        y: clamp(handleY, -100, 100),
+      }
     }
   })
 
@@ -303,8 +319,14 @@ export function getDrivenValue(prop: AnimatedProperty, frame: number): number {
   
   const t = (frame - startKf.frame) / duration
   
-  // Apply bezier easing
-  const easedT = easeWithHandle(t, startKf.handleOut)
+  // Apply cubic bezier easing using both handles
+  // startKf.handleOut controls departure
+  // endKf.handleIn controls arrival
+  // Provide defaults for migration safety (old keyframes might lack handleIn)
+  const handleOut = startKf.handleOut || createDefaultHandle()
+  const handleIn = endKf.handleIn || createDefaultHandle()
+  
+  const easedT = cubicBezier(t, handleOut, handleIn)
   
   // Interpolate value
   return startKf.value + (endKf.value - startKf.value) * easedT

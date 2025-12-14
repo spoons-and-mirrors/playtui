@@ -1,8 +1,11 @@
 #!/usr/bin/env bun
-import { createCliRenderer } from "@opentui/core"
-import { createRoot, useKeyboard, useTerminalDimensions } from "@opentui/react"
+import { createCliRenderer, SliderRenderable } from "@opentui/core"
+import { createRoot, useKeyboard, useTerminalDimensions, extend } from "@opentui/react"
 import { Builder } from "./index"
 import { COLORS } from "./theme"
+
+// Register slider component (not included in @opentui/react baseComponents as of 0.1.60)
+extend({ slider: SliderRenderable })
 
 function App() {
   const { width, height } = useTerminalDimensions()

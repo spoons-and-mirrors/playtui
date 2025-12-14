@@ -13,9 +13,6 @@ export function TimelinePanel({
   return (
     <box
       height={14}
-      border
-      borderStyle="single"
-      borderColor={COLORS.border}
       backgroundColor={COLORS.bg}
       flexDirection="column"
     >

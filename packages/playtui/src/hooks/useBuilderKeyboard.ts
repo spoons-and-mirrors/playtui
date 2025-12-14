@@ -152,8 +152,8 @@ export function useBuilderKeyboard({
     else if (key.name === "y" || (key.name === "z" && key.shift)) onRedo()
     else if (key.option && key.name === "up") onMoveNode("up")
     else if (key.option && key.name === "down") onMoveNode("down")
-    else if (key.name === "up" || key.name === "k") onNavigateTree("up")
-    else if (key.name === "down" || key.name === "j") onNavigateTree("down")
+    else if (key.name === "up") onNavigateTree("up")
+    else if (key.name === "down") onNavigateTree("down")
     else if (key.name === "escape") setSelectedId(null)
   })
 }
