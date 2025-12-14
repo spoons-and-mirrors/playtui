@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
 import type { ElementNode } from "./lib/types"
 import { clearLog } from "./lib/logger"
-import { resetIdCounter, findNode, countNodes, updateNode } from "./lib/tree"
+import { resetIdCounter, findNode, countNodes, updateNode, getNodePosition } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
 import { TreeView } from "./components/pages/Tree"
 import { PropertyPane } from "./components/pages/Properties"
@@ -289,8 +289,39 @@ export function Builder({ width, height }: BuilderProps) {
     }
   }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
 
+  // Layout constants
   const treeWidth = 27
   const sidebarWidth = 35
+  const filmStripHeight = 6
+  const footerHeight = 1
+  const mainContentHeight = mode === "play" 
+    ? height - footerHeight - filmStripHeight 
+    : height - footerHeight
+
+  // Handle focusing an element in the canvas (double-click in tree)
+  // Centers the element in the visible canvas area
+  const handleFocusElement = useCallback((nodeId: string) => {
+    if (!tree) return
+    
+    const node = findNode(tree, nodeId)
+    if (!node) return
+    
+    // Get the node's accumulated position from tree root
+    const pos = getNodePosition(tree, nodeId)
+    if (!pos) return
+    
+    // Get element dimensions (use defaults if not set)
+    const nodeWidth = typeof node.width === "number" ? node.width : 10
+    const nodeHeight = typeof node.height === "number" ? node.height : 3
+    
+    // When autoLayout is on, the root is already centered by flexbox.
+    // To center a specific element, we offset by the negative of its position
+    // (plus half its size to center the element itself, not its top-left corner)
+    const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
+    const newOffsetY = Math.round(-pos.y - nodeHeight / 2)
+    
+    setCanvasOffset({ x: newOffsetX, y: newOffsetY })
+  }, [tree])
 
   // Loading state
   if (isLoading) { // Allow project to be null if we are in library mode?
@@ -336,12 +367,6 @@ export function Builder({ width, height }: BuilderProps) {
     )
   }
 
-  const filmStripHeight = 6
-  const footerHeight = 1
-  const mainContentHeight = mode === "play" 
-    ? height - footerHeight - filmStripHeight 
-    : height - footerHeight
-
   return (
     <box id="builder" style={{ width, height, flexDirection: "column" }}>
       {/* Main content area - horizontal panels */}
@@ -353,7 +378,7 @@ export function Builder({ width, height }: BuilderProps) {
             <Title onLogoClick={() => setMode("docs")} />
             <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
               <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
-                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} />
+                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} onFocusElement={handleFocusElement} />
             </scrollbox>
           </box>
         )}

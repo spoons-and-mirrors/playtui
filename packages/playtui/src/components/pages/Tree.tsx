@@ -22,12 +22,13 @@ interface TreeNodeProps {
   onSelect: (id: string) => void
   onToggle: (id: string) => void
   onStartEdit: (id: string) => void
+  onFocusElement: (id: string) => void
   onRename: (id: string, name: string) => void
   onBlurEdit: () => void
   depth?: number
 }
 
-function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, onStartEdit, onRename, onBlurEdit, depth = 0 }: TreeNodeProps) {
+function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, onStartEdit, onFocusElement, onRename, onBlurEdit, depth = 0 }: TreeNodeProps) {
   const isSelected = node.id === selectedId
   const isEditing = node.id === editingId
   const isCollapsed = collapsed.has(node.id)
@@ -58,6 +59,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
     // Double-click detection (< 400ms between clicks)
     if (isSelected && timeSinceLastClick < 400) {
       onStartEdit(node.id)
+      onFocusElement(node.id)
     } else {
       onSelect(node.id)
     }
@@ -105,6 +107,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
           onSelect={onSelect}
           onToggle={onToggle}
           onStartEdit={onStartEdit}
+          onFocusElement={onFocusElement}
           onRename={onRename}
           onBlurEdit={onBlurEdit}
           depth={depth + 1}
@@ -121,10 +124,11 @@ interface TreeViewProps {
   onSelect: (id: string) => void
   onToggle: (id: string) => void
   onRename: (id: string, name: string) => void
+  onFocusElement: (id: string) => void
 }
 
 // TreeView renders root's children directly, hiding the implicit root container
-export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRename }: TreeViewProps) {
+export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRename, onFocusElement }: TreeViewProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const handleStartEdit = (id: string) => setEditingId(id)
@@ -154,6 +158,7 @@ export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRe
           onSelect={onSelect}
           onToggle={onToggle}
           onStartEdit={handleStartEdit}
+          onFocusElement={onFocusElement}
           onRename={handleRename}
           onBlurEdit={() => setEditingId(null)}
           depth={0}

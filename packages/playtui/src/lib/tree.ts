@@ -91,3 +91,30 @@ export function moveNode(root: ElementNode, nodeId: string, direction: "up" | "d
   
   return updateNode(root, parent.id, { children: newChildren })
 }
+
+// Calculate approximate position of a node by accumulating x/y offsets up the tree
+// Returns { x, y } representing the node's offset from the root
+export function getNodePosition(root: ElementNode, nodeId: string): { x: number; y: number } | null {
+  const path: ElementNode[] = []
+  
+  function findPath(node: ElementNode): boolean {
+    path.push(node)
+    if (node.id === nodeId) return true
+    for (const child of node.children) {
+      if (findPath(child)) return true
+    }
+    path.pop()
+    return false
+  }
+  
+  if (!findPath(root)) return null
+  
+  let x = 0
+  let y = 0
+  for (const node of path) {
+    x += node.x ?? 0
+    y += node.y ?? 0
+  }
+  
+  return { x, y }
+}

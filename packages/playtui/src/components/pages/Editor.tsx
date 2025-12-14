@@ -160,7 +160,7 @@ export function EditorPanel({
           id="canvas-viewport"
           position="relative"
           left={canvasOffset.x}
-          top={canvasOffset.y + canvasOffsetAdjustY/2}
+          top={canvasOffset.y + canvasOffsetAdjustY / 2}
         >
           <Renderer
             key={treeKey}
