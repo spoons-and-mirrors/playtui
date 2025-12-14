@@ -48,6 +48,7 @@ export function Builder({ width, height }: BuilderProps) {
     duplicateFrame,
     deleteFrame,
     setFps,
+    setFrameCount,
     // Palette methods
     palettes,
     activePaletteIndex,
@@ -217,7 +218,7 @@ export function Builder({ width, height }: BuilderProps) {
   const handleDragStart = useCallback((event: DragEvent) => {
     if (!tree) return
     const node = findNode(tree, event.nodeId)
-    if (!node || !("position" in node)) return
+    if (!node) return
     
     // Store initial mouse position and node position
     dragStartRef.current = {
@@ -440,6 +441,7 @@ export function Builder({ width, height }: BuilderProps) {
           onDeleteFrame={deleteFrame}
           fps={animation?.fps ?? 10}
           onFpsChange={setFps}
+          onFrameCountChange={setFrameCount}
           isPlaying={isPlaying}
           onTogglePlay={() => setIsPlaying(p => !p)}
           onImport={projectHook.importAnimation}

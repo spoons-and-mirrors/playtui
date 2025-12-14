@@ -11,6 +11,7 @@ import { copyToClipboard, readFromClipboard } from "../../lib/clipboard"
 import { log } from "../../lib/logger"
 
 const FRAME_GAP = 1
+const DOUBLE_CLICK_MS = 300
 
 // Pad frame number with leading zeros based on total frames (minimum 2 digits)
 function formatFrameNum(index: number, total: number): string {
@@ -34,6 +35,7 @@ interface FilmStripProps {
   onDeleteFrame: (index: number) => void
   fps: number
   onFpsChange: (fps: number) => void
+  onFrameCountChange: (count: number) => void
   isPlaying: boolean
   onTogglePlay: () => void
   onImport: (frames: ElementNode[], fps: number) => void
@@ -48,6 +50,7 @@ export function FilmStrip({
   onDeleteFrame,
   fps,
   onFpsChange,
+  onFrameCountChange,
   isPlaying,
   onTogglePlay,
   onImport,
@@ -57,6 +60,13 @@ export function FilmStrip({
   const [copied, setCopied] = useState(false)
   const [imported, setImported] = useState(false)
   const [clipboardError, setClipboardError] = useState<string | null>(null)
+  
+  // Editable field state: "fps" | "frameCount" | null
+  const [editingField, setEditingField] = useState<"fps" | "frameCount" | null>(null)
+  const [editValue, setEditValue] = useState("")
+  
+  // Double-click detection
+  const lastClickRef = useRef<{ field: string; time: number } | null>(null)
 
   const copyAnimationCode = useCallback(async () => {
     const bakedFrames = bakeKeyframedFrames(frames, animatedProperties)
@@ -106,6 +116,46 @@ export function FilmStrip({
     setClipboardError(parseResult.error || "Invalid animation format")
     setTimeout(() => setClipboardError(null), 3000)
   }, [onImport])
+
+  // Handle starting edit mode for FPS or frame count
+  const startEditing = useCallback((field: "fps" | "frameCount") => {
+    setEditingField(field)
+    setEditValue(field === "fps" ? String(fps) : String(frames.length))
+  }, [fps, frames.length])
+
+  // Handle submitting the edited value
+  const submitEdit = useCallback(() => {
+    if (!editingField) return
+    const num = parseInt(editValue, 10)
+    if (isNaN(num) || num < 1) {
+      setEditingField(null)
+      return
+    }
+    if (editingField === "fps") {
+      onFpsChange(num)
+    } else {
+      onFrameCountChange(num)
+    }
+    setEditingField(null)
+  }, [editingField, editValue, onFpsChange, onFrameCountChange])
+
+  // Handle canceling edit
+  const cancelEdit = useCallback(() => {
+    setEditingField(null)
+  }, [])
+
+  // Handle click with double-click detection
+  const handleFieldClick = useCallback((field: "fps" | "frameCount") => {
+    const now = Date.now()
+    const last = lastClickRef.current
+    if (last && last.field === field && now - last.time < DOUBLE_CLICK_MS) {
+      // Double click detected
+      startEditing(field)
+      lastClickRef.current = null
+    } else {
+      lastClickRef.current = { field, time: now }
+    }
+  }, [startEditing])
 
   // Auto-scroll to keep current frame centered
   useEffect(() => {
@@ -172,24 +222,53 @@ export function FilmStrip({
          </box>
 
          {/* FPS Control - cohesive unit */}
-         <box id="fps-control" flexDirection="row" marginLeft={1}>
-           <box border={["left"]} borderColor={COLORS.muted} paddingLeft={1} paddingRight={1}>
-             <text fg={COLORS.muted}>FPS</text>
-           </box>
-           <box flexDirection="row" gap={1} paddingLeft={1}>
-             <text fg={COLORS.accent} onMouseDown={() => onFpsChange(Math.max(1, fps - 1))}>◀</text>
-             <text fg={COLORS.text}><strong>{fps}</strong></text>
-             <text fg={COLORS.accent} onMouseDown={() => onFpsChange(fps + 1)}>▶</text>
-           </box>
-           <box paddingRight={1} />
-         </box>
+          <box id="fps-control" flexDirection="row" marginLeft={1}>
+            <box border={["left"]} borderColor={COLORS.muted} paddingLeft={1} paddingRight={1}>
+              <text fg={COLORS.muted}>FPS</text>
+            </box>
+            <box flexDirection="row" gap={1} paddingLeft={1}>
+              <text fg={COLORS.accent} onMouseDown={() => onFpsChange(Math.max(1, fps - 1))}>◀</text>
+              {editingField === "fps" ? (
+                <input
+                  value={editValue}
+                  focused
+                  width={4}
+                  backgroundColor={COLORS.bg}
+                  textColor={COLORS.text}
+                  onInput={setEditValue}
+                  onSubmit={submitEdit}
+                  onKeyDown={(key) => { if (key.name === "escape") cancelEdit() }}
+                />
+              ) : (
+                <text fg={COLORS.text} onMouseDown={() => handleFieldClick("fps")}><strong>{fps}</strong></text>
+              )}
+              <text fg={COLORS.accent} onMouseDown={() => onFpsChange(fps + 1)}>▶</text>
+            </box>
+            <box paddingRight={1} />
+          </box>
 
          {/* Frame Counter */}
-         <box id="frame-counter" marginLeft={1}>
-           <text fg={COLORS.muted}>
-             <span fg={COLORS.accent}>{formatFrameNum(currentIndex, frames.length)}</span>/{formatFrameNum(frames.length - 1, frames.length)}
-           </text>
-         </box>
+          <box id="frame-counter" marginLeft={1} flexDirection="row">
+            <text fg={COLORS.muted}>
+              <span fg={COLORS.accent}>{formatFrameNum(currentIndex, frames.length)}</span>/
+            </text>
+            {editingField === "frameCount" ? (
+              <input
+                value={editValue}
+                focused
+                width={4}
+                backgroundColor={COLORS.bg}
+                textColor={COLORS.text}
+                onInput={setEditValue}
+                onSubmit={submitEdit}
+                onKeyDown={(key) => { if (key.name === "escape") cancelEdit() }}
+              />
+            ) : (
+              <text fg={COLORS.muted} onMouseDown={() => handleFieldClick("frameCount")}>
+                {formatFrameNum(frames.length - 1, frames.length)}
+              </text>
+            )}
+          </box>
 
          {/* Spacer */}
          <box flexGrow={1} />

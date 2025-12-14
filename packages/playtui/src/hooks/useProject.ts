@@ -51,6 +51,7 @@ export interface UseProjectReturn {
   duplicateFrame: () => void
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
+  setFrameCount: (count: number) => void
   importAnimation: (frames: ElementNode[], fps: number) => void
 
   // Keyframing
@@ -507,6 +508,64 @@ export function useProject(): UseProjectReturn {
     scheduleSave()
   }, [scheduleSave])
 
+  // Animation: Set frame count (add or remove frames to reach target count)
+  const setFrameCount = useCallback((targetCount: number) => {
+    if (targetCount < 1) return
+    setProject((prev) => {
+      if (!prev) return prev
+      
+      const currentCount = prev.animation.frames.length
+      if (targetCount === currentCount) return prev
+      
+      let newFrames = [...prev.animation.frames]
+      let newKeyframing = { ...prev.animation.keyframing }
+      
+      if (targetCount > currentCount) {
+        // Add frames by duplicating the last frame
+        const lastFrame = prev.animation.frames[currentCount - 1]
+        for (let i = currentCount; i < targetCount; i++) {
+          const treeClone = JSON.parse(JSON.stringify(lastFrame))
+          newFrames.push(treeClone)
+          // Shift keyframes for each insertion
+          newKeyframing = {
+            ...newKeyframing,
+            animatedProperties: shiftKeyframesOnInsert(
+              newKeyframing.animatedProperties,
+              i
+            ),
+          }
+        }
+      } else {
+        // Remove frames from the end
+        for (let i = currentCount - 1; i >= targetCount; i--) {
+          newKeyframing = {
+            ...newKeyframing,
+            animatedProperties: shiftKeyframesOnDelete(
+              newKeyframing.animatedProperties,
+              i
+            ),
+          }
+        }
+        newFrames = newFrames.slice(0, targetCount)
+      }
+      
+      // Clamp current frame index if needed
+      const newIndex = Math.min(prev.animation.currentFrameIndex, targetCount - 1)
+      
+      return {
+        ...prev,
+        tree: newFrames[newIndex],
+        animation: {
+          ...prev.animation,
+          frames: newFrames,
+          currentFrameIndex: newIndex,
+          keyframing: newKeyframing,
+        }
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+
   // Animation: Import animation data (frames + fps)
   const importAnimation = useCallback((frames: ElementNode[], fps: number) => {
     setProject((prev) => {
@@ -775,6 +834,7 @@ export function useProject(): UseProjectReturn {
     duplicateFrame,
     deleteFrame,
     setFps,
+    setFrameCount,
     importAnimation,
     // Keyframing methods
     toggleAutoKey,
