@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { TextAttributes } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { AnimatedProperty } from "../../lib/keyframing"
@@ -10,14 +11,21 @@ interface DopesheetRowProps {
 }
 
 export function DopesheetRow({ property, frameCount, currentFrame, onSelect }: DopesheetRowProps) {
+  const [hovered, setHovered] = useState(false)
   const keyframes = property.keyframes
   const hasKeyframeAtCurrent = keyframes.some(k => k.frame === currentFrame)
 
   return (
-    <box height={1} flexDirection="row" onMouseDown={onSelect}>
+    <box 
+      height={1} 
+      flexDirection="row" 
+      onMouseDown={onSelect}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered(false)}
+    >
       {/* Label */}
       <box width={20} paddingRight={1} justifyContent="flex-end" backgroundColor={COLORS.bg}>
-        <text fg={COLORS.text} attributes={TextAttributes.DIM}>
+        <text fg={hovered ? COLORS.accent : COLORS.text} attributes={hovered ? undefined : TextAttributes.DIM}>
           {property.property}
         </text>
       </box>

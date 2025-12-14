@@ -1,4 +1,5 @@
 import { TextAttributes } from "@opentui/core"
+import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
 import type { UseProjectReturn } from "../../hooks/useProject"
@@ -12,6 +13,38 @@ function getElementName(tree: any, nodeId: string): string {
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
+// Find previous keyframe frame number across ALL properties for a node
+function findPrevKeyframeForNode(props: any[], currentFrame: number): number | null {
+  let bestPrev: number | null = null
+  
+  for (const prop of props) {
+    for (const kf of prop.keyframes) {
+      if (kf.frame < currentFrame) {
+        if (bestPrev === null || kf.frame > bestPrev) {
+          bestPrev = kf.frame
+        }
+      }
+    }
+  }
+  return bestPrev
+}
+
+// Find next keyframe frame number across ALL properties for a node
+function findNextKeyframeForNode(props: any[], currentFrame: number): number | null {
+  let bestNext: number | null = null
+  
+  for (const prop of props) {
+    for (const kf of prop.keyframes) {
+      if (kf.frame > currentFrame) {
+        if (bestNext === null || kf.frame < bestNext) {
+          bestNext = kf.frame
+        }
+      }
+    }
+  }
+  return bestNext
+}
+
 export function Dopesheet({ 
   projectHook,
   onSelectProperty 
@@ -19,7 +52,7 @@ export function Dopesheet({
   projectHook: UseProjectReturn
   onSelectProperty: (nodeId: string, property: string) => void 
 }) {
-  const { project } = projectHook
+  const { project, setCurrentFrame } = projectHook
   
   if (!project) return null
   
@@ -27,6 +60,7 @@ export function Dopesheet({
   const frameCount = project.animation.frames.length
   const currentFrame = project.animation.currentFrameIndex
   const tree = project.tree
+  const selectedId = project.selectedId
   
   // Group by Node ID
   const grouped: Record<string, typeof animatedProperties> = {}
@@ -34,6 +68,26 @@ export function Dopesheet({
     if (!grouped[prop.nodeId]) grouped[prop.nodeId] = []
     grouped[prop.nodeId].push(prop)
   }
+
+  // J/K shortcuts for prev/next keyframe (J=prev, K=next)
+  useKeyboard((key) => {
+    // If we have a selected element, use that. Otherwise try the first node in the dopesheet
+    // or maybe check all properties? "Nearest keyframe for the select element" was the request.
+    if (!selectedId) return
+
+    const props = grouped[selectedId]
+    if (!props || props.length === 0) return
+
+    if (key.name === "j") {
+      // J = previous keyframe
+      const prev = findPrevKeyframeForNode(props, currentFrame)
+      if (prev !== null) setCurrentFrame(prev)
+    } else if (key.name === "k") {
+      // K = next keyframe
+      const next = findNextKeyframeForNode(props, currentFrame)
+      if (next !== null) setCurrentFrame(next)
+    }
+  })
 
   return (
     <box flexDirection="column" flexGrow={1}>
