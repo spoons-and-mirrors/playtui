@@ -5,12 +5,12 @@ export enum Bind {
   GLOBAL_QUIT = "global.quit",
   
   // Navigation / View Modes
-  VIEW_SWITCH_EDITOR_PLAY = "view.switch.editor_play",
+  VIEW_EDITOR = "view.editor",
+  VIEW_PLAY = "view.play",
   TOGGLE_CODE = "view.toggle_code",
   VIEW_LIBRARY = "view.library",
   VIEW_DOCS = "view.docs",
   TOGGLE_PANELS = "view.toggle_panels",
-  TOGGLE_TIMELINE = "view.toggle_timeline",
   NAV_TREE_UP = "nav.tree.up",
   NAV_TREE_DOWN = "nav.tree.down",
 
@@ -80,40 +80,40 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   },
 
   // --- View ---
-  [Bind.VIEW_SWITCH_EDITOR_PLAY]: {
-    id: Bind.VIEW_SWITCH_EDITOR_PLAY,
-    label: "Toggle Editor/Play",
+  [Bind.VIEW_EDITOR]: {
+    id: Bind.VIEW_EDITOR,
+    label: "Edit Mode",
     keys: [{ name: "f1" }],
+    category: "View"
+  },
+  [Bind.VIEW_PLAY]: {
+    id: Bind.VIEW_PLAY,
+    label: "Play Mode",
+    keys: [{ name: "f2" }],
     category: "View"
   },
   [Bind.TOGGLE_CODE]: {
     id: Bind.TOGGLE_CODE,
     label: "Toggle Code",
-    keys: [{ name: "f2" }],
+    keys: [{ name: "f3" }],
     category: "View"
   },
   [Bind.VIEW_LIBRARY]: {
     id: Bind.VIEW_LIBRARY,
     label: "Library View",
-    keys: [{ name: "f3" }],
+    keys: [{ name: "f4" }],
     category: "View"
   },
   [Bind.VIEW_DOCS]: {
     id: Bind.VIEW_DOCS,
     label: "Docs View",
-    keys: [{ name: "f4" }],
+    keys: [{ name: "f5" }],
     category: "View"
   },
   [Bind.TOGGLE_PANELS]: {
     id: Bind.TOGGLE_PANELS,
     label: "Toggle Panels",
     keys: [{ name: "tab" }],
-    category: "View"
-  },
-  [Bind.TOGGLE_TIMELINE]: {
-    id: Bind.TOGGLE_TIMELINE,
-    label: "Toggle Timeline",
-    keys: [{ name: "t" }],
     category: "View"
   },
 

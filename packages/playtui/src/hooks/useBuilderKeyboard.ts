@@ -21,7 +21,6 @@ interface UseBuilderKeyboardParams {
   // Modal/UI state
   modalMode: "new" | "load" | "delete" | "saveAs" | null
   mode: ViewMode
-  lastEditorPlayMode: "editor" | "play"
   focusedField: string | null
   addMode: boolean
 
@@ -54,12 +53,12 @@ interface UseBuilderKeyboardParams {
   onTogglePanels?: () => void
   onToggleCode?: () => void
   onToggleTimeline?: () => void
+  onShowTimeline?: () => void
 }
 
 export function useBuilderKeyboard({
   modalMode,
   mode,
-  lastEditorPlayMode,
   focusedField,
   addMode,
   setModalMode,
@@ -84,6 +83,7 @@ export function useBuilderKeyboard({
   onTogglePanels,
   onToggleCode,
   onToggleTimeline,
+  onShowTimeline,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
@@ -94,12 +94,20 @@ export function useBuilderKeyboard({
 
     // F-key mode switching (always available except in modal)
     if (!modalMode) {
-      if (isKeybind(key, Bind.VIEW_SWITCH_EDITOR_PLAY)) { 
-        // F1 toggles between editor and play, or restores last editor/play mode
-        if (mode === "editor") setMode("play")
-        else if (mode === "play") setMode("editor")
-        else setMode(lastEditorPlayMode)
+      // F1 goes to editor mode
+      if (isKeybind(key, Bind.VIEW_EDITOR)) { 
+        setMode("editor")
         return 
+      }
+      // F2: if not in play mode, enter play mode; if in play mode, toggle timeline
+      if (isKeybind(key, Bind.VIEW_PLAY)) {
+        if (mode !== "play") {
+          setMode("play")
+          onShowTimeline?.() // Ensure timeline is shown when entering play mode
+        } else {
+          onToggleTimeline?.() // Toggle timeline when already in play mode
+        }
+        return
       }
       if (isKeybind(key, Bind.TOGGLE_CODE) && onToggleCode) { onToggleCode(); return }
       if (isKeybind(key, Bind.VIEW_LIBRARY)) { setMode("library"); return }
@@ -121,7 +129,6 @@ export function useBuilderKeyboard({
     // Play mode - frame shortcuts, then fall through to editor shortcuts
     if (mode === "play") {
       if (isKeybind(key, Bind.ANIM_PLAY_TOGGLE) && onAnimPlayToggle) { onAnimPlayToggle(); return }
-      if (isKeybind(key, Bind.TOGGLE_TIMELINE) && onToggleTimeline) { onToggleTimeline(); return }
       if (!focusedField && !addMode) {
         if (isKeybind(key, Bind.ANIM_PREV_FRAME) && onAnimPrevFrame) { onAnimPrevFrame(); return }
         if (isKeybind(key, Bind.ANIM_NEXT_FRAME) && onAnimNextFrame) { onAnimNextFrame(); return }

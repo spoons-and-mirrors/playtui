@@ -5,11 +5,9 @@ import { ValueGraph } from "./CurveEditor"
 import type { UseProjectReturn } from "../../hooks/useProject"
 
 export function TimelinePanel({ 
-  projectHook,
-  onClose 
+  projectHook
 }: { 
   projectHook: UseProjectReturn
-  onClose: () => void 
 }) {
   const [view, setView] = useState<{ type: "dopesheet" } | { type: "curve", nodeId: string, property: string }>({ type: "dopesheet" })
 

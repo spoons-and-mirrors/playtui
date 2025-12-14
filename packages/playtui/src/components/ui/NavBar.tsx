@@ -1,8 +1,6 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
 import type { SaveStatus } from "../../hooks/useProject"
-import { Flipbook } from "@playtui/flipbook"
-import { animation as f1ToggleAnim } from "../animations/f1-toggle"
 
 export type ViewMode = "editor" | "play" | "library" | "docs"
 
@@ -68,78 +66,19 @@ function ModeTab({ fKey, label, isActive, onPress }: ModeTabProps) {
   )
 }
 
-interface DualModeTabProps {
-  fKey: string
-  label1: string
-  label2: string
-  activeMode: "editor" | "play" | null
-  onPressLabel1: () => void
-  onPressLabel2: () => void
-  isAnimating?: boolean
-}
-
-function DualModeTab({ fKey, label1, label2, activeMode, onPressLabel1, onPressLabel2, isAnimating }: DualModeTabProps) {
-  const isLabel1Active = activeMode === "editor"
-  const isLabel2Active = activeMode === "play"
-  const isAnyActive = isLabel1Active || isLabel2Active
-  
-  // Show only the active label, or first label if neither active
-  const activeLabel = isLabel2Active ? label2 : label1
-  const activeOnPress = isLabel2Active ? onPressLabel2 : onPressLabel1
-  
-  if (isAnimating) {
-    return <Flipbook animation={f1ToggleAnim} />
-  }
-  
-  return (
-    <box id="mode-tab-dual" style={{ flexDirection: "row" }}>
-      <box backgroundColor={isAnyActive ? COLORS.accentBright : COLORS.bg} paddingLeft={1} paddingRight={1}>
-        <text fg={isAnyActive ? COLORS.bg : COLORS.muted}>
-          {isAnyActive ? <strong>{fKey}</strong> : fKey}
-        </text>
-      </box>
-      <box 
-        id="mode-tab-dual-label"
-        backgroundColor={isAnyActive ? COLORS.accent : COLORS.bg} 
-        paddingLeft={1} 
-        paddingRight={1}
-        onMouseDown={activeOnPress}
-      >
-        <text fg={isAnyActive ? COLORS.bg : COLORS.muted}>
-          {isAnyActive ? <strong>{activeLabel}</strong> : activeLabel}
-        </text>
-      </box>
-    </box>
-  )
-}
-
 interface NavBarProps {
   mode: ViewMode
   width: number
   projectName?: string
   saveStatus?: SaveStatus
   showCodePanel?: boolean
+  showTimeline?: boolean
   onModeChange: (mode: ViewMode) => void
   onToggleCode?: () => void
+  onPlayPress?: () => void
 }
 
-export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, onModeChange, onToggleCode }: NavBarProps) {
-  const [isAnimating, setIsAnimating] = useState(false)
-  const prevModeRef = useRef<ViewMode>(mode)
-
-  useEffect(() => {
-    const prevMode = prevModeRef.current
-    // Trigger animation when switching between editor and play
-    if ((prevMode === "editor" && mode === "play") || (prevMode === "play" && mode === "editor")) {
-      setIsAnimating(true)
-      const duration = (f1ToggleAnim.frames.length / f1ToggleAnim.fps) * 1000
-      const timer = setTimeout(() => setIsAnimating(false), duration)
-      prevModeRef.current = mode
-      return () => clearTimeout(timer)
-    }
-    prevModeRef.current = mode
-  }, [mode])
-
+export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, showTimeline, onModeChange, onToggleCode, onPlayPress }: NavBarProps) {
   return (
     <box
       id="app-header"
@@ -155,18 +94,11 @@ export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, on
     >
       {/* Left: Mode tabs */}
       <box id="app-header-tabs" style={{ flexDirection: "row", gap: 1 }}>
-        <DualModeTab 
-          fKey="F1" 
-          label1="Edit" 
-          label2="Play" 
-          activeMode={mode === "editor" ? "editor" : mode === "play" ? "play" : null}
-          onPressLabel1={() => onModeChange("editor")} 
-          onPressLabel2={() => onModeChange("play")}
-          isAnimating={isAnimating}
-        />
-        <ModeTab fKey="F2" label="Code" isActive={!!showCodePanel} onPress={() => onToggleCode?.()} />
-        <ModeTab fKey="F3" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
-        <ModeTab fKey="F4" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
+        <ModeTab fKey="F1" label="Edit" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
+        <ModeTab fKey="F2" label="Play" isActive={mode === "play"} onPress={() => onPlayPress?.()} />
+        <ModeTab fKey="F3" label="Code" isActive={!!showCodePanel && (mode === "editor" || mode === "play")} onPress={() => onToggleCode?.()} />
+        <ModeTab fKey="F4" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
+        <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
       </box>
 
       {/* Right: Save indicator + Project name in card */}

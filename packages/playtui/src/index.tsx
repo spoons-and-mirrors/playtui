@@ -63,23 +63,14 @@ export function Builder({ width, height }: BuilderProps) {
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
-  const [mode, _setMode] = useState<ViewMode>("editor")
-  
-  // Wrap setMode to track last editor/play mode
-  const setMode = useCallback((newMode: ViewMode) => {
-    if (newMode === "editor" || newMode === "play") {
-      setLastEditorPlayMode(newMode)
-    }
-    _setMode(newMode)
-  }, [])
+  const [mode, setMode] = useState<ViewMode>("editor")
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showCodePanel, setShowCodePanel] = useState(false)
   const [codePanelExpanded, setCodePanelExpanded] = useState(false)
-  const [showTimeline, setShowTimeline] = useState(false)
-  const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
+  const [showTimeline, setShowTimeline] = useState(true) // Default to true in play mode
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
@@ -158,7 +149,6 @@ export function Builder({ width, height }: BuilderProps) {
   useBuilderKeyboard({
     modalMode,
     mode,
-    lastEditorPlayMode,
     focusedField,
     addMode,
     setModalMode,
@@ -184,6 +174,7 @@ export function Builder({ width, height }: BuilderProps) {
     onTogglePanels: togglePanels,
     onToggleCode: () => setShowCodePanel(v => !v),
     onToggleTimeline: () => setShowTimeline(v => !v),
+    onShowTimeline: () => setShowTimeline(true),
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -303,7 +294,7 @@ export function Builder({ width, height }: BuilderProps) {
   const mainContentHeight = height - footerHeight 
     - (mode === "play" ? filmStripHeight : 0)
     - (showCodePanel ? codePanelHeight : 0)
-    - (showTimeline ? timelineHeight : 0)
+    - (mode === "play" && showTimeline ? timelineHeight : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -329,7 +320,7 @@ export function Builder({ width, height }: BuilderProps) {
     const bottomPanelHeight = 
       (mode === "play" ? filmStripHeight : 0) +
       (showCodePanel ? codePanelHeight : 0) +
-      (showTimeline ? timelineHeight : 0)
+      (mode === "play" && showTimeline ? timelineHeight : 0)
 
     // The canvas is vertically centered in the remaining space *above* the bottom panels.
     // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
@@ -418,7 +409,7 @@ export function Builder({ width, height }: BuilderProps) {
             <DocsPanel />
           )}
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
       </box>
     )
   }
@@ -431,7 +422,7 @@ export function Builder({ width, height }: BuilderProps) {
         <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
       </box>
     )
   }
@@ -487,7 +478,6 @@ export function Builder({ width, height }: BuilderProps) {
              canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
-             onToggleTimeline={() => setShowTimeline(v => !v)}
              onDragStart={handleDragStart}
              onDragMove={handleDragMove}
              onDragEnd={handleDragEnd}
@@ -499,7 +489,7 @@ export function Builder({ width, height }: BuilderProps) {
             selectedId={selectedId}
             hoveredId={hoveredId}
             canvasOffset={canvasOffset}
-            canvasOffsetAdjustY={(showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
+            canvasOffsetAdjustY={showCodePanel ? codePanelHeight : 0}
             onCanvasOffsetChange={setCanvasOffset}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
             onHover={setHoveredId}
@@ -558,13 +548,10 @@ export function Builder({ width, height }: BuilderProps) {
         />
       )}
       
-      {/* Timeline Panel - bottom panel toggled with T */}
-      {showTimeline && (
+      {/* Timeline Panel - visible in play mode, toggleable with F2 */}
+      {mode === "play" && showTimeline && (
         <box height={timelineHeight} flexShrink={0}>
-          <TimelinePanel 
-            projectHook={projectHook}
-            onClose={() => setShowTimeline(false)} 
-          />
+          <TimelinePanel projectHook={projectHook} />
         </box>
       )}
 
@@ -588,7 +575,7 @@ export function Builder({ width, height }: BuilderProps) {
         </box>
       )}
       
-      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
+      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { if (mode !== "play") { setMode("play"); setShowTimeline(true) } else { setShowTimeline(v => !v) } }} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (
