@@ -11,6 +11,7 @@ import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
 import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
+import { TimelinePanel } from "./components/timeline/TimelinePanel"
 import { KeyframingContext } from "./components/contexts/KeyframingContext"
 import { useProject } from "./hooks/useProject"
 import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
@@ -76,6 +77,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showCodePanel, setShowCodePanel] = useState(false)
+  const [showTimeline, setShowTimeline] = useState(false)
   const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   
@@ -180,6 +182,7 @@ export function Builder({ width, height }: BuilderProps) {
     onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
     onTogglePanels: togglePanels,
     onToggleCode: () => setShowCodePanel(v => !v),
+    onToggleTimeline: () => setShowTimeline(v => !v),
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -294,10 +297,12 @@ export function Builder({ width, height }: BuilderProps) {
   const sidebarWidth = 35
   const filmStripHeight = 6
   const codePanelHeight = 12
+  const timelineHeight = 14
   const footerHeight = 1
   const mainContentHeight = height - footerHeight 
     - (mode === "play" ? filmStripHeight : 0)
     - (showCodePanel ? codePanelHeight : 0)
+    - (showTimeline ? timelineHeight : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -317,11 +322,74 @@ export function Builder({ width, height }: BuilderProps) {
     
     // The root is centered by flexbox. To center a specific element,
     // offset by the negative of its position (plus half its size to center it)
+    // We also need to account for the bottom panel which shifts the viewport center
+    
+    // Calculate total bottom panel height
+    const bottomPanelHeight = 
+      (mode === "play" ? filmStripHeight : 0) +
+      (showCodePanel ? codePanelHeight : 0) +
+      (showTimeline ? timelineHeight : 0)
+
+    // The canvas is vertically centered in the remaining space *above* the bottom panels.
+    // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
+    // visual center down to account for this.
+    // 
+    // Let's look at EditorPanel:
+    // top={canvasOffset.y + canvasOffsetAdjustY / 2}
+    //
+    // So if we have a bottom panel of height H, the canvas visual center is shifted down by H/2.
+    // This means the coordinate (0,0) which was at the physical center is now at physical center + H/2.
+    //
+    // Wait, if the canvas size *shrinks* because of bottom panels (flex layout), 
+    // the flexbox centering moves the physical center UP by H/2.
+    // To keep the visual content stable, we add H/2 to the top offset.
+    //
+    // So, effectively, (0,0) remains visually in the center of the *original* full height area
+    // (minus footer/header/etc).
+    //
+    // If we want to center an element, we want its center to be at the new physical center 
+    // of the VISIBLE canvas area.
+    //
+    // The visible canvas area has height: TotalHeight - TopBar - BottomPanels.
+    // The physical center is at (TotalHeight - TopBar - BottomPanels) / 2.
+    //
+    // Relative to the "stable" (0,0) point (which is centered in the full area?), where is the new center?
+    // 
+    // Let's assume the previous logic was trying to maintain a stable world coordinate system.
+    // 
+    // If we want to center the element in the *visible* area:
+    // We simply need the element's position relative to the world origin (0,0) to be offset such that
+    // it aligns with the center of the visible area.
+    //
+    // The `canvasOffset` shifts the world origin.
+    // If offset is (0,0), the world origin is at the *visual* center (which is shifted by `canvasOffsetAdjustY`).
+    //
+    // `canvasOffsetAdjustY` is typically passed as `bottomPanelHeight`.
+    // So origin is at `PhysicalCenter + BottomPanelHeight / 2`.
+    //
+    // We want the element center `(pos.y + h/2)` to be at the `PhysicalCenter`.
+    //
+    // Current Y = `PhysicalCenter + BottomPanelHeight/2 + offset.y + pos.y + h/2`  (Wait, strictly, it's `top` relative to container)
+    //
+    // Let's trace EditorPanel render:
+    // Container is flex-centered.
+    // Inner box `canvas-viewport` has `top={canvasOffset.y + canvasOffsetAdjustY / 2}`
+    //
+    // So `canvas-viewport` origin (0,0) is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2`.
+    // The element is at `(pos.x, pos.y)` inside `canvas-viewport`.
+    // So element top-left is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y`.
+    // Element center is at `... + pos.y + h/2`.
+    //
+    // We want Element Center to be at `PhysicalCenter`.
+    // So: `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = PhysicalCenter`
+    // => `canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = 0`
+    // => `canvasOffset.y = -(pos.y + h/2) - canvasOffsetAdjustY / 2`
+    
     const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
-    const newOffsetY = Math.round(-pos.y - nodeHeight / 2)
+    const newOffsetY = Math.round(-pos.y - nodeHeight / 2 - bottomPanelHeight / 2)
     
     setCanvasOffset({ x: newOffsetX, y: newOffsetY })
-  }, [tree])
+  }, [tree, mode, showCodePanel, showTimeline])
 
   // Loading state
   if (isLoading) { // Allow project to be null if we are in library mode?
@@ -403,9 +471,10 @@ export function Builder({ width, height }: BuilderProps) {
              projectHook={projectHook} 
              isPlaying={isPlaying}
              canvasOffset={canvasOffset}
-             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0)}
+             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
+             onToggleTimeline={() => setShowTimeline(v => !v)}
              onDragStart={handleDragStart}
              onDragMove={handleDragMove}
              onDragEnd={handleDragEnd}
@@ -417,7 +486,7 @@ export function Builder({ width, height }: BuilderProps) {
             selectedId={selectedId}
             hoveredId={hoveredId}
             canvasOffset={canvasOffset}
-            canvasOffsetAdjustY={showCodePanel ? codePanelHeight : 0}
+            canvasOffsetAdjustY={(showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
             onCanvasOffsetChange={setCanvasOffset}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
             onHover={setHoveredId}
@@ -480,6 +549,16 @@ export function Builder({ width, height }: BuilderProps) {
       {showCodePanel && (
         <box height={codePanelHeight} flexShrink={0}>
           <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setShowCodePanel(false)} />
+        </box>
+      )}
+
+      {/* Timeline Panel - bottom panel toggled with T */}
+      {showTimeline && (
+        <box height={timelineHeight} flexShrink={0}>
+          <TimelinePanel 
+            projectHook={projectHook}
+            onClose={() => setShowTimeline(false)} 
+          />
         </box>
       )}
       

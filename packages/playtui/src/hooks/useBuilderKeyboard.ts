@@ -53,6 +53,7 @@ interface UseBuilderKeyboardParams {
   // Panel visibility
   onTogglePanels?: () => void
   onToggleCode?: () => void
+  onToggleTimeline?: () => void
 }
 
 export function useBuilderKeyboard({
@@ -82,6 +83,7 @@ export function useBuilderKeyboard({
   onAnimDeleteFrame,
   onTogglePanels,
   onToggleCode,
+  onToggleTimeline,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
@@ -119,6 +121,7 @@ export function useBuilderKeyboard({
     // Play mode - frame shortcuts, then fall through to editor shortcuts
     if (mode === "play") {
       if (isKeybind(key, Bind.ANIM_PLAY_TOGGLE) && onAnimPlayToggle) { onAnimPlayToggle(); return }
+      if (isKeybind(key, Bind.TOGGLE_TIMELINE) && onToggleTimeline) { onToggleTimeline(); return }
       if (!focusedField && !addMode) {
         if (isKeybind(key, Bind.ANIM_PREV_FRAME) && onAnimPrevFrame) { onAnimPrevFrame(); return }
         if (isKeybind(key, Bind.ANIM_NEXT_FRAME) && onAnimNextFrame) { onAnimNextFrame(); return }
