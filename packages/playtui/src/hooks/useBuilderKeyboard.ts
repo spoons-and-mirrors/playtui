@@ -23,6 +23,7 @@ interface UseBuilderKeyboardParams {
   mode: ViewMode
   focusedField: string | null
   addMode: boolean
+  filmStripEditing?: boolean
 
   // State setters
   setModalMode: (mode: "new" | "load" | "delete" | "saveAs" | null) => void
@@ -61,6 +62,7 @@ export function useBuilderKeyboard({
   mode,
   focusedField,
   addMode,
+  filmStripEditing,
   setModalMode,
   setMode,
   setFocusedField,
@@ -158,7 +160,7 @@ export function useBuilderKeyboard({
     }
 
     // Main shortcuts (editor mode only)
-    if (isKeybind(key, Bind.EDITOR_DELETE)) onDelete()
+    if (isKeybind(key, Bind.EDITOR_DELETE) && !filmStripEditing) onDelete()
     else if (isKeybind(key, Bind.EDITOR_DUPLICATE)) onDuplicate()
     else if (isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) setAddMode(true)
     else if (isKeybind(key, Bind.EDITOR_COPY)) onCopy()

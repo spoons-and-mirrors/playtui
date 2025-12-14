@@ -72,6 +72,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [codePanelExpanded, setCodePanelExpanded] = useState(false)
   const [showTimeline, setShowTimeline] = useState(true) // Default to true in play mode
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
+  const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
@@ -151,6 +152,7 @@ export function Builder({ width, height }: BuilderProps) {
     mode,
     focusedField,
     addMode,
+    filmStripEditing,
     setModalMode,
     setMode,
     setFocusedField,
@@ -545,6 +547,7 @@ export function Builder({ width, height }: BuilderProps) {
           isPlaying={isPlaying}
           onTogglePlay={() => setIsPlaying(p => !p)}
           onImport={projectHook.importAnimation}
+          onEditingChange={setFilmStripEditing}
         />
       )}
       

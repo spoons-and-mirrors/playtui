@@ -159,7 +159,7 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   [Bind.EDITOR_DELETE]: {
     id: Bind.EDITOR_DELETE,
     label: "Delete",
-    keys: [{ name: "delete" }, { name: "backspace" }], // Added backspace as common alias
+    keys: [{ name: "delete" }],
     category: "Editor"
   },
   [Bind.EDITOR_DUPLICATE]: {
