@@ -3,8 +3,7 @@ import { TextAttributes } from "@opentui/core"
 import type { MouseEvent } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
-import { useKeyframing } from "../contexts/KeyframingContext"
-import { useProject } from "../../hooks/useProject"
+import type { UseProjectReturn } from "../../hooks/useProject"
 import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle } from "../../lib/keyframing"
 import { ValueSlider } from "../ui/ValueSlider"
 import { findNode } from "../../lib/tree"
@@ -39,35 +38,42 @@ function findNextKeyframe(keyframes: { frame: number }[], currentFrame: number):
 const GRAPH_HEIGHT = 10
 
 export function ValueGraph({ 
+  projectHook,
   nodeId, 
   property,
   onBack
 }: { 
+  projectHook: UseProjectReturn
   nodeId: string
   property: string
   onBack: () => void
 }) {
-  const { project, setCurrentFrame, setKeyframeHandle } = useProject()
-  const keyframing = useKeyframing()
+  const { project, setCurrentFrame, setKeyframeHandle } = projectHook
   const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
   const handleRef = useRef({ x: 33, y: 0 })
 
-  // J/K shortcuts for prev/next keyframe
+  // J/K shortcuts for prev/next keyframe (VIM-style: j=next/down, k=prev/up)
   useKeyboard((key) => {
-    if (!project || !keyframing) return
+    if (!project) return
     const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, nodeId, property)
     if (!animProp) return
     
-    if (key.name === "j") {
-      const prev = findPrevKeyframe(animProp.keyframes, keyframing.currentFrame)
+    const currentFrame = project.animation.currentFrameIndex
+    
+    if (key.name === "k") {
+      // K = up/previous keyframe
+      const prev = findPrevKeyframe(animProp.keyframes, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
-    } else if (key.name === "k") {
-      const next = findNextKeyframe(animProp.keyframes, keyframing.currentFrame)
+    } else if (key.name === "j") {
+      // J = down/next keyframe
+      const next = findNextKeyframe(animProp.keyframes, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }
   })
 
-  if (!project || !keyframing) return null
+  if (!project) return null
+  
+  const currentFrame = project.animation.currentFrameIndex
   
   const animatedProp = getAnimatedProperty(
     project.animation.keyframing.animatedProperties, 
@@ -127,7 +133,7 @@ export function ValueGraph({
     project.animation.keyframing.animatedProperties,
     nodeId,
     property,
-    keyframing.currentFrame
+    currentFrame
   )
 
   const handle = currentKeyframe ? currentKeyframe.handleOut : createDefaultHandle()
@@ -138,10 +144,42 @@ export function ValueGraph({
   // Find if we are sitting ON a keyframe (to enable sliders)
   const isKeyframeSelected = !!currentKeyframe
 
+  // Handle click on timeline cell to navigate to that frame
+  const handleCellClick = (e: MouseEvent, frame: number) => {
+    e.stopPropagation()
+    setCurrentFrame(frame)
+  }
+
   return (
     <box id="curve-editor" flexDirection="column" flexGrow={1}>
-      <box id="curve-header" flexDirection="row" justifyContent="space-between" paddingLeft={1} paddingRight={1}>
+      {/* Header - styled like filmstrip */}
+      <box 
+        id="curve-header" 
+        flexDirection="row" 
+        justifyContent="space-between" 
+        alignItems="center"
+        paddingLeft={1} 
+        paddingRight={1}
+        height={1}
+        backgroundColor={COLORS.bgAlt}
+        border={["bottom"]}
+        borderColor={COLORS.border}
+        borderStyle="single"
+      >
         <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getElementName(project.tree, nodeId)}:{property}</text>
+        
+        {/* Frame/Value status - moved to header */}
+        <box id="curve-status" flexDirection="row" gap={2}>
+          <text fg={COLORS.muted} selectable={false}>
+            Frame: <span fg={COLORS.text}>{hoveredFrame !== null ? hoveredFrame : currentFrame}</span>
+          </text>
+          <text fg={COLORS.muted} selectable={false}>
+            Value: <span fg={COLORS.text}>{hoveredFrame !== null 
+              ? getDrivenValue(animatedProp, hoveredFrame).toFixed(1) 
+              : getDrivenValue(animatedProp, currentFrame).toFixed(1)}</span>
+          </text>
+        </box>
+
         <box id="curve-controls" flexDirection="row" gap={2}>
           {isKeyframeSelected ? (
             <>
@@ -149,14 +187,14 @@ export function ValueGraph({
                 id="handle-x"
                 label="Speed"
                 value={handle.x}
-                onChange={(v) => setKeyframeHandle(nodeId, property, keyframing.currentFrame, v, handleRef.current.y)}
+                onChange={(v) => setKeyframeHandle(nodeId, property, currentFrame, v, handleRef.current.y)}
                 resetTo={33}
               />
               <ValueSlider
                 id="handle-y"
                 label="Bounce"
                 value={handle.y}
-                onChange={(v) => setKeyframeHandle(nodeId, property, keyframing.currentFrame, handleRef.current.x, v)}
+                onChange={(v) => setKeyframeHandle(nodeId, property, currentFrame, handleRef.current.x, v)}
                 resetTo={0}
               />
             </>
@@ -164,8 +202,8 @@ export function ValueGraph({
             <text fg={COLORS.muted} selectable={false}>Select keyframe to edit easing</text>
           )}
         </box>
-        <box id="curve-back-btn" onMouseDown={onBack} backgroundColor={COLORS.bgAlt} paddingLeft={1} paddingRight={1}>
-          <text selectable={false}>Back</text>
+        <box id="curve-back-btn" onMouseDown={onBack} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+          <text fg={COLORS.accent} selectable={false}>Back</text>
         </box>
       </box>
       
@@ -185,7 +223,7 @@ export function ValueGraph({
                 const percent = getPercentAtFrame(frame)
                 const targetRow = percentToRow(percent)
                 const isKeyframe = keyframes.some(k => k.frame === frame)
-                const isCurrent = frame === keyframing.currentFrame
+                const isCurrent = frame === currentFrame
                 const isHovered = frame === hoveredFrame
                 
                 // Determine cell content
@@ -236,7 +274,7 @@ export function ValueGraph({
                     backgroundColor={bg}
                     onMouseMove={(e) => handleMouseMove(e, frame)}
                     onMouseOut={handleMouseLeave}
-                    onMouseDown={() => setCurrentFrame(frame)}
+                    onMouseDown={(e) => handleCellClick(e, frame)}
                   >
                     <text fg={fg} selectable={false}>{char}</text>
                   </box>
@@ -245,18 +283,6 @@ export function ValueGraph({
             </box>
           ))}
         </box>
-      </box>
-
-      {/* Status bar - BELOW the graph */}
-      <box id="curve-status" flexDirection="row" paddingLeft={1} gap={2} marginTop={1}>
-        <text fg={COLORS.muted} selectable={false}>
-          Frame: {hoveredFrame !== null ? hoveredFrame : keyframing.currentFrame}
-        </text>
-        <text fg={COLORS.muted} selectable={false}>
-          Value: {hoveredFrame !== null 
-            ? getDrivenValue(animatedProp, hoveredFrame).toFixed(1) 
-            : getDrivenValue(animatedProp, keyframing.currentFrame).toFixed(1)}
-        </text>
       </box>
     </box>
   )

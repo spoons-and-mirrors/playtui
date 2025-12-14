@@ -5,7 +5,6 @@ import { COLORS } from "../../theme"
 import { useDragCapture } from "../pages/Properties"
 import { useKeyframing } from "../contexts/KeyframingContext"
 import { KeyframeContextMenu } from "./KeyframeContextMenu"
-import { hasKeyframeAt } from "../../lib/keyframing"
 
 interface ValueSliderProps {
   id: string
@@ -23,6 +22,7 @@ interface ValueSliderProps {
  * - Double click to reset to default
  * - Uses accent text on bg color styling
  * - Shows warning color when property has keyframes
+ * - Auto-keyframes when property is already keyframed (always on)
  */
 export function ValueSlider({ id, label, property, value, onChange, onChangeEnd, resetTo = 0 }: ValueSliderProps) {
   const [dragging, setDragging] = useState(false)
@@ -42,6 +42,13 @@ export function ValueSlider({ id, label, property, value, onChange, onChangeEnd,
     ? keyframing.hasKeyframe(keyframing.selectedId, property, keyframing.currentFrame) 
     : false
 
+  // Auto-keyframe: when property is keyframed and value changes, add/update keyframe
+  const handleAutoKeyframe = (newValue: number) => {
+    if (isKeyframed && keyframing && keyframing.selectedId && property) {
+      keyframing.addKeyframe(keyframing.selectedId, property, newValue)
+    }
+  }
+
   const handleValueMouseDown = (e: MouseEvent) => {
     // Right click -> Context menu
     if (e.button === MouseButton.RIGHT && keyframing && property) {
@@ -55,6 +62,7 @@ export function ValueSlider({ id, label, property, value, onChange, onChangeEnd,
     if (now - lastClickTime.current < 300) {
       onChange(resetTo)
       if (onChangeEnd) onChangeEnd(resetTo)
+      handleAutoKeyframe(resetTo)
       lastClickTime.current = 0
       return
     }
@@ -64,7 +72,10 @@ export function ValueSlider({ id, label, property, value, onChange, onChangeEnd,
     dragStart.current = { x: e.x, y: e.y, value }
     setDragging(true)
     if (registerDrag) {
-      registerDrag(e.x, e.y, value, onChange, onChangeEnd)
+      registerDrag(e.x, e.y, value, onChange, (v) => {
+        if (onChangeEnd) onChangeEnd(v)
+        handleAutoKeyframe(v)
+      })
     }
   }
 
@@ -78,8 +89,9 @@ export function ValueSlider({ id, label, property, value, onChange, onChangeEnd,
   }
 
   const handleValueDragEnd = () => {
-    if (dragStart.current && onChangeEnd) {
-      onChangeEnd(value)
+    if (dragStart.current) {
+      if (onChangeEnd) onChangeEnd(value)
+      handleAutoKeyframe(value)
     }
     dragStart.current = null
     setDragging(false)

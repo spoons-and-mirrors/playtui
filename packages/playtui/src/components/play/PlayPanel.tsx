@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useRef } from "react"
 import { EditorPanel } from "../pages/Editor"
 import type { UseProjectReturn } from "../../hooks/useProject"
+import type { DragEvent } from "../Renderer"
 import { bakeFrame } from "../../lib/keyframing"
 
 interface PlayPanelProps {
   projectHook: UseProjectReturn
   isPlaying: boolean
   onTogglePlay: () => void
+  onDragStart?: (event: DragEvent) => void
+  onDragMove?: (event: DragEvent) => void
+  onDragEnd?: (nodeId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelProps) {
+export function PlayPanel({ projectHook, isPlaying, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
   const { 
     project, 
     updateTree, 
@@ -83,6 +87,9 @@ export function PlayPanel({ projectHook, isPlaying, onTogglePlay }: PlayPanelPro
         onSelect={setSelectedId}
         onHover={() => {}}
         onBackgroundClick={() => setSelectedId(null)}
+        onDragStart={onDragStart}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
       />
     </box>
   )

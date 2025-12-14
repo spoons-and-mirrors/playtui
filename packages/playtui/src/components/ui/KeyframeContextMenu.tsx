@@ -23,7 +23,7 @@ export function KeyframeContextMenu({
       left={x}
       top={y}
       width={20}
-      height={hasKeyframeAtCurrent ? 4 : 3}
+      height={hasKeyframeAtCurrent ? 3 : 3}
       border
       borderStyle="single"
       borderColor={COLORS.border}
@@ -31,25 +31,23 @@ export function KeyframeContextMenu({
       zIndex={100}
       flexDirection="column"
       onMouseUp={(e) => {
-        // Close if clicking outside (this is a bit tricky in TUI, often done via overlay)
-        // For now, rely on specific actions closing it or clicking outside in parent
         e.stopPropagation()
       }}
     >
-      <box
-        height={1}
-        paddingLeft={1}
-        backgroundColor={hasKeyframeAtCurrent ? COLORS.bg : COLORS.accent}
-        onMouseDown={(e) => {
-          e.stopPropagation()
-          onAddKeyframe()
-          onClose()
-        }}
-      >
-        <text fg={hasKeyframeAtCurrent ? COLORS.text : COLORS.bg}>
-          {hasKeyframeAtCurrent ? "Update Keyframe" : "Add Keyframe"}
-        </text>
-      </box>
+      {!hasKeyframeAtCurrent && (
+        <box
+          height={1}
+          paddingLeft={1}
+          backgroundColor={COLORS.accent}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onAddKeyframe()
+            onClose()
+          }}
+        >
+          <text fg={COLORS.bg}>Add Keyframe</text>
+        </box>
+      )}
       
       {hasKeyframeAtCurrent && (
         <box

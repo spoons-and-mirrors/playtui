@@ -116,33 +116,82 @@ function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
   return [...keyframes].sort((a, b) => a.frame - b.frame)
 }
 
-// Cubic bezier interpolation
-// t is normalized time (0-1) within the segment
-// Returns normalized value (0-1)
-function cubicBezier(t: number, handleOut: BezierHandle, handleIn: BezierHandle): number {
-  // Convert handles to control points
-  // P0 = (0, 0), P3 = (1, 1)
-  // P1 = control point from start keyframe's handleOut
-  // P2 = control point from end keyframe's handleIn (we derive from handleOut of start)
+// Solve cubic bezier for t given x using Newton-Raphson iteration
+// This finds the parameter t where the bezier curve has the given x value
+function solveCubicBezierX(x: number, p1x: number, p2x: number, epsilon = 0.0001): number {
+  // For extreme cases, return linear
+  if (x <= 0) return 0
+  if (x >= 1) return 1
   
+  // Newton-Raphson iteration
+  let t = x // Initial guess
+  for (let i = 0; i < 8; i++) {
+    const mt = 1 - t
+    const mt2 = mt * mt
+    const mt3 = mt2 * mt
+    const t2 = t * t
+    const t3 = t2 * t
+    
+    // Bezier X(t) = 3(1-t)²t*p1x + 3(1-t)t²*p2x + t³
+    const currentX = 3 * mt2 * t * p1x + 3 * mt * t2 * p2x + t3
+    
+    // If close enough, we're done
+    const error = currentX - x
+    if (Math.abs(error) < epsilon) break
+    
+    // Derivative: dX/dt = 3(1-t)²p1x + 6(1-t)t(p2x-p1x) + 3t²(1-p2x)
+    const derivative = 3 * mt2 * p1x + 6 * mt * t * (p2x - p1x) + 3 * t2 * (1 - p2x)
+    
+    // Avoid division by zero
+    if (Math.abs(derivative) < 0.000001) break
+    
+    t = t - error / derivative
+    t = clamp(t, 0, 1)
+  }
+  
+  return clamp(t, 0, 1)
+}
+
+// Cubic bezier interpolation (CSS-style cubic-bezier timing function)
+// x = time (0-1), returns eased value (0-1)
+// handleOut.x controls ease-out (speed at start): 0=instant, 100=very slow start
+// handleOut.y controls overshoot: negative=undershoot, positive=overshoot
+function cubicBezier(x: number, handleOut: BezierHandle, handleIn: BezierHandle): number {
+  // Control points for the bezier curve
+  // P0 = (0, 0) - start
+  // P1 = (p1x, p1y) - first control point (from handleOut)
+  // P2 = (p2x, p2y) - second control point (from handleIn)  
+  // P3 = (1, 1) - end
+  
+  // Speed (x): 0-100, controls horizontal position of control point
+  // 0 = control point at x=0 (sharp/instant)
+  // 33 = linear-ish (default)
+  // 100 = control point at x=1 (very slow ease)
   const p1x = handleOut.x / 100
-  const p1y = handleOut.y / 100 + t * (1 - handleOut.y / 100) * 0.5
   const p2x = 1 - handleIn.x / 100
-  const p2y = 1 - handleIn.y / 100 * 0.5
   
-  // Simplified cubic bezier for Y given T
-  // Using De Casteljau's algorithm approximation
+  // Bounce (y): -100 to 100, controls vertical position
+  // 0 = normal interpolation
+  // positive = overshoot (goes past target then back)
+  // negative = undershoot (hesitates before reaching target)
+  const p1y = handleOut.y / 100 + 0.33 // Offset so 0 gives roughly linear
+  const p2y = 1 - handleIn.y / 100 - 0.33
+  
+  // Find the bezier parameter t for the given x (time)
+  const t = solveCubicBezierX(x, p1x, p2x)
+  
+  // Now calculate Y at parameter t
   const mt = 1 - t
   const mt2 = mt * mt
   const mt3 = mt2 * mt
   const t2 = t * t
   const t3 = t2 * t
   
-  // Bezier curve: B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3
-  // For Y value interpolation:
-  const y = mt3 * 0 + 3 * mt2 * t * p1y + 3 * mt * t2 * p2y + t3 * 1
+  // Bezier Y(t) = 3(1-t)²t*p1y + 3(1-t)t²*p2y + t³
+  const y = 3 * mt2 * t * p1y + 3 * mt * t2 * p2y + t3
   
-  return clamp(y, 0, 1)
+  // Allow slight overshoot but clamp extremes
+  return clamp(y, -0.5, 1.5)
 }
 
 // Simplified easing based on single handle

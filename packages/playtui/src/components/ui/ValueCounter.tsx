@@ -18,6 +18,7 @@ interface ValueCounterProps {
 
 // Generic value counter: | - | label:value | + |
 // Shows warning color when property has keyframes
+// Auto-keyframes when property is already keyframed (always on)
 export function ValueCounter({ id, label, property, value, onChange, onChangeEnd, resetTo = 0 }: ValueCounterProps) {
   const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -39,18 +40,25 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
   
   const step = 1
 
-  const handleDec = () => {
-    onChange(value - step)
-    if (keyframing?.autoKeyEnabled && keyframing.selectedId && property && onChangeEnd) {
-      onChangeEnd(value - step) 
+  // Auto-keyframe: when property is keyframed and value changes, add/update keyframe
+  const handleAutoKeyframe = (newValue: number) => {
+    if (isKeyframed && keyframing && keyframing.selectedId && property) {
+      keyframing.addKeyframe(keyframing.selectedId, property, newValue)
     }
   }
 
+  const handleDec = () => {
+    const newVal = value - step
+    onChange(newVal)
+    if (onChangeEnd) onChangeEnd(newVal)
+    handleAutoKeyframe(newVal)
+  }
+
   const handleInc = () => {
-    onChange(value + step)
-    if (keyframing?.autoKeyEnabled && keyframing.selectedId && property && onChangeEnd) {
-      onChangeEnd(value + step)
-    }
+    const newVal = value + step
+    onChange(newVal)
+    if (onChangeEnd) onChangeEnd(newVal)
+    handleAutoKeyframe(newVal)
   }
 
   const handleValueMouseDown = (e: MouseEvent) => {
@@ -64,9 +72,8 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
     const now = Date.now()
     if (now - lastClickTime.current < 300) {
       onChange(resetTo)
-      if (keyframing?.autoKeyEnabled && keyframing.selectedId && property && onChangeEnd) {
-        onChangeEnd(resetTo)
-      }
+      if (onChangeEnd) onChangeEnd(resetTo)
+      handleAutoKeyframe(resetTo)
       lastClickTime.current = 0
       return
     }
@@ -75,12 +82,11 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
     dragStart.current = { x: e.x, y: e.y, value }
     setDragging(true)
     
-    const wrappedOnChangeEnd = (v: number) => {
-      if (onChangeEnd) onChangeEnd(v)
-    }
-
     if (registerDrag) {
-      registerDrag(e.x, e.y, value, onChange, wrappedOnChangeEnd)
+      registerDrag(e.x, e.y, value, onChange, (v) => {
+        if (onChangeEnd) onChangeEnd(v)
+        handleAutoKeyframe(v)
+      })
     }
   }
 
@@ -94,8 +100,9 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
   }
 
   const handleValueDragEnd = () => {
-    if (dragStart.current && onChangeEnd) {
-      onChangeEnd(value)
+    if (dragStart.current) {
+      if (onChangeEnd) onChangeEnd(value)
+      handleAutoKeyframe(value)
     }
     dragStart.current = null
     setDragging(false)

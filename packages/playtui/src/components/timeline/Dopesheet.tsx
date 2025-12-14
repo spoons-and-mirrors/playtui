@@ -1,8 +1,7 @@
 import { TextAttributes } from "@opentui/core"
 import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
-import { useKeyframing } from "../contexts/KeyframingContext"
-import { useProject } from "../../hooks/useProject"
+import type { UseProjectReturn } from "../../hooks/useProject"
 import { findNode } from "../../lib/tree"
 
 // Get display name for an element (capitalize type)
@@ -14,17 +13,19 @@ function getElementName(tree: any, nodeId: string): string {
 }
 
 export function Dopesheet({ 
+  projectHook,
   onSelectProperty 
 }: { 
+  projectHook: UseProjectReturn
   onSelectProperty: (nodeId: string, property: string) => void 
 }) {
-  const { project, setCurrentFrame } = useProject()
-  const keyframing = useKeyframing()
+  const { project } = projectHook
   
-  if (!project || !keyframing) return null
+  if (!project) return null
   
   const animatedProperties = project.animation.keyframing.animatedProperties
   const frameCount = project.animation.frames.length
+  const currentFrame = project.animation.currentFrameIndex
   const tree = project.tree
   
   // Group by Node ID
@@ -49,7 +50,7 @@ export function Dopesheet({
                 key={`${prop.nodeId}:${prop.property}`}
                 property={prop}
                 frameCount={frameCount}
-                currentFrame={keyframing.currentFrame}
+                currentFrame={currentFrame}
                 onSelect={() => onSelectProperty(prop.nodeId, prop.property)}
               />
             ))}
