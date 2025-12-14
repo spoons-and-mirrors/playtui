@@ -345,16 +345,16 @@ export function FilmStrip({
           ref={scrollRef}
           scrollX
           scrollY={false}
+          scrollbarOptions={{
+            showArrows: false,
+            trackOptions: {
+              foregroundColor: COLORS.accent,
+              backgroundColor: COLORS.bgAlt,
+            },
+          }}
           style={{
             width: "100%",
             height: 2,
-            scrollbarOptions: {
-              showArrows: false,
-              trackOptions: {
-                foregroundColor: "transparent",
-                backgroundColor: "transparent",
-              },
-            },
             contentOptions: {
               flexDirection: "row",
               gap: 1,
