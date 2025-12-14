@@ -20,7 +20,7 @@ Switch between modes using F-keys or clicking the NavBar buttons.
 | Key | Mode | Description |
 |-----|------|-------------|
 | F1 | Edit/Play | Toggle between editor and animation playback |
-| F2 | Code | Live JSX editor - edit code directly |
+| F2 | Code | Toggle code panel - live JSX editor |
 | F3 | Library | Browse and load saved projects |
 | F4 | Docs | This documentation |
 

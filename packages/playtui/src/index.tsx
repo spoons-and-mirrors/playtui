@@ -75,6 +75,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [showCodePanel, setShowCodePanel] = useState(false)
   const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   
@@ -82,7 +83,6 @@ export function Builder({ width, height }: BuilderProps) {
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
     editor: 0,
     play: 0,
-    code: 1,
   })
 
   // Derive panel visibility from current mode's state
@@ -179,6 +179,7 @@ export function Builder({ width, height }: BuilderProps) {
     onAnimDuplicateFrame: duplicateFrame,
     onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
     onTogglePanels: togglePanels,
+    onToggleCode: () => setShowCodePanel(v => !v),
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -292,10 +293,11 @@ export function Builder({ width, height }: BuilderProps) {
   const treeWidth = 27
   const sidebarWidth = 35
   const filmStripHeight = 6
+  const codePanelHeight = 12
   const footerHeight = 1
-  const mainContentHeight = mode === "play" 
-    ? height - footerHeight - filmStripHeight 
-    : height - footerHeight
+  const mainContentHeight = height - footerHeight 
+    - (mode === "play" ? filmStripHeight : 0)
+    - (showCodePanel ? codePanelHeight : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -347,7 +349,7 @@ export function Builder({ width, height }: BuilderProps) {
             <DocsPanel />
           )}
         </box>
-        <NavBar mode={mode} width={width} onModeChange={setMode} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
       </box>
     )
   }
@@ -360,7 +362,7 @@ export function Builder({ width, height }: BuilderProps) {
         <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
-        <NavBar mode={mode} width={width} onModeChange={setMode} />
+        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
       </box>
     )
   }
@@ -395,15 +397,13 @@ export function Builder({ width, height }: BuilderProps) {
           setFocusedField={setFocusedField}
         />
 
-        {/* Canvas or Code Panel - grows to fill middle */}
-        {mode === "code" ? (
-          <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setMode("editor")} />
-        ) : mode === "play" ? (
+        {/* Canvas - grows to fill middle */}
+        {mode === "play" ? (
            <PlayPage 
              projectHook={projectHook} 
              isPlaying={isPlaying}
              canvasOffset={canvasOffset}
-             canvasOffsetAdjustY={filmStripHeight}
+             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0)}
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
@@ -417,6 +417,7 @@ export function Builder({ width, height }: BuilderProps) {
             selectedId={selectedId}
             hoveredId={hoveredId}
             canvasOffset={canvasOffset}
+            canvasOffsetAdjustY={showCodePanel ? codePanelHeight : 0}
             onCanvasOffsetChange={setCanvasOffset}
             onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
             onHover={setHoveredId}
@@ -474,7 +475,15 @@ export function Builder({ width, height }: BuilderProps) {
           onImport={projectHook.importAnimation}
         />
       )}
-      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
+      
+      {/* Code Panel - bottom panel toggled with F2 */}
+      {showCodePanel && (
+        <box height={codePanelHeight} flexShrink={0}>
+          <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setShowCodePanel(false)} />
+        </box>
+      )}
+      
+      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

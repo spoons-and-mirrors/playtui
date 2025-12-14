@@ -6,7 +6,7 @@ export enum Bind {
   
   // Navigation / View Modes
   VIEW_SWITCH_EDITOR_PLAY = "view.switch.editor_play",
-  VIEW_CODE = "view.code",
+  TOGGLE_CODE = "view.toggle_code",
   VIEW_LIBRARY = "view.library",
   VIEW_DOCS = "view.docs",
   TOGGLE_PANELS = "view.toggle_panels",
@@ -85,9 +85,9 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
     keys: [{ name: "f1" }],
     category: "View"
   },
-  [Bind.VIEW_CODE]: {
-    id: Bind.VIEW_CODE,
-    label: "Code View",
+  [Bind.TOGGLE_CODE]: {
+    id: Bind.TOGGLE_CODE,
+    label: "Toggle Code",
     keys: [{ name: "f2" }],
     category: "View"
   },

@@ -4,7 +4,7 @@ import type { SaveStatus } from "../../hooks/useProject"
 import { Flipbook } from "@playtui/flipbook"
 import { animation as f1ToggleAnim } from "../animations/f1-toggle"
 
-export type ViewMode = "editor" | "code" | "play" | "library" | "docs"
+export type ViewMode = "editor" | "play" | "library" | "docs"
 
 // ============================================================================
 // Save Indicator
@@ -118,10 +118,12 @@ interface NavBarProps {
   width: number
   projectName?: string
   saveStatus?: SaveStatus
+  showCodePanel?: boolean
   onModeChange: (mode: ViewMode) => void
+  onToggleCode?: () => void
 }
 
-export function NavBar({ mode, width, projectName, saveStatus, onModeChange }: NavBarProps) {
+export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, onModeChange, onToggleCode }: NavBarProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const prevModeRef = useRef<ViewMode>(mode)
 
@@ -162,7 +164,7 @@ export function NavBar({ mode, width, projectName, saveStatus, onModeChange }: N
           onPressLabel2={() => onModeChange("play")}
           isAnimating={isAnimating}
         />
-        <ModeTab fKey="F2" label="Code" isActive={mode === "code"} onPress={() => onModeChange("code")} />
+        <ModeTab fKey="F2" label="Code" isActive={!!showCodePanel} onPress={() => onToggleCode?.()} />
         <ModeTab fKey="F3" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
         <ModeTab fKey="F4" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
       </box>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
+import { TextAttributes } from "@opentui/core"
 import type { TextareaRenderable } from "@opentui/core"
 import { COLORS } from "../../theme"
 import { log } from "../../lib/logger"
@@ -85,7 +86,6 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
   }, [handleCodeChange])
 
   const [copied, setCopied] = useState(false)
-  const [clipboardError, setClipboardError] = useState<string | null>(null)
   
   const copyCode = useCallback(async () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
@@ -93,53 +93,72 @@ export function CodePanel({ code, tree, updateTree, onClose }: CodePanelProps) {
     
     if (result.success) {
       setCopied(true)
-      if (result.filePath) {
-        setClipboardError(`Saved to: ${result.filePath}`)
-        setTimeout(() => setClipboardError(null), 5000)
-      } else {
-        setClipboardError(null)
-      }
       setTimeout(() => setCopied(false), 1000)
     } else {
       log("CODE_COPY_ERROR", { error: result.error })
-      setClipboardError(result.error || "Failed to export")
-      setTimeout(() => setClipboardError(null), 3000)
     }
   }, [code])
 
   return (
-    <box id="code-panel" style={{ flexGrow: 1, flexDirection: "column", backgroundColor: COLORS.bg }}>
-      <box id="code-panel-header" style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <box style={{ flexDirection: "row", gap: 1 }}>
-          {error && <text fg={COLORS.danger}>Error: {error}</text>}
-          {clipboardError && (
-            <text fg={clipboardError.startsWith("Saved to:") ? COLORS.accent : COLORS.danger}>
-              {clipboardError}
-            </text>
-          )}
+    <box id="code-panel" flexDirection="column" flexGrow={1} backgroundColor={COLORS.bg}>
+      {/* Header row - matches CurveEditor style */}
+      <box 
+        id="code-header" 
+        flexDirection="row" 
+        alignItems="center"
+        height={1}
+        backgroundColor={COLORS.bgAlt}
+      >
+        {/* Left: Label */}
+        <box paddingLeft={1} paddingRight={2}>
+          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>JSX Code</text>
         </box>
-        <box onMouseDown={() => copyCode()}>
-          <text fg={copied ? COLORS.success : COLORS.accent}>
-            {copied ? "✓ Exported" : "⎘ Copy"}
-          </text>
+        
+        {/* Error indicator */}
+        {error && (
+          <box paddingRight={2}>
+            <text fg={COLORS.danger} selectable={false}>Error: {error.slice(0, 30)}</text>
+          </box>
+        )}
+        
+        {/* Spacer */}
+        <box flexGrow={1} />
+        
+        {/* Copy button */}
+        <box 
+          id="code-copy-btn" 
+          onMouseDown={() => copyCode()} 
+          backgroundColor={copied ? COLORS.success : COLORS.bg} 
+          paddingLeft={1} 
+          paddingRight={1}
+          marginRight={1}
+        >
+          <text fg={copied ? COLORS.bg : COLORS.accent} selectable={false}>{copied ? "Copied" : "Copy"}</text>
+        </box>
+        
+        {/* Close button */}
+        <box id="code-close-btn" onMouseDown={onClose} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+          <text fg={COLORS.accent} selectable={false}>Close</text>
         </box>
       </box>
-      <textarea
-        ref={textareaRef}
-        placeholder="Paste or edit JSX code here..."
-        focused
-        textColor={COLORS.text}
-        backgroundColor="transparent"
-        focusedBackgroundColor="transparent"
-        cursorColor={COLORS.accent}
-        style={{ flexGrow: 1, width: "100%" }}
-        onContentChange={handleContentChange}
-      />
-      {error && (
-        <box style={{ marginTop: 1 }}>
-          <text fg={COLORS.danger}>Parse error - fix to apply</text>
-        </box>
-      )}
+      
+      {/* Border separator */}
+      <box height={1} border={["top"]} borderColor={COLORS.border} borderStyle="single" />
+      
+      {/* Code editor area */}
+      <box id="code-body" flexDirection="row" flexGrow={1} backgroundColor={COLORS.bg}>
+        <textarea
+          ref={textareaRef}
+          placeholder="Paste or edit JSX code here..."
+          focused
+          textColor={COLORS.text}
+          backgroundColor="transparent"
+          focusedBackgroundColor="transparent"
+          cursorColor={COLORS.accent}
+          style={{ flexGrow: 1, width: "100%" }}
+          onContentChange={handleContentChange}
+        />
+      </box>
     </box>
   )
 }

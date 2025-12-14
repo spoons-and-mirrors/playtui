@@ -5,10 +5,10 @@ This document is meant to evolve and reference all (or most) features of the app
 ## Components
 
 ### NavBar
-Bottom navigation bar spanning the full width of the app. Contains mode-switching buttons (Edit, Play, Code, Library, Docs) on the left side, and displays the current project name with a save status indicator on the right.
+Bottom navigation bar spanning the full width of the app. Contains mode-switching buttons (Edit/Play toggle, Code toggle, Library, Docs) on the left side, and displays the current project name with a save status indicator on the right.
 
-### Code Page
-Live JSX code editor for the current project. Displays a full-screen textarea where users can directly edit the component tree as JSX code. Changes are parsed in real-time and applied to the visual editor. Shows parse errors inline when the code is invalid. Includes a copy button to save the code to clipboard.
+### Code Panel
+Toggleable bottom panel (F2) for live JSX editing. Displays a compact textarea where users can directly edit the component tree as JSX code. Changes are parsed in real-time and applied to the visual editor. Shows parse errors in the header. Includes Copy and Close buttons. Panel appears below the canvas, similar to the Timeline panel.
 
 ### Library Page
 Project browser for loading saved projects. Displays a scrollable list of all saved projects with keyboard navigation (arrow keys). Selecting a project shows confirmation dialog. Replaces the current project state when a project is loaded.

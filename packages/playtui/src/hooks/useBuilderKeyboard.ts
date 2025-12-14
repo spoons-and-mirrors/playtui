@@ -52,6 +52,7 @@ interface UseBuilderKeyboardParams {
 
   // Panel visibility
   onTogglePanels?: () => void
+  onToggleCode?: () => void
 }
 
 export function useBuilderKeyboard({
@@ -80,6 +81,7 @@ export function useBuilderKeyboard({
   onAnimDuplicateFrame,
   onAnimDeleteFrame,
   onTogglePanels,
+  onToggleCode,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
@@ -97,7 +99,7 @@ export function useBuilderKeyboard({
         else setMode(lastEditorPlayMode)
         return 
       }
-      if (isKeybind(key, Bind.VIEW_CODE)) { setMode("code"); return }
+      if (isKeybind(key, Bind.TOGGLE_CODE) && onToggleCode) { onToggleCode(); return }
       if (isKeybind(key, Bind.VIEW_LIBRARY)) { setMode("library"); return }
       if (isKeybind(key, Bind.VIEW_DOCS)) { setMode("docs"); return }
     }
@@ -111,11 +113,6 @@ export function useBuilderKeyboard({
     // Non-editor modes (no editor shortcuts)
     if (mode === "docs" || mode === "library") {
       if (isKeybind(key, Bind.CANCEL_SELECTION)) { setSelectedId(null); return }
-      return
-    }
-
-    // Code mode - allow TAB for panel toggle, but no other editor shortcuts
-    if (mode === "code") {
       return
     }
 
