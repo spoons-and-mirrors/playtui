@@ -1,10 +1,13 @@
 {
-  "name": "playtui",
-  "version": "0.1.0",
-  "type": "module",
-  "description": "Visual TUI component builder for OpenTUI",
-  "bin": {
-    "playtui": "dist/cli.js"
+  "name": "playtui-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "dev": "bun run --cwd packages/playtui dev",
+    "flipbook:demo": "bun run --cwd packages/flipbook/src cli.tsx --demo",
+    "pub:flipbook": "cd packages/flipbook && npm publish",
+    "pub:playtui": "cd packages/playtui && npm publish"
   },
   "repository": {
     "type": "git",
@@ -14,23 +17,10 @@
   "bugs": {
     "url": "https://github.com/spoons-and-mirrors/playtui/issues"
   },
-  "files": ["dist"],
-  "scripts": {
-    "start": "bun run src/cli.tsx",
-    "dev": "bun --watch run src/cli.tsx",
-    "build": "bun build src/cli.tsx --outdir dist --target bun --minify"
-  },
-  "keywords": ["tui", "terminal", "ui", "builder", "opentui", "visual"],
   "author": "spoon",
   "license": "MIT",
   "dependencies": {
-    "@opentui/core": "latest",
-    "@opentui/react": "latest",
-    "react": "^19.0.0"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.3.3",
-    "@types/react": "^19.0.0",
-    "typescript": "^5.9.3"
+    "@opentui/core": "^0.1.60",
+    "@opentui/react": "^0.1.60"
   }
 }

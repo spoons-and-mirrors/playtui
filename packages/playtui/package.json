@@ -1,0 +1,31 @@
+{
+  "name": "playtui",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Visual TUI component builder for OpenTUI",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "playtui": "dist/cli.js"
+  },
+  "scripts": {
+    "start": "bun run src/cli.tsx",
+    "dev": "bun --watch run src/cli.tsx",
+    "build": "bun build src/cli.tsx --outdir dist --target bun --minify"
+  },
+  "keywords": ["tui", "terminal", "ui", "builder", "opentui", "visual"],
+  "author": "spoon",
+  "license": "MIT",
+  "dependencies": {
+    "@opentui/core": "latest",
+    "@opentui/react": "latest",
+    "@playtui/flipbook": "workspace:*",
+    "react": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.3",
+    "@types/react": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}
