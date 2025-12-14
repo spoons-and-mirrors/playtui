@@ -17,6 +17,7 @@ export enum Bind {
   // UI / Modal
   MODAL_CLOSE = "modal.close",
   CANCEL_SELECTION = "ui.cancel_selection",
+  BLUR_INPUT = "ui.blur_input",
   CONFIRM = "ui.confirm",
 
   // Editor Operations
@@ -128,6 +129,12 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
     label: "Deselect",
     keys: [{ name: "escape" }],
     category: "Editor"
+  },
+  [Bind.BLUR_INPUT]: {
+    id: Bind.BLUR_INPUT,
+    label: "Blur Input",
+    keys: [{ name: "escape" }],
+    category: "Global"
   },
   [Bind.CONFIRM]: {
     id: Bind.CONFIRM,

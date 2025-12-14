@@ -77,6 +77,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showCodePanel, setShowCodePanel] = useState(false)
+  const [codePanelExpanded, setCodePanelExpanded] = useState(false)
   const [showTimeline, setShowTimeline] = useState(false)
   const [lastEditorPlayMode, setLastEditorPlayMode] = useState<"editor" | "play">("editor")
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
@@ -296,7 +297,7 @@ export function Builder({ width, height }: BuilderProps) {
   const treeWidth = 27
   const sidebarWidth = 35
   const filmStripHeight = 6
-  const codePanelHeight = 12
+  const codePanelHeight = codePanelExpanded ? Math.floor(height / 2) : 12
   const timelineHeight = 14
   const footerHeight = 1
   const mainContentHeight = height - footerHeight 
@@ -453,7 +454,19 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Center Area - header, canvas */}
         <KeyframingContext.Provider value={keyframingContextValue}>
-        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}>
+        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}
+        onMouseDown={() => {
+            // Clicking anywhere in the main area (outside specific panels that handle stopPropagation)
+            // should blur focused fields
+            if (focusedField === "code-panel") {
+                // We need to notify CodePanel to blur? 
+                // CodePanel's focus state is internal.
+                // But we can just clear the global focus lock.
+                // Actually, if we click canvas, CodePanel should lose focus.
+                setFocusedField(null)
+            }
+        }}
+      >
           <Header
           addMode={addMode}
           onFileAction={handleFileAction}
@@ -545,19 +558,32 @@ export function Builder({ width, height }: BuilderProps) {
         />
       )}
       
-      {/* Code Panel - bottom panel toggled with F2 */}
-      {showCodePanel && (
-        <box height={codePanelHeight} flexShrink={0}>
-          <CodePanel code={code} tree={tree} updateTree={updateTree} onClose={() => setShowCodePanel(false)} />
-        </box>
-      )}
-
       {/* Timeline Panel - bottom panel toggled with T */}
       {showTimeline && (
         <box height={timelineHeight} flexShrink={0}>
           <TimelinePanel 
             projectHook={projectHook}
             onClose={() => setShowTimeline(false)} 
+          />
+        </box>
+      )}
+
+      {/* Code Panel - bottom panel toggled with F2 */}
+      {showCodePanel && (
+        <box height={codePanelHeight} flexShrink={0} onMouseDown={(e) => {
+            e.stopPropagation()
+        }}>
+          <CodePanel 
+            code={code} 
+            tree={tree} 
+            updateTree={updateTree} 
+            onClose={() => setShowCodePanel(false)}
+            onFocusChange={(focused) => {
+                if (focused) setFocusedField("code-panel")
+                else if (focusedField === "code-panel") setFocusedField(null)
+            }}
+            isExpanded={codePanelExpanded}
+            onToggleExpand={() => setCodePanelExpanded(v => !v)}
           />
         </box>
       )}
