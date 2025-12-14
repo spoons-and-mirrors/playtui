@@ -9,7 +9,7 @@ import { PropertyPane } from "./components/pages/Properties"
 import { LibraryPage } from "./components/pages/Library"
 import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
-import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, AppHeader } from "./components/ui"
+import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
 import { KeyframingContext } from "./components/contexts/KeyframingContext"
 import { useProject } from "./hooks/useProject"
@@ -347,7 +347,7 @@ export function Builder({ width, height }: BuilderProps) {
             <DocsPanel />
           )}
         </box>
-        <AppHeader mode={mode} width={width} onModeChange={setMode} />
+        <NavBar mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -360,7 +360,7 @@ export function Builder({ width, height }: BuilderProps) {
         <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
-        <AppHeader mode={mode} width={width} onModeChange={setMode} />
+        <NavBar mode={mode} width={width} onModeChange={setMode} />
       </box>
     )
   }
@@ -474,7 +474,7 @@ export function Builder({ width, height }: BuilderProps) {
           onImport={projectHook.importAnimation}
         />
       )}
-      <AppHeader mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
+      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} onModeChange={setMode} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

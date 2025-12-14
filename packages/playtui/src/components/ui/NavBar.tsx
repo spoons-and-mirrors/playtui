@@ -113,7 +113,7 @@ function DualModeTab({ fKey, label1, label2, activeMode, onPressLabel1, onPressL
   )
 }
 
-interface AppHeaderProps {
+interface NavBarProps {
   mode: ViewMode
   width: number
   projectName?: string
@@ -121,7 +121,7 @@ interface AppHeaderProps {
   onModeChange: (mode: ViewMode) => void
 }
 
-export function AppHeader({ mode, width, projectName, saveStatus, onModeChange }: AppHeaderProps) {
+export function NavBar({ mode, width, projectName, saveStatus, onModeChange }: NavBarProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const prevModeRef = useRef<ViewMode>(mode)
 
@@ -181,5 +181,5 @@ export function AppHeader({ mode, width, projectName, saveStatus, onModeChange }
 }
 
 // Legacy exports for backwards compatibility
-export const ModeTabBar = AppHeader
-export const Footer = AppHeader
+export const ModeTabBar = NavBar
+export const Footer = NavBar

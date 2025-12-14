@@ -1,6 +1,6 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
-import type { ViewMode } from "../components/ui/AppHeader"
+import type { ViewMode } from "../components/ui/NavBar"
 import { Bind, isKeybind } from "../lib/shortcuts"
 
 // Keyboard shortcut to element type mapping
