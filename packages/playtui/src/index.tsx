@@ -550,8 +550,8 @@ export function Builder({ width, height }: BuilderProps) {
       
       {/* Timeline Panel - visible in play mode, toggleable with F2 */}
       {mode === "play" && showTimeline && (
-        <box height={timelineHeight} flexShrink={0}>
-          <TimelinePanel projectHook={projectHook} />
+        <box height={timelineHeight} width={width} flexShrink={0} overflow="hidden">
+          <TimelinePanel projectHook={projectHook} width={width} />
         </box>
       )}
 

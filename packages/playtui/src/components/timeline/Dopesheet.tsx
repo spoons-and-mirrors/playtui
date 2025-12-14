@@ -48,9 +48,11 @@ function findNextKeyframeForNode(props: any[], currentFrame: number): number | n
 
 export function Dopesheet({ 
   projectHook,
+  width,
   onSelectProperty 
 }: { 
   projectHook: UseProjectReturn
+  width: number
   onSelectProperty: (nodeId: string, property: string) => void 
 }) {
   const { project, setCurrentFrame } = projectHook
