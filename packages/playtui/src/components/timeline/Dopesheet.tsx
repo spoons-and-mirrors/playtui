@@ -1,4 +1,6 @@
+import { useRef, useEffect } from "react"
 import { TextAttributes } from "@opentui/core"
+import type { ScrollBoxRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
@@ -56,12 +58,14 @@ export function Dopesheet({
   onSelectProperty: (nodeId: string, property: string) => void 
 }) {
   const { project, setCurrentFrame } = projectHook
+  const scrollRefs = useRef<Map<string, React.RefObject<ScrollBoxRenderable>>>(new Map())
   
   if (!project) return null
   
   const animatedProperties = project.animation.keyframing.animatedProperties
   const frameCount = project.animation.frames.length
   const currentFrame = project.animation.currentFrameIndex
+  const fps = project.animation.fps
   const tree = project.tree
   const selectedId = project.selectedId
   
@@ -71,6 +75,43 @@ export function Dopesheet({
     if (!grouped[prop.nodeId]) grouped[prop.nodeId] = []
     grouped[prop.nodeId].push(prop)
   }
+
+  // Create refs for each row
+  const rowKeys = Object.entries(grouped).flatMap(([_, props]) => 
+    props.map(prop => `${prop.nodeId}:${prop.property}`)
+  )
+  
+  // Initialize refs for all rows
+  rowKeys.forEach(key => {
+    if (!scrollRefs.current.has(key)) {
+      scrollRefs.current.set(key, { current: null } as React.RefObject<ScrollBoxRenderable>)
+    }
+  })
+
+  // Auto-scroll to current frame when it changes
+  useEffect(() => {
+    const cellW = 1
+    const framePos = currentFrame * cellW
+    
+    // Sync all row scrollboxes
+    scrollRefs.current.forEach(ref => {
+      const sb = ref.current
+      if (!sb) return
+      const viewportWidth = sb.width ?? 0
+      const scrollLeft = sb.scrollLeft ?? 0
+      
+      const playheadLeft = framePos
+      const playheadRight = framePos + cellW
+      
+      // If playhead is left of viewport, scroll to it
+      if (playheadLeft < scrollLeft) {
+        sb.scrollTo({ x: playheadLeft, y: 0 })
+      // If playhead is right of viewport, scroll so it's visible at the end
+      } else if (playheadRight > scrollLeft + viewportWidth) {
+        sb.scrollTo({ x: playheadRight - viewportWidth + 4, y: 0 })
+      }
+    })
+  }, [currentFrame])
 
   // J/K shortcuts for prev/next keyframe
   useKeyboard((key) => {
@@ -98,15 +139,21 @@ export function Dopesheet({
               <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>{getElementName(tree, nodeId)}</text>
             </box>
             {/* Properties */}
-            {props.map(prop => (
-              <DopesheetRow
-                key={`${prop.nodeId}:${prop.property}`}
-                property={prop}
-                frameCount={frameCount}
-                currentFrame={currentFrame}
-                onSelect={() => onSelectProperty(prop.nodeId, prop.property)}
-              />
-            ))}
+            {props.map(prop => {
+              const rowKey = `${prop.nodeId}:${prop.property}`
+              const scrollRef = scrollRefs.current.get(rowKey)
+              return (
+                <DopesheetRow
+                  key={rowKey}
+                  property={prop}
+                  frameCount={frameCount}
+                  currentFrame={currentFrame}
+                  fps={fps}
+                  onSelect={() => onSelectProperty(prop.nodeId, prop.property)}
+                  scrollRef={scrollRef}
+                />
+              )
+            })}
           </box>
         ))}
         {animatedProperties.length === 0 && (

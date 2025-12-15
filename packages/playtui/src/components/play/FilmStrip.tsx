@@ -298,31 +298,36 @@ export function FilmStrip({
          {/* Spacer */}
          <box flexGrow={1} />
 
-          {/* Export Button - Card style */}
+          {/* Export Button */}
           <box
             id="export-btn"
-            marginLeft={1}
             marginRight={1}
             paddingLeft={1}
             paddingRight={1}
-            backgroundColor={copied ? COLORS.success : COLORS.accent}
+            backgroundColor={copied ? COLORS.success : COLORS.bg}
+            border={["left"]}
+            borderStyle="heavy"
+            borderColor={COLORS.accent}
             onMouseDown={copyAnimationCode}
           >
-            <text fg={COLORS.bg}>
-              {copied ? "✓ Export" : "⎘ Export"}
+            <text fg={copied ? COLORS.bg : COLORS.accent}>
+              Export
             </text>
           </box>
 
-          {/* Import Button - Card style */}
+          {/* Import Button */}
           <box
             id="import-btn"
             paddingLeft={1}
             paddingRight={1}
-            backgroundColor={imported ? COLORS.success : (clipboardError ? COLORS.danger : COLORS.muted)}
+            backgroundColor={imported ? COLORS.success : COLORS.bg}
+            border={["left"]}
+            borderStyle="heavy"
+            borderColor={COLORS.accent}
             onMouseDown={importFromClipboard}
           >
-            <text fg={COLORS.bg}>
-             {clipboardError ? "✗ Error" : (imported ? "✓ Import" : "⎗ Import")}
+            <text fg={imported ? COLORS.bg : COLORS.accent}>
+             {clipboardError ? "Error" :  "Import" }
            </text>
          </box>
        </box>
