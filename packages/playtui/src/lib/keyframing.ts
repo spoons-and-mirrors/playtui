@@ -40,27 +40,6 @@ export interface KeyframingState {
   }
 }
 
-export const ANIMATABLE_PROPERTIES = [
-  "x",
-  "y",
-  "zIndex",
-  "marginTop",
-  "marginRight",
-  "marginBottom",
-  "marginLeft",
-  "paddingTop",
-  "paddingRight",
-  "paddingBottom",
-  "paddingLeft",
-  "gap",
-  "rowGap",
-  "columnGap",
-  "flexGrow",
-  "flexShrink",
-] as const
-
-export type AnimatableProperty = (typeof ANIMATABLE_PROPERTIES)[number]
-
 // Default bezier handle: linear interpolation
 export function createDefaultHandle(): BezierHandle {
   return { x: 33, y: 0 }
@@ -80,10 +59,6 @@ export function createDefaultKeyframingState(): KeyframingState {
 
 export function keyframedPropertyId(nodeId: string, property: PropertyPath): KeyframedPropertyId {
   return `${nodeId}:${property}`
-}
-
-export function isAnimatableProperty(property: string): property is AnimatableProperty {
-  return (ANIMATABLE_PROPERTIES as readonly string[]).includes(property)
 }
 
 export function getAnimatedProperty(

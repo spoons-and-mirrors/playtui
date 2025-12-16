@@ -10,7 +10,7 @@ interface DopesheetRowProps {
   currentFrame: number
   fps: number
   onSelect: () => void
-  scrollRef?: React.RefObject<ScrollBoxRenderable>
+  scrollRef?: React.RefObject<ScrollBoxRenderable | null>
 }
 
 export function DopesheetRow({ property, frameCount, currentFrame, fps, onSelect, scrollRef }: DopesheetRowProps) {

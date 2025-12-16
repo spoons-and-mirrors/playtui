@@ -58,7 +58,7 @@ export function Dopesheet({
   onSelectProperty: (nodeId: string, property: string) => void 
 }) {
   const { project, setCurrentFrame } = projectHook
-  const scrollRefs = useRef<Map<string, React.RefObject<ScrollBoxRenderable>>>(new Map())
+  const scrollRefs = useRef<Map<string, React.RefObject<ScrollBoxRenderable | null>>>(new Map())
   
   if (!project) return null
   
@@ -76,7 +76,7 @@ export function Dopesheet({
     grouped[prop.nodeId].push(prop)
   }
 
-  // Create refs for each row
+  // Create refs for each row (no hooks in loop - just create ref objects)
   const rowKeys = Object.entries(grouped).flatMap(([_, props]) => 
     props.map(prop => `${prop.nodeId}:${prop.property}`)
   )
@@ -84,7 +84,7 @@ export function Dopesheet({
   // Initialize refs for all rows
   rowKeys.forEach(key => {
     if (!scrollRefs.current.has(key)) {
-      scrollRefs.current.set(key, { current: null } as React.RefObject<ScrollBoxRenderable>)
+      scrollRefs.current.set(key, { current: null })
     }
   })
 
