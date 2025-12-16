@@ -1,19 +1,9 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { ElementNode, ElementType } from "../../lib/types"
+import type { ElementNode } from "../../lib/types"
 import { Bind, isKeybind } from "../../lib/shortcuts"
+import { ELEMENT_REGISTRY } from "../elements"
 
-const TYPE_ICONS: Record<ElementType, string> = {
-  box: "□",
-  text: "T",
-  scrollbox: "⊟",
-  input: "▭",
-  textarea: "▤",
-  select: "▼",
-  slider: "═",
-  "ascii-font": "A",
-  "tab-select": "⊞",
-}
 
 interface TreeNodeProps {
   node: ElementNode
@@ -38,8 +28,12 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
   const lastClickRef = useRef<number>(0)
   
   const canCollapse = hasChildren && (node.type === "box" || node.type === "scrollbox")
-  const icon = canCollapse ? (isCollapsed ? "▸" : "▾") : TYPE_ICONS[node.type]
+  let icon = ELEMENT_REGISTRY[node.type]?.icon || "?"
+  if (canCollapse) {
+    icon = isCollapsed ? "" : ""
+  }
   const typeLabel = node.type.charAt(0).toUpperCase() + node.type.slice(1)
+
   const label = node.name || (node.type === "text" ? `"${(node.content || "").slice(0, 8)}"` : typeLabel)
 
   const handleMouseDown = (e: any) => {

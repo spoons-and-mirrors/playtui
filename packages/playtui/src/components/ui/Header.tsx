@@ -2,6 +2,7 @@ import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
 import type { ElementType, ElementNode } from "../../lib/types"
 import { ELEMENT_REGISTRY } from "../elements"
+import { ADD_MODE_BINDINGS, getShortcutLabel } from "../../lib/shortcuts"
 
 // ============================================================================
 // Types
@@ -30,27 +31,10 @@ interface HeaderProps {
 }
 
 // ============================================================================
-// Element Options
+// Project Menu
 // ============================================================================
 
-interface ElementOption {
-  type: ElementType
-  icon: string
-  label: string
-  shortcut: string
-}
 
-const ELEMENT_OPTIONS: ElementOption[] = [
-  { type: "box", icon: "□", label: "Box", shortcut: "B" },
-  { type: "text", icon: "T", label: "Text", shortcut: "T" },
-  { type: "ascii-font", icon: "A", label: "ASCII", shortcut: "F" },
-  { type: "scrollbox", icon: "⊟", label: "Scroll", shortcut: "S" },
-  { type: "input", icon: "▭", label: "Input", shortcut: "I" },
-  { type: "textarea", icon: "▤", label: "Textarea", shortcut: "X" },
-  { type: "select", icon: "▼", label: "Select", shortcut: "E" },
-  { type: "slider", icon: "═", label: "Slider", shortcut: "L" },
-  { type: "tab-select", icon: "⊞", label: "Tabs", shortcut: "W" },
-]
 
 // ============================================================================
 // Project Menu
@@ -133,12 +117,12 @@ function FileMenu({ onAction }: { onAction: (action: MenuAction) => void }) {
 // Element Toolbar
 // ============================================================================
 
-function ElementToolbarBtn({ option, onPress }: { option: ElementOption; onPress: () => void }) {
+function ElementToolbarBtn({ type, icon, label, shortcut, onPress }: { type: ElementType; icon: string; label: string; shortcut: string; onPress: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <box
-      id={`add-${option.type}`}
+      id={`add-${type}`}
       onMouseDown={onPress}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered(false)}
@@ -149,10 +133,10 @@ function ElementToolbarBtn({ option, onPress }: { option: ElementOption; onPress
         flexDirection: "row",
       }}
     >
-      <text fg={hovered ? COLORS.accent : COLORS.text}>{option.icon}</text>
+      <text fg={hovered ? COLORS.accent : COLORS.text}>{icon}</text>
       {hovered && (
         <text fg={COLORS.muted} style={{ marginLeft: 1 }}>
-          {option.label} [{option.shortcut}]
+          {label} [{shortcut}]
         </text>
       )}
     </box>
@@ -186,9 +170,22 @@ function ElementToolbar({
       </box>
       {expanded && (
         <box style={{ flexDirection: "row", gap: 0, backgroundColor: COLORS.card, paddingLeft: 1 }}>
-          {ELEMENT_OPTIONS.map((opt) => (
-            <ElementToolbarBtn key={opt.type} option={opt} onPress={() => onAddElement(opt.type)} />
-          ))}
+          {ADD_MODE_BINDINGS.map((binding) => {
+            const entry = ELEMENT_REGISTRY[binding.type]
+            const shortcut = getShortcutLabel(binding.bind)
+            const icon = entry.icon || "?"
+            const label = entry.label
+            return (
+              <ElementToolbarBtn
+                key={binding.type}
+                type={binding.type}
+                icon={icon}
+                label={label}
+                shortcut={shortcut}
+                onPress={() => onAddElement(binding.type)}
+              />
+            )
+          })}
         </box>
       )}
     </box>
