@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
 import type { SaveStatus } from "../../hooks/useProject"
 import type { ViewMode } from "../../lib/viewState"
+import { Bind, getShortcutLabel } from "../../lib/shortcuts"
 
 // ============================================================================
 // Save Indicator
@@ -93,11 +94,11 @@ export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, sh
     >
       {/* Left: Mode tabs */}
       <box id="app-header-tabs" style={{ flexDirection: "row", gap: 1 }}>
-        <ModeTab fKey="F1" label="Edit" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
-        <ModeTab fKey="F2" label="Play" isActive={mode === "play"} onPress={() => onPlayPress?.()} />
-        <ModeTab fKey="F3" label="Code" isActive={!!showCodePanel && (mode === "editor" || mode === "play")} onPress={() => onToggleCode?.()} />
-        <ModeTab fKey="F4" label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
-        <ModeTab fKey="F5" label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
+        <ModeTab fKey={getShortcutLabel(Bind.VIEW_EDITOR)} label="Edit" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
+        <ModeTab fKey={getShortcutLabel(Bind.VIEW_PLAY)} label="Play" isActive={mode === "play"} onPress={() => onPlayPress?.()} />
+        <ModeTab fKey={getShortcutLabel(Bind.TOGGLE_CODE)} label="Code" isActive={!!showCodePanel && (mode === "editor" || mode === "play")} onPress={() => onToggleCode?.()} />
+        <ModeTab fKey={getShortcutLabel(Bind.VIEW_LIBRARY)} label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
+        <ModeTab fKey={getShortcutLabel(Bind.VIEW_DOCS)} label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
       </box>
 
       {/* Right: Save indicator + Project name in card */}
