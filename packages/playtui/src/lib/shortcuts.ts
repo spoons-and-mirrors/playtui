@@ -1,4 +1,5 @@
 import type { KeyEvent } from "@opentui/core"
+import type { ElementType } from "./types"
 
 export enum Bind {
   // Global
@@ -268,6 +269,18 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
     category: "Timeline"
   },
 }
+
+export const ADD_MODE_BINDINGS: { type: ElementType; bind: Bind }[] = [
+  { type: "box", bind: Bind.ADD_BOX },
+  { type: "text", bind: Bind.ADD_TEXT },
+  { type: "ascii-font", bind: Bind.ADD_ASCII_FONT },
+  { type: "scrollbox", bind: Bind.ADD_SCROLLBOX },
+  { type: "input", bind: Bind.ADD_INPUT },
+  { type: "textarea", bind: Bind.ADD_TEXTAREA },
+  { type: "select", bind: Bind.ADD_SELECT },
+  { type: "slider", bind: Bind.ADD_SLIDER },
+  { type: "tab-select", bind: Bind.ADD_TAB_SELECT },
+]
 
 export function isKeybind(event: KeyEvent, bind: Bind): boolean {
   const def = KEYBOARD_SHORTCUTS[bind]

@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, InputNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  SelectProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
+  StringProp, NumberProp, SelectProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -78,9 +78,11 @@ interface InputPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function InputProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: InputPropertiesProps) {
+export function InputProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: InputPropertiesProps) {
   const node = genericNode as InputNode
   return (
     <box id="section-input" style={{ flexDirection: "column" }}>
@@ -115,21 +117,27 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           {/* Text colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Text"
                 value={node.textColor || ""}
                 focused={focusedField === "textColor"}
                 onFocus={() => setFocusedField("textColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ textColor: v })}
+                pickMode={pickingForField === "textColor"}
+                onPickStart={() => setPickingForField?.("textColor")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Foc Txt"
                 value={node.focusedTextColor || ""}
                 focused={focusedField === "focusedTextColor"}
                 onFocus={() => setFocusedField("focusedTextColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ focusedTextColor: v })}
+                pickMode={pickingForField === "focusedTextColor"}
+                onPickStart={() => setPickingForField?.("focusedTextColor")}
               />
             </box>
           </box>
@@ -137,32 +145,41 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           {/* Background colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="BG"
                 value={node.backgroundColor || ""}
                 focused={focusedField === "backgroundColor"}
                 onFocus={() => setFocusedField("backgroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ backgroundColor: v })}
+                pickMode={pickingForField === "backgroundColor"}
+                onPickStart={() => setPickingForField?.("backgroundColor")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Foc BG"
                 value={node.focusedBackgroundColor || ""}
                 focused={focusedField === "focusedBackgroundColor"}
                 onFocus={() => setFocusedField("focusedBackgroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ focusedBackgroundColor: v })}
+                pickMode={pickingForField === "focusedBackgroundColor"}
+                onPickStart={() => setPickingForField?.("focusedBackgroundColor")}
               />
             </box>
           </box>
 
           {/* Placeholder color */}
-          <ColorPropWithHex
+          <ColorControl
             label="Plchld Clr"
             value={node.placeholderColor || ""}
             focused={focusedField === "placeholderColor"}
             onFocus={() => setFocusedField("placeholderColor")}
+            onBlur={() => setFocusedField(null)}
             onChange={(v) => onUpdate({ placeholderColor: v })}
+            pickMode={pickingForField === "placeholderColor"}
+            onPickStart={() => setPickingForField?.("placeholderColor")}
           />
 
           {/* Cursor section header */}
@@ -181,12 +198,15 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Color"
                 value={node.cursorColor || ""}
                 focused={focusedField === "cursorColor"}
                 onFocus={() => setFocusedField("cursorColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ cursorColor: v })}
+                pickMode={pickingForField === "cursorColor"}
+                onPickStart={() => setPickingForField?.("cursorColor")}
               />
             </box>
           </box>

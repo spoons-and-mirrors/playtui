@@ -4,6 +4,28 @@
 import type { ElementNode, ElementType, SizeValue, BorderSide } from "./types"
 import { genId } from "./tree"
 import { log } from "./logger"
+import { ELEMENT_REGISTRY } from "../components/elements"
+
+// Apply registry-defined properties from parsed JSX props to node
+function applyRegistryProps(node: Partial<ElementNode>, type: ElementType, props: Record<string, unknown>): void {
+  const entry = ELEMENT_REGISTRY[type]
+  if (!entry?.properties) return
+
+  for (const propDef of entry.properties) {
+    const value = props[propDef.key]
+    if (value === undefined) continue
+
+    // Special handling for options arrays (select/tab-select)
+    if (propDef.type === "options") {
+      const opts = value as Array<{ name: string }> | string[]
+      ;(node as Record<string, unknown>)[propDef.key] = opts.map(o => typeof o === "string" ? o : o.name)
+      continue
+    }
+
+    // All other props - direct assignment
+    ;(node as Record<string, unknown>)[propDef.key] = value
+  }
+}
 
 interface ParseResult {
   success: boolean
@@ -369,111 +391,14 @@ function createNode(tagName: string, props: Record<string, unknown>): ElementNod
     if (props.visible !== undefined) node.visible = props.visible as boolean
   }
   
-  // Scrollbox-specific
+  // Apply registry-defined props for scrollbox (stickyScroll, scrollX, etc.)
   if (type === "scrollbox") {
-    if (props.stickyScroll !== undefined) (node as any).stickyScroll = props.stickyScroll
-    if (props.stickyStart !== undefined) (node as any).stickyStart = props.stickyStart
-    if (props.scrollX !== undefined) (node as any).scrollX = props.scrollX
-    if (props.scrollY !== undefined) (node as any).scrollY = props.scrollY
-    if (props.viewportCulling !== undefined) (node as any).viewportCulling = props.viewportCulling
+    applyRegistryProps(node, type, props)
   }
   
-  // Text element
-  if (type === "text") {
-    if (props.fg !== undefined) (node as any).fg = props.fg
-    if (props.bg !== undefined) (node as any).bg = props.bg
-    if (props.wrapMode !== undefined) (node as any).wrapMode = props.wrapMode
-    if (props.selectable !== undefined) (node as any).selectable = props.selectable
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // Input element
-  if (type === "input") {
-    if (props.placeholder !== undefined) (node as any).placeholder = props.placeholder
-    if (props.placeholderColor !== undefined) (node as any).placeholderColor = props.placeholderColor
-    if (props.maxLength !== undefined) (node as any).maxLength = props.maxLength
-    if (props.textColor !== undefined) (node as any).textColor = props.textColor
-    if (props.focusedTextColor !== undefined) (node as any).focusedTextColor = props.focusedTextColor
-    if (props.backgroundColor !== undefined) (node as any).backgroundColor = props.backgroundColor
-    if (props.focusedBackgroundColor !== undefined) (node as any).focusedBackgroundColor = props.focusedBackgroundColor
-    if (props.cursorColor !== undefined) (node as any).cursorColor = props.cursorColor
-    if (props.cursorStyle !== undefined) (node as any).cursorStyle = props.cursorStyle
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // Textarea element
-  if (type === "textarea") {
-    if (props.placeholder !== undefined) (node as any).placeholder = props.placeholder
-    if (props.placeholderColor !== undefined) (node as any).placeholderColor = props.placeholderColor
-    if (props.initialValue !== undefined) (node as any).initialValue = props.initialValue
-    if (props.textColor !== undefined) (node as any).textColor = props.textColor
-    if (props.focusedTextColor !== undefined) (node as any).focusedTextColor = props.focusedTextColor
-    if (props.backgroundColor !== undefined) (node as any).backgroundColor = props.backgroundColor
-    if (props.focusedBackgroundColor !== undefined) (node as any).focusedBackgroundColor = props.focusedBackgroundColor
-    if (props.cursorColor !== undefined) (node as any).cursorColor = props.cursorColor
-    if (props.cursorStyle !== undefined) (node as any).cursorStyle = props.cursorStyle
-    if (props.blinking !== undefined) (node as any).blinking = props.blinking
-    if (props.showCursor !== undefined) (node as any).showCursor = props.showCursor
-    if (props.scrollMargin !== undefined) (node as any).scrollMargin = props.scrollMargin
-    if (props.tabIndicatorColor !== undefined) (node as any).tabIndicatorColor = props.tabIndicatorColor
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // Select element
-  if (type === "select") {
-    if (props.options !== undefined) {
-      // Options come as array of objects { name, value } - extract names
-      const opts = props.options as Array<{ name: string }> | string[]
-      (node as any).options = opts.map(o => typeof o === "string" ? o : o.name)
-    }
-    if (props.showScrollIndicator !== undefined) (node as any).showScrollIndicator = props.showScrollIndicator
-    if (props.showDescription !== undefined) (node as any).showDescription = props.showDescription
-    if (props.wrapSelection !== undefined) (node as any).wrapSelection = props.wrapSelection
-    if (props.itemSpacing !== undefined) (node as any).itemSpacing = props.itemSpacing
-    if (props.fastScrollStep !== undefined) (node as any).fastScrollStep = props.fastScrollStep
-    if (props.backgroundColor !== undefined) (node as any).backgroundColor = props.backgroundColor
-    if (props.textColor !== undefined) (node as any).textColor = props.textColor
-    if (props.selectedBackgroundColor !== undefined) (node as any).selectedBackgroundColor = props.selectedBackgroundColor
-    if (props.selectedTextColor !== undefined) (node as any).selectedTextColor = props.selectedTextColor
-    if (props.descriptionColor !== undefined) (node as any).descriptionColor = props.descriptionColor
-    if (props.selectedDescriptionColor !== undefined) (node as any).selectedDescriptionColor = props.selectedDescriptionColor
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // Slider element
-  if (type === "slider") {
-    if (props.orientation !== undefined) (node as any).orientation = props.orientation
-    if (props.value !== undefined) (node as any).value = props.value
-    if (props.min !== undefined) (node as any).min = props.min
-    if (props.max !== undefined) (node as any).max = props.max
-    if (props.viewPortSize !== undefined) (node as any).viewPortSize = props.viewPortSize
-    if (props.backgroundColor !== undefined) (node as any).backgroundColor = props.backgroundColor
-    if (props.foregroundColor !== undefined) (node as any).foregroundColor = props.foregroundColor
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // ASCII-font element
-  if (type === "ascii-font") {
-    if (props.text !== undefined) (node as any).text = props.text
-    if (props.font !== undefined) (node as any).font = props.font
-    if (props.color !== undefined) (node as any).color = props.color
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-  
-  // Tab-select element
-  if (type === "tab-select") {
-    if (props.options !== undefined) {
-      const opts = props.options as Array<{ name: string }> | string[]
-      (node as any).options = opts.map(o => typeof o === "string" ? o : o.name)
-    }
-    if (props.tabWidth !== undefined) (node as any).tabWidth = props.tabWidth
-    if (props.showUnderline !== undefined) (node as any).showUnderline = props.showUnderline
-    if (props.wrapSelection !== undefined) (node as any).wrapSelection = props.wrapSelection
-    if (props.backgroundColor !== undefined) (node as any).backgroundColor = props.backgroundColor
-    if (props.textColor !== undefined) (node as any).textColor = props.textColor
-    if (props.selectedBackgroundColor !== undefined) (node as any).selectedBackgroundColor = props.selectedBackgroundColor
-    if (props.selectedTextColor !== undefined) (node as any).selectedTextColor = props.selectedTextColor
-    if (props.visible !== undefined) node.visible = props.visible as boolean
+  // Apply registry-defined props for all other element types
+  if (type !== "box" && type !== "scrollbox") {
+    applyRegistryProps(node, type, props)
   }
   
   return node as ElementNode

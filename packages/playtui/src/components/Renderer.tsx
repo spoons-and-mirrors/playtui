@@ -42,10 +42,10 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDra
   const entry = ELEMENT_REGISTRY[node.type]
   if (!entry) return null
 
-  const { Renderer: ElementRenderer, hasChildren } = entry
+  const { Renderer: ElementRenderer, capabilities } = entry
 
   // Recursively render children for container elements
-  const children = hasChildren
+  const children = capabilities.supportsChildren
     ? node.children.map((child) => (
         <Renderer
           key={child.id}

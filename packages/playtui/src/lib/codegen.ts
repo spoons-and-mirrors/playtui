@@ -1,6 +1,64 @@
-import type { ElementNode, SizeValue, BorderSide, BoxNode, ScrollboxNode } from "./types"
+import type { ElementNode, SizeValue, BoxNode, ScrollboxNode, TextNode, AsciiFontNode, BorderSide } from "./types"
 import { isContainerNode } from "./types"
 import { log } from "./logger"
+import { ELEMENT_REGISTRY, type SerializableProp } from "../components/elements"
+
+// Serialize a single prop value based on its schema definition
+function serializeProp(prop: SerializableProp, value: unknown): string | null {
+  if (value === undefined || value === null) return null
+  if (value === prop.default) return null
+
+  const { key, type, escape, jsxBoolean, jsxBooleanDefault } = prop
+
+  // Boolean props with jsxBoolean flag
+  if (jsxBoolean) {
+    if (value === true && jsxBooleanDefault !== true) return key
+    if (value === false && jsxBooleanDefault === true) return `${key}={false}`
+    if (value === true && jsxBooleanDefault === true) return null // default, skip
+    if (value === false && jsxBooleanDefault !== true) return null // default, skip
+    return null
+  }
+
+  // Options array (select/tab-select)
+  if (type === "options") {
+    const opts = value as string[]
+    if (!opts || opts.length === 0) return null
+    const optionsStr = opts.map(o => `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, "_")}" }`).join(", ")
+    return `${key}={[${optionsStr}]}`
+  }
+
+  // String/color props
+  if (type === "string" || type === "color") {
+    const strVal = escape ? String(value).replace(/"/g, '\\"') : String(value)
+    return `${key}="${strVal}"`
+  }
+
+  // Number props
+  if (type === "number") {
+    return `${key}={${value}}`
+  }
+
+  // Boolean props (non-jsxBoolean)
+  if (type === "boolean") {
+    return value ? `${key}={true}` : `${key}={false}`
+  }
+
+  return null
+}
+
+// Serialize all props for an element using registry
+function serializeRegistryProps(node: ElementNode): string[] {
+  const entry = ELEMENT_REGISTRY[node.type]
+  if (!entry?.properties) return []
+
+  const result: string[] = []
+  for (const prop of entry.properties) {
+    const value = (node as unknown as Record<string, unknown>)[prop.key]
+    const serialized = serializeProp(prop, value)
+    if (serialized) result.push(serialized)
+  }
+  return result
+}
 
 // ============================================================================
 // Animation Export - Generates TSX with pre-rendered JSX frames
@@ -178,176 +236,60 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
     props.push(`style={{ ${styleProps.join(", ")} }}`)
   }
 
-  // Text element
+  // Text element - has special content formatting, keep manual
   if (node.type === "text") {
-    const textProps: string[] = []
-    if (node.fg) textProps.push(`fg="${node.fg}"`)
-    if (node.bg) textProps.push(`bg="${node.bg}"`)
-    if (node.wrapMode && node.wrapMode !== "none") textProps.push(`wrapMode="${node.wrapMode}"`)
-    if (node.selectable) textProps.push("selectable")
-    if (node.visible === false) textProps.push("visible={false}")
+    const textNode = node as TextNode
+    const registryProps = serializeRegistryProps(node)
     // Include style props for positioning
     if (styleProps.length > 0) {
-      textProps.push(`style={{ ${styleProps.join(", ")} }}`)
+      registryProps.push(`style={{ ${styleProps.join(", ")} }}`)
     }
-    const content = node.content || ""
+    const content = textNode.content || ""
     
     // Build nested formatting tags
     let formattedContent = content
-    if (node.bold && node.italic) {
+    if (textNode.bold && textNode.italic) {
       formattedContent = `<strong><em>${content}</em></strong>`
-    } else if (node.bold) {
+    } else if (textNode.bold) {
       formattedContent = `<strong>${content}</strong>`
-    } else if (node.italic) {
+    } else if (textNode.italic) {
       formattedContent = `<em>${content}</em>`
     }
-    if (node.underline) {
+    if (textNode.underline) {
       formattedContent = `<u>${formattedContent}</u>`
     }
-    if (node.strikethrough) {
+    if (textNode.strikethrough) {
       formattedContent = `<span strikethrough>${formattedContent}</span>`
     }
-    if (node.dim) {
+    if (textNode.dim) {
       formattedContent = `<span dim>${formattedContent}</span>`
     }
     
-    const propsStr = textProps.length > 0 ? ` ${textProps.join(" ")}` : ""
+    const propsStr = registryProps.length > 0 ? ` ${registryProps.join(" ")}` : ""
     return `${pad}<text${propsStr}>${formattedContent}</text>`
   }
 
-  // Input element
-  if (node.type === "input") {
-    const inputProps: string[] = []
-    if (node.placeholder) inputProps.push(`placeholder="${node.placeholder}"`)
-    if (node.placeholderColor) inputProps.push(`placeholderColor="${node.placeholderColor}"`)
-    if (node.maxLength) inputProps.push(`maxLength={${node.maxLength}}`)
-    if (node.textColor) inputProps.push(`textColor="${node.textColor}"`)
-    if (node.focusedTextColor) inputProps.push(`focusedTextColor="${node.focusedTextColor}"`)
-    if (node.backgroundColor) inputProps.push(`backgroundColor="${node.backgroundColor}"`)
-    if (node.focusedBackgroundColor) inputProps.push(`focusedBackgroundColor="${node.focusedBackgroundColor}"`)
-    if (node.cursorColor) inputProps.push(`cursorColor="${node.cursorColor}"`)
-    if (node.cursorStyle && node.cursorStyle !== "block") inputProps.push(`cursorStyle="${node.cursorStyle}"`)
-    if (node.visible === false) inputProps.push("visible={false}")
-    if (styleProps.length > 0) {
-      inputProps.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
-    const propsStr = inputProps.length > 0 ? ` ${inputProps.join(" ")}` : ""
-    return `${pad}<input${propsStr} />`
-  }
-
-  // Textarea element
-  if (node.type === "textarea") {
-    const taProps: string[] = []
-    if (node.placeholder) taProps.push(`placeholder="${node.placeholder}"`)
-    if (node.placeholderColor) taProps.push(`placeholderColor="${node.placeholderColor}"`)
-    if (node.initialValue) taProps.push(`initialValue="${node.initialValue}"`)
-    if (node.textColor) taProps.push(`textColor="${node.textColor}"`)
-    if (node.focusedTextColor) taProps.push(`focusedTextColor="${node.focusedTextColor}"`)
-    if (node.backgroundColor) taProps.push(`backgroundColor="${node.backgroundColor}"`)
-    if (node.focusedBackgroundColor) taProps.push(`focusedBackgroundColor="${node.focusedBackgroundColor}"`)
-    if (node.cursorColor) taProps.push(`cursorColor="${node.cursorColor}"`)
-    if (node.cursorStyle && node.cursorStyle !== "block") taProps.push(`cursorStyle="${node.cursorStyle}"`)
-    if (node.blinking === false) taProps.push("blinking={false}")
-    if (node.showCursor === false) taProps.push("showCursor={false}")
-    if (node.scrollMargin) taProps.push(`scrollMargin={${node.scrollMargin}}`)
-    if (node.tabIndicatorColor) taProps.push(`tabIndicatorColor="${node.tabIndicatorColor}"`)
-    if (node.visible === false) taProps.push("visible={false}")
-    if (styleProps.length > 0) {
-      taProps.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
-    const propsStr = taProps.length > 0 ? ` ${taProps.join(" ")}` : ""
-    return `${pad}<textarea${propsStr} />`
-  }
-
-  // Select element
-  if (node.type === "select") {
-    const selProps: string[] = []
-    if (node.options && node.options.length > 0) {
-      const optionsStr = node.options.map(o => `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, "_")}" }`).join(", ")
-      selProps.push(`options={[${optionsStr}]}`)
-    }
-    if (node.showScrollIndicator) selProps.push("showScrollIndicator")
-    if (node.showDescription) selProps.push("showDescription")
-    if (node.wrapSelection) selProps.push("wrapSelection")
-    if (node.itemSpacing) selProps.push(`itemSpacing={${node.itemSpacing}}`)
-    if (node.fastScrollStep && node.fastScrollStep !== 5) selProps.push(`fastScrollStep={${node.fastScrollStep}}`)
-    if (node.backgroundColor) selProps.push(`backgroundColor="${node.backgroundColor}"`)
-    if (node.textColor) selProps.push(`textColor="${node.textColor}"`)
-    if (node.selectedBackgroundColor) selProps.push(`selectedBackgroundColor="${node.selectedBackgroundColor}"`)
-    if (node.selectedTextColor) selProps.push(`selectedTextColor="${node.selectedTextColor}"`)
-    if (node.descriptionColor) selProps.push(`descriptionColor="${node.descriptionColor}"`)
-    if (node.selectedDescriptionColor) selProps.push(`selectedDescriptionColor="${node.selectedDescriptionColor}"`)
-    if (node.visible === false) selProps.push("visible={false}")
-    if (styleProps.length > 0) {
-      selProps.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
-    return `${pad}<select ${selProps.join(" ")} />`
-  }
-
-  // Slider element
-  if (node.type === "slider") {
-    const sliderProps: string[] = []
-    if (node.orientation) sliderProps.push(`orientation="${node.orientation}"`)
-    if (node.value !== undefined) sliderProps.push(`value={${node.value}}`)
-    if (node.min !== undefined) sliderProps.push(`min={${node.min}}`)
-    if (node.max !== undefined) sliderProps.push(`max={${node.max}}`)
-    if (node.viewPortSize) sliderProps.push(`viewPortSize={${node.viewPortSize}}`)
-    if (node.backgroundColor) sliderProps.push(`backgroundColor="${node.backgroundColor}"`)
-    if (node.foregroundColor) sliderProps.push(`foregroundColor="${node.foregroundColor}"`)
-    if (node.visible === false) sliderProps.push("visible={false}")
-    if (styleProps.length > 0) {
-      sliderProps.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
-    return `${pad}<slider ${sliderProps.join(" ")} />`
-  }
-
-  // ASCII-font element
-  if (node.type === "ascii-font") {
-    const asciiProps: string[] = []
+  // Leaf elements - use registry-driven serialization
+  if (node.type === "input" || node.type === "textarea" || node.type === "select" || 
+      node.type === "slider" || node.type === "ascii-font" || node.type === "tab-select") {
+    const elementProps = serializeRegistryProps(node)
     // Include name for round-trip editing (skip in clean export)
     if (!stripInternal) {
-      const name = node.name || "AsciiFont"
-      asciiProps.push(`name="${name}"`)
+      const name = node.name || ELEMENT_REGISTRY[node.type]?.label || node.type
+      elementProps.unshift(`name="${name}"`)
     }
-    if (node.text) asciiProps.push(`text="${node.text}"`)
-    if (node.font) asciiProps.push(`font="${node.font}"`)
-    if (node.color) asciiProps.push(`color="${node.color}"`)
-    if (node.visible === false) asciiProps.push("visible={false}")
     // Include style props for positioning
     if (styleProps.length > 0) {
-      asciiProps.push(`style={{ ${styleProps.join(", ")} }}`)
+      elementProps.push(`style={{ ${styleProps.join(", ")} }}`)
     }
-    return `${pad}<ascii-font ${asciiProps.join(" ")} />`
+    const propsStr = elementProps.length > 0 ? ` ${elementProps.join(" ")}` : ""
+    return `${pad}<${node.type}${propsStr} />`
   }
 
-  // Tab-select element
-  if (node.type === "tab-select") {
-    const tabProps: string[] = []
-    if (node.options && node.options.length > 0) {
-      const optionsStr = node.options.map(o => `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, "_")}" }`).join(", ")
-      tabProps.push(`options={[${optionsStr}]}`)
-    }
-    if (node.tabWidth) tabProps.push(`tabWidth={${node.tabWidth}}`)
-    if (node.showUnderline === false) tabProps.push("showUnderline={false}")
-    if (node.wrapSelection) tabProps.push("wrapSelection")
-    if (node.backgroundColor) tabProps.push(`backgroundColor="${node.backgroundColor}"`)
-    if (node.textColor) tabProps.push(`textColor="${node.textColor}"`)
-    if (node.selectedBackgroundColor) tabProps.push(`selectedBackgroundColor="${node.selectedBackgroundColor}"`)
-    if (node.selectedTextColor) tabProps.push(`selectedTextColor="${node.selectedTextColor}"`)
-    if (node.visible === false) tabProps.push("visible={false}")
-    if (styleProps.length > 0) {
-      tabProps.push(`style={{ ${styleProps.join(", ")} }}`)
-    }
-    return `${pad}<tab-select ${tabProps.join(" ")} />`
-  }
-
-  // Scrollbox element
+  // Scrollbox element - container with registry props
   if (node.type === "scrollbox") {
-    if (node.stickyScroll) props.push("stickyScroll")
-    if (node.stickyStart && node.stickyStart !== "bottom") props.push(`stickyStart="${node.stickyStart}"`)
-    if (node.scrollX) props.push("scrollX")
-    if (node.scrollY === false) props.push("scrollY={false}")
-    if (node.viewportCulling) props.push("viewportCulling")
+    const scrollboxProps = serializeRegistryProps(node)
+    props.push(...scrollboxProps)
     if (node.children.length === 0) {
       return `${pad}<scrollbox ${props.join(" ")} />`
     }

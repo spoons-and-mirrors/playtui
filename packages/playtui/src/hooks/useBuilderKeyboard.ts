@@ -1,21 +1,8 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
-import type { ViewMode } from "../components/ui/NavBar"
-import { Bind, isKeybind } from "../lib/shortcuts"
+import type { ViewMode, ViewAction } from "../lib/viewState"
+import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
 
-// Keyboard shortcut to element type mapping
-// This maps Bind to ElementType for the "Add Mode"
-const ADD_ACTION_MAP: Partial<Record<Bind, ElementType>> = {
-  [Bind.ADD_BOX]: "box",
-  [Bind.ADD_TEXT]: "text",
-  [Bind.ADD_SCROLLBOX]: "scrollbox",
-  [Bind.ADD_INPUT]: "input",
-  [Bind.ADD_TEXTAREA]: "textarea",
-  [Bind.ADD_SELECT]: "select",
-  [Bind.ADD_SLIDER]: "slider",
-  [Bind.ADD_ASCII_FONT]: "ascii-font",
-  [Bind.ADD_TAB_SELECT]: "tab-select",
-}
 
 interface UseBuilderKeyboardParams {
   // Modal/UI state
@@ -52,9 +39,9 @@ interface UseBuilderKeyboardParams {
 
   // Panel visibility
   onTogglePanels?: () => void
-  onToggleCode?: () => void
-  onToggleTimeline?: () => void
-  onShowTimeline?: () => void
+
+  // View actions
+  onViewAction?: (action: ViewAction) => void
 }
 
 export function useBuilderKeyboard({
@@ -83,9 +70,7 @@ export function useBuilderKeyboard({
   onAnimDuplicateFrame,
   onAnimDeleteFrame,
   onTogglePanels,
-  onToggleCode,
-  onToggleTimeline,
-  onShowTimeline,
+  onViewAction,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
@@ -95,25 +80,31 @@ export function useBuilderKeyboard({
     }
 
     // F-key mode switching (always available except in modal)
-    if (!modalMode) {
-      // F1 goes to editor mode
-      if (isKeybind(key, Bind.VIEW_EDITOR)) { 
-        setMode("editor")
-        return 
-      }
-      // F2: if not in play mode, enter play mode; if in play mode, toggle timeline
-      if (isKeybind(key, Bind.VIEW_PLAY)) {
-        if (mode !== "play") {
-          setMode("play")
-          onShowTimeline?.() // Ensure timeline is shown when entering play mode
-        } else {
-          onToggleTimeline?.() // Toggle timeline when already in play mode
-        }
+    if (!modalMode && onViewAction) {
+      if (isKeybind(key, Bind.VIEW_EDITOR)) {
+        onViewAction(Bind.VIEW_EDITOR)
         return
       }
-      if (isKeybind(key, Bind.TOGGLE_CODE) && onToggleCode) { onToggleCode(); return }
-      if (isKeybind(key, Bind.VIEW_LIBRARY)) { setMode("library"); return }
-      if (isKeybind(key, Bind.VIEW_DOCS)) { setMode("docs"); return }
+
+      if (isKeybind(key, Bind.VIEW_PLAY)) {
+        onViewAction(Bind.VIEW_PLAY)
+        return
+      }
+
+      if (isKeybind(key, Bind.TOGGLE_CODE)) {
+        onViewAction(Bind.TOGGLE_CODE)
+        return
+      }
+
+      if (isKeybind(key, Bind.VIEW_LIBRARY)) {
+        onViewAction(Bind.VIEW_LIBRARY)
+        return
+      }
+
+      if (isKeybind(key, Bind.VIEW_DOCS)) {
+        onViewAction(Bind.VIEW_DOCS)
+        return
+      }
     }
 
     // Close modal on escape
@@ -150,9 +141,9 @@ export function useBuilderKeyboard({
       if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) { setAddMode(false); return }
       
       // Check all add shortcuts
-      for (const [bind, type] of Object.entries(ADD_ACTION_MAP)) {
-        if (isKeybind(key, bind as Bind)) {
-          onAddElement(type)
+      for (const binding of ADD_MODE_BINDINGS) {
+        if (isKeybind(key, binding.bind)) {
+          onAddElement(binding.type)
           return
         }
       }

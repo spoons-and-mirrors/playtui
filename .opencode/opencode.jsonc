@@ -13,7 +13,7 @@
 			"url": "https://mcp.grep.app"
 		},
 		"deepwiki": {
-			"enabled": true,
+			"enabled": false,
 			"type": "remote",
 			"url": "https://mcp.deepwiki.com/sse"
 		}
@@ -80,11 +80,11 @@
 		}
 	},
 
-	// "experimental": {
-	// 	"batch_tool": false,
+	 "experimental": {
+	 "batch_tool": false,
 	// 	"mcp_registry": false,
 	// 	"primary_tools": ["prune"]
-	// }
+	 },
 
 	"keybinds": {
     "leader": "ctrl+x",

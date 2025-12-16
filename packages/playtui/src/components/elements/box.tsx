@@ -2,7 +2,7 @@ import type { ElementNode, BoxNode } from "../../lib/types"
 import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, StringProp, ColorPropWithHex, BorderSidesProp, SectionHeader
+  ToggleProp, SelectProp, StringProp, ColorControl, SectionHeader, BorderSidesProp
 } from "../controls"
 
 // =============================================================================
@@ -147,9 +147,11 @@ interface BoxPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: BoxPropertiesProps) {
+export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: BoxPropertiesProps) {
   const node = genericNode as BoxNode
   const hasBorder = node.border === true
 
@@ -184,21 +186,27 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
               />
 
               {/* Border color */}
-              <ColorPropWithHex
+              <ColorControl
                 label="Color"
                 value={node.borderColor || ""}
                 focused={focusedField === "borderColor"}
                 onFocus={() => setFocusedField("borderColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ borderColor: v })}
+                pickMode={pickingForField === "borderColor"}
+                onPickStart={() => setPickingForField?.("borderColor")}
               />
 
               {/* Focused border color */}
-              <ColorPropWithHex
+              <ColorControl
                 label="Focus Clr"
                 value={node.focusedBorderColor || ""}
                 focused={focusedField === "focusedBorderColor"}
                 onFocus={() => setFocusedField("focusedBorderColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ focusedBorderColor: v })}
+                pickMode={pickingForField === "focusedBorderColor"}
+                onPickStart={() => setPickingForField?.("focusedBorderColor")}
               />
 
               {/* Title */}

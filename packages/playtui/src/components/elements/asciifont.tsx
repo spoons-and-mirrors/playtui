@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, AsciiFontNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  StringProp, SelectProp, ColorPropWithHex, SectionHeader
+  StringProp, SelectProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -86,9 +86,11 @@ interface AsciiFontPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: AsciiFontPropertiesProps) {
+export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: AsciiFontPropertiesProps) {
   const node = genericNode as AsciiFontNode
   return (
     <box id="section-asciifont" style={{ flexDirection: "column" }}>
@@ -113,12 +115,15 @@ export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField,
           />
 
           {/* Color */}
-          <ColorPropWithHex
+          <ColorControl
             label="Color"
             value={node.color || ""}
             focused={focusedField === "color"}
             onFocus={() => setFocusedField("color")}
+            onBlur={() => setFocusedField(null)}
             onChange={(v) => onUpdate({ color: v })}
+            pickMode={pickingForField === "color"}
+            onPickStart={() => setPickingForField?.("color")}
           />
         </box>
       )}

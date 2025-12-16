@@ -167,6 +167,9 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
           id="code-copy-btn" 
           onMouseDown={() => copyCode()} 
           backgroundColor={copied ? COLORS.success : COLORS.bg} 
+          border={["left"]}
+          borderStyle="heavy"
+          borderColor={COLORS.accent}
           paddingLeft={1} 
           paddingRight={1}
           marginRight={1}
@@ -175,9 +178,18 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
         </box>
         
         {/* Close button */}
-        <box id="code-close-btn" onMouseDown={onClose} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+        <box 
+          id="code-close-btn" 
+          onMouseDown={onClose} 
+          backgroundColor={COLORS.bg} 
+          border={["left"]}
+          borderStyle="heavy"
+          borderColor={COLORS.accent}
+          paddingLeft={1} 
+          paddingRight={1}
+        >
           <text fg={COLORS.accent} selectable={false}>Close</text>
-        </box>
+        </box>        
       </box>
       
       {/* Border separator */}
