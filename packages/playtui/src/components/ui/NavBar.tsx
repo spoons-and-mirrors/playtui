@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
 import type { SaveStatus } from "../../hooks/useProject"
-
-export type ViewMode = "editor" | "play" | "library" | "docs"
+import type { ViewMode } from "../../lib/viewState"
 
 // ============================================================================
 // Save Indicator

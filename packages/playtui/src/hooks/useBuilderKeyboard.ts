@@ -1,6 +1,6 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
-import type { ViewMode } from "../components/ui/NavBar"
+import type { ViewMode, ViewAction } from "../lib/viewState"
 import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
 
 
@@ -39,9 +39,9 @@ interface UseBuilderKeyboardParams {
 
   // Panel visibility
   onTogglePanels?: () => void
-  onToggleCode?: () => void
-  onToggleTimeline?: () => void
-  onShowTimeline?: () => void
+
+  // View actions
+  onViewAction?: (action: ViewAction) => void
 }
 
 export function useBuilderKeyboard({
@@ -70,9 +70,7 @@ export function useBuilderKeyboard({
   onAnimDuplicateFrame,
   onAnimDeleteFrame,
   onTogglePanels,
-  onToggleCode,
-  onToggleTimeline,
-  onShowTimeline,
+  onViewAction,
 }: UseBuilderKeyboardParams) {
   useKeyboard((key) => {
     // Toggle panels - TAB key (always available, even in modal)
@@ -82,25 +80,31 @@ export function useBuilderKeyboard({
     }
 
     // F-key mode switching (always available except in modal)
-    if (!modalMode) {
-      // F1 goes to editor mode
-      if (isKeybind(key, Bind.VIEW_EDITOR)) { 
-        setMode("editor")
-        return 
-      }
-      // F2: if not in play mode, enter play mode; if in play mode, toggle timeline
-      if (isKeybind(key, Bind.VIEW_PLAY)) {
-        if (mode !== "play") {
-          setMode("play")
-          onShowTimeline?.() // Ensure timeline is shown when entering play mode
-        } else {
-          onToggleTimeline?.() // Toggle timeline when already in play mode
-        }
+    if (!modalMode && onViewAction) {
+      if (isKeybind(key, Bind.VIEW_EDITOR)) {
+        onViewAction(Bind.VIEW_EDITOR)
         return
       }
-      if (isKeybind(key, Bind.TOGGLE_CODE) && onToggleCode) { onToggleCode(); return }
-      if (isKeybind(key, Bind.VIEW_LIBRARY)) { setMode("library"); return }
-      if (isKeybind(key, Bind.VIEW_DOCS)) { setMode("docs"); return }
+
+      if (isKeybind(key, Bind.VIEW_PLAY)) {
+        onViewAction(Bind.VIEW_PLAY)
+        return
+      }
+
+      if (isKeybind(key, Bind.TOGGLE_CODE)) {
+        onViewAction(Bind.TOGGLE_CODE)
+        return
+      }
+
+      if (isKeybind(key, Bind.VIEW_LIBRARY)) {
+        onViewAction(Bind.VIEW_LIBRARY)
+        return
+      }
+
+      if (isKeybind(key, Bind.VIEW_DOCS)) {
+        onViewAction(Bind.VIEW_DOCS)
+        return
+      }
     }
 
     // Close modal on escape

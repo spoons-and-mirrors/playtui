@@ -9,7 +9,7 @@ import { PropertyPane } from "./components/pages/Properties"
 import { LibraryPage } from "./components/pages/Library"
 import { PlayPage } from "./components/pages/Play"
 import { Title } from "./components/ui/Title"
-import { Footer, type ViewMode, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
+import { Footer, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
 import { FilmStrip } from "./components/play/FilmStrip"
 import { TimelinePanel } from "./components/timeline/TimelinePanel"
 import { KeyframingContext } from "./components/contexts/KeyframingContext"
@@ -18,6 +18,8 @@ import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
 import type { DragEvent } from "./components/Renderer"
 import type { CanvasOffset } from "./components/pages/Editor"
+import { reduceViewState, type ViewAction, type ViewMode } from "./lib/viewState"
+import { Bind } from "./lib/shortcuts"
 
 interface BuilderProps {
   width: number
@@ -73,6 +75,31 @@ export function Builder({ width, height }: BuilderProps) {
   const [showTimeline, setShowTimeline] = useState(true) // Default to true in play mode
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
+
+  const applyViewAction = useCallback(
+    (action: ViewAction) => {
+      const current = {
+        mode,
+        showCodePanel,
+        showTimeline,
+      }
+
+      const next = reduceViewState(current, action)
+
+      if (next.mode !== mode) {
+        setMode(next.mode)
+      }
+
+      if (next.showCodePanel !== showCodePanel) {
+        setShowCodePanel(next.showCodePanel)
+      }
+
+      if (next.showTimeline !== showTimeline) {
+        setShowTimeline(next.showTimeline)
+      }
+    },
+    [mode, showCodePanel, showTimeline],
+  )
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
@@ -174,9 +201,7 @@ export function Builder({ width, height }: BuilderProps) {
     onAnimDuplicateFrame: duplicateFrame,
     onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
     onTogglePanels: togglePanels,
-    onToggleCode: () => setShowCodePanel(v => !v),
-    onToggleTimeline: () => setShowTimeline(v => !v),
-    onShowTimeline: () => setShowTimeline(true),
+    onViewAction: applyViewAction,
   })
 
   const handleToggleCollapse = useCallback((id: string) => {
@@ -578,7 +603,7 @@ export function Builder({ width, height }: BuilderProps) {
         </box>
       )}
       
-      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { if (mode !== "play") { setMode("play"); setShowTimeline(true) } else { setShowTimeline(v => !v) } }} />
+      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => applyViewAction(Bind.TOGGLE_CODE)} onPlayPress={() => applyViewAction(Bind.VIEW_PLAY)} />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (
