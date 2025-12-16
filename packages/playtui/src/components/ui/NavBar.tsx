@@ -94,8 +94,10 @@ export function NavBar({
   const playViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "play")!
   const libraryViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "library")!
   const docsViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "docs")!
-
+  const currentViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === mode)!
+ 
   return (
+
     <box
       id="app-header"
       backgroundColor={COLORS.bgAlt}
@@ -125,7 +127,7 @@ export function NavBar({
         <ModeTab
           fKey={getShortcutLabel(Bind.TOGGLE_CODE)}
           label="Code"
-          isActive={!!showCodePanel && (mode === "editor" || mode === "play")}
+          isActive={!!showCodePanel && currentViewMode.supportsCodePanel}
           onPress={() => onToggleCode?.()}
         />
         <ModeTab

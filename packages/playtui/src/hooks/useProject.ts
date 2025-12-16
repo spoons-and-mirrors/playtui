@@ -59,8 +59,14 @@ export interface UseProjectReturn {
   addKeyframe: (nodeId: string, property: string, value: number) => void
   removeKeyframe: (nodeId: string, property: string) => void
   setKeyframeHandle: (nodeId: string, property: string, frame: number, handleX: number, handleY: number) => void
-
+  setTimelineView: (
+    view:
+      | { type: "dopesheet" }
+      | { type: "curve"; nodeId: string; property: string }
+  ) => void
+ 
   // Palettes
+
   palettes: ColorPalette[]
   activePaletteIndex: number
   updateSwatch: (id: string, color: string) => void
@@ -683,8 +689,31 @@ export function useProject(): UseProjectReturn {
     })
     scheduleSave()
   }, [scheduleSave])
-
+ 
+  // Keyframing: Set active timeline view (dopesheet or curve)
+  const setTimelineView = useCallback((view: { type: "dopesheet" } | { type: "curve"; nodeId: string; property: string }) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      const prevKeyframing = prev.animation.keyframing
+      return {
+        ...prev,
+        animation: {
+          ...prev.animation,
+          keyframing: {
+            ...prevKeyframing,
+            timeline: {
+              ...prevKeyframing.timeline,
+              view,
+            },
+          },
+        },
+      }
+    })
+    scheduleSave()
+  }, [scheduleSave])
+ 
   // Update selected ID (UI state only, no save needed)
+
   const setSelectedId = useCallback(
     (id: string | null) => {
       setProject((prev) => {
@@ -841,6 +870,7 @@ export function useProject(): UseProjectReturn {
     addKeyframe,
     removeKeyframe,
     setKeyframeHandle,
+    setTimelineView,
     // Palette methods
     palettes,
     activePaletteIndex,

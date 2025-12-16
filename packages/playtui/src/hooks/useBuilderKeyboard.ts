@@ -1,7 +1,7 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
 import type { ViewMode, ViewAction } from "../lib/viewState"
-import { VIEW_MODES } from "../lib/viewState"
+import { VIEW_MODES, VIEW_MODE_BY_MODE } from "../lib/viewState"
 import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
 
 
@@ -101,8 +101,10 @@ export function useBuilderKeyboard({
       return
     }
 
+    const viewCfg = VIEW_MODE_BY_MODE[mode]
+
     // Non-editor modes (no editor shortcuts)
-    if (mode === "docs" || mode === "library") {
+    if (viewCfg.kind === "browser") {
       if (isKeybind(key, Bind.CANCEL_SELECTION)) { setSelectedId(null); return }
       return
     }

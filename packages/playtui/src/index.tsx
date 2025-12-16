@@ -19,7 +19,7 @@ import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
 import type { DragEvent } from "./components/Renderer"
 import type { CanvasOffset } from "./components/pages/Editor"
-import { reduceViewState, type ViewAction, type ViewMode, type ViewLayoutState } from "./lib/viewState"
+import { reduceViewState, VIEW_MODE_BY_MODE, type ViewAction, type ViewMode, type ViewLayoutState } from "./lib/viewState"
 import { Bind } from "./lib/shortcuts"
 
 interface BuilderProps {
@@ -73,6 +73,7 @@ export function Builder({ width, height }: BuilderProps) {
     showTimeline: true,
   })
   const mode = viewLayout.mode
+  const viewModeConfig = VIEW_MODE_BY_MODE[mode]
   const showCodePanel = viewLayout.showCodePanel
   const codePanelHeight = viewLayout.codePanelHeight
   const showTimeline = viewLayout.showTimeline
@@ -316,9 +317,9 @@ export function Builder({ width, height }: BuilderProps) {
   const timelineHeight = 14
   const footerHeight = 1
   const mainContentHeight = height - footerHeight 
-    - (mode === "play" ? filmStripHeight : 0)
+    - (viewModeConfig.hasFilmStrip ? filmStripHeight : 0)
     - (showCodePanel ? codePanelHeight : 0)
-    - (mode === "play" && showTimeline ? timelineHeight : 0)
+    - (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -342,9 +343,9 @@ export function Builder({ width, height }: BuilderProps) {
     
     // Calculate total bottom panel height
     const bottomPanelHeight = 
-      (mode === "play" ? filmStripHeight : 0) +
+      (viewModeConfig.hasFilmStrip ? filmStripHeight : 0) +
       (showCodePanel ? codePanelHeight : 0) +
-      (mode === "play" && showTimeline ? timelineHeight : 0)
+      (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
 
     // The canvas is vertically centered in the remaining space *above* the bottom panels.
     // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
@@ -417,8 +418,8 @@ export function Builder({ width, height }: BuilderProps) {
     )
   }
   
-  // Library Mode - Full Screen (hides tree and sidebar)
-  if (mode === "library" || mode === "docs") {
+  // Library/Docs Mode - Full Screen (hides tree and sidebar)
+  if (viewModeConfig.kind === "browser") {
     return (
       <box id="builder" style={{ width, height, flexDirection: "column" }}>
         <box style={{ flexGrow: 1, flexDirection: "column" }}>
@@ -515,7 +516,11 @@ export function Builder({ width, height }: BuilderProps) {
              projectHook={projectHook} 
              isPlaying={isPlaying}
              canvasOffset={canvasOffset}
-             canvasOffsetAdjustY={filmStripHeight + (showCodePanel ? codePanelHeight : 0) + (showTimeline ? timelineHeight : 0)}
+             canvasOffsetAdjustY={
+               (viewModeConfig.hasFilmStrip ? filmStripHeight : 0) +
+               (showCodePanel ? codePanelHeight : 0) +
+               (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
+             }
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
