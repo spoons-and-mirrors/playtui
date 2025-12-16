@@ -306,9 +306,9 @@ export function isTabSelectNode(node: ElementNode): node is TabSelectNode {
   return node.type === "tab-select"
 }
 
-export function isContainerNode(node: ElementNode): node is BoxNode | ScrollboxNode {
-  return node.type === "box" || node.type === "scrollbox"
-}
+// NOTE: isContainerNode has been moved to components/elements/index.ts
+// where it derives from ELEMENT_REGISTRY.capabilities.supportsChildren
+// This eliminates duplication between the type guard and the registry.
 
 // =============================================================================
 // PROPERTY DEFINITIONS - Now centralized in components/elements/index.ts

@@ -1,7 +1,6 @@
 import type { ElementNode, SizeValue, BoxNode, ScrollboxNode, TextNode, AsciiFontNode, BorderSide } from "./types"
-import { isContainerNode } from "./types"
 import { log } from "./logger"
-import { ELEMENT_REGISTRY, type SerializableProp } from "../components/elements"
+import { ELEMENT_REGISTRY, isContainerNode, type SerializableProp } from "../components/elements"
 
 // Serialize a single prop value based on its schema definition
 function serializeProp(prop: SerializableProp, value: unknown): string | null {

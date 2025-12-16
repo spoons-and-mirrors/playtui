@@ -1,14 +1,13 @@
 import { useState, useRef, createContext, useContext } from "react"
 import { MouseButton, type MouseEvent, type ScrollBoxRenderable } from "@opentui/core"
 import type { ElementNode, BorderSide, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
-import { isContainerNode } from "../../lib/types"
 import { 
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
     OverflowPicker, DimensionsControl
 } from "../controls"
-import { ELEMENT_REGISTRY, PROPERTY_SECTIONS, type SerializableProp, type PropertySection } from "../elements"
+import { ELEMENT_REGISTRY, PROPERTY_SECTIONS, isContainerNode, type SerializableProp, type PropertySection } from "../elements"
 import { COLORS } from "../../theme"
 
 // Drag capture context - allows value controls to register drags at the panel level

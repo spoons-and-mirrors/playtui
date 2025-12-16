@@ -18,7 +18,7 @@ import { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_DEFAULTS } from "./sc
 import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
 import { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
 import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
-import type { ElementType, ElementNode } from "../../lib/types"
+import type { ElementType, ElementNode, BoxNode, ScrollboxNode } from "../../lib/types"
 import type { ColorPalette } from "../../lib/projectTypes"
 
 // Renderer props shared by all element renderers
@@ -619,3 +619,15 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
 
 // All element types
 export const ELEMENT_TYPES = Object.keys(ELEMENT_REGISTRY) as ElementType[]
+
+// =============================================================================
+// TYPE GUARDS - Derived from registry (single source of truth)
+// =============================================================================
+
+/**
+ * Check if a node supports children. Derived from ELEMENT_REGISTRY.capabilities.
+ * This replaces the hardcoded check that was previously in types.ts.
+ */
+export function isContainerNode(node: ElementNode): node is BoxNode | ScrollboxNode {
+  return ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren === true
+}
