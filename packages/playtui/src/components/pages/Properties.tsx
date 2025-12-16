@@ -2,14 +2,13 @@ import { useState, useRef, createContext, useContext } from "react"
 import { MouseButton, type MouseEvent, type ScrollBoxRenderable } from "@opentui/core"
 import type { ElementNode, BorderSide, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
-import { SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
     OverflowPicker, DimensionsControl
 } from "../controls"
-import { ELEMENT_REGISTRY, type SerializableProp, type PropertySection } from "../elements"
+import { ELEMENT_REGISTRY, PROPERTY_SECTIONS, type SerializableProp, type PropertySection } from "../elements"
 import { COLORS } from "../../theme"
 
 // Drag capture context - allows value controls to register drags at the panel level
@@ -25,12 +24,8 @@ export type DragRegisterFn = (
 export const DragCaptureContext = createContext<DragRegisterFn | null>(null)
 export const useDragCapture = () => useContext(DragCaptureContext)
 
-// Sections that are element-specific and handled by registry Properties components
-const ELEMENT_SPECIFIC_SECTIONS: PropertySection[] = [
-  "border", "text", "input", "textarea", "select", "scrollbox", "slider", "asciiFont", "tabSelect"
-]
+  // Helper type for dynamic property access
 
-// Helper type for dynamic property access
 type AnyNodeProps = Record<string, unknown>
 
 interface PropertyPaneProps {
@@ -49,8 +44,8 @@ interface PropertyPaneProps {
 export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onShowHex, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
-    SECTION_ORDER.forEach(section => {
-      initial[section] = !EXPANDED_BY_DEFAULT.includes(section)
+    PROPERTY_SECTIONS.forEach((meta) => {
+      initial[meta.id] = !meta.defaultExpanded
     })
     return initial
   })
@@ -101,22 +96,15 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
   // Get properties from the element registry - single source of truth
   const props = ELEMENT_REGISTRY[node.type].properties
   const unsectioned = props.filter((p) => !p.section)
-  
-  // Get active sections: sections with props defined for this element + element-specific sections
-  const sectionToType: Record<string, string> = {
-    border: "box", text: "text", input: "input", textarea: "textarea",
-    select: "select", scrollbox: "scrollbox", slider: "slider",
-    asciiFont: "ascii-font", tabSelect: "tab-select"
-  }
-  const activeSections = SECTION_ORDER.filter(section => {
-    // Include if there are props for this section
-    if (props.some(p => p.section === section)) return true
-    // Include element-specific sections for matching node type
-    if (ELEMENT_SPECIFIC_SECTIONS.includes(section) && sectionToType[section] === node.type) return true
-    // Border section applies to both box and scrollbox
-    if (section === "border" && (node.type === "box" || node.type === "scrollbox")) return true
-    return false
-  })
+
+  const activeSections = PROPERTY_SECTIONS
+    .filter((meta) => {
+      const section = meta.id
+      if (props.some((p) => p.section === section)) return true
+      if (meta.ownerTypes && meta.ownerTypes.includes(node.type)) return true
+      return false
+    })
+    .map((meta) => meta.id)
 
   const renderProp = (prop: SerializableProp) => {
     const nodeProps = node as unknown as AnyNodeProps
@@ -325,10 +313,13 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     const isCollapsed = collapsed["flexContainer"]
     const wrapProp = props.find(p => p.key === "flexWrap")
     const alignContentProp = props.find(p => p.key === "alignContent")
+    const flexMeta = PROPERTY_SECTIONS.find((meta) => meta.id === "flexContainer")
+    if (!flexMeta) return null
 
     return (
       <box key="flexContainer" id="section-flexContainer" style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS["flexContainer"]} collapsed={isCollapsed} onToggle={() => toggleSection("flexContainer")} />
+        <SectionHeader title={flexMeta.label} collapsed={isCollapsed} onToggle={() => toggleSection("flexContainer")} />
+
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
             <FlexDirectionPicker value={container.flexDirection} onChange={(v) => onUpdate({ flexDirection: v } as Partial<ElementNode>)} />
@@ -425,10 +416,13 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     const isCollapsed = collapsed["overflow"]
     const hasOverflowProp = props.some(p => p.key === "overflow")
     if (!hasOverflowProp) return null
+    const overflowMeta = PROPERTY_SECTIONS.find((meta) => meta.id === "overflow")
+    if (!overflowMeta) return null
 
     return (
       <box key="overflow" id="section-overflow" style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS["overflow"]} collapsed={isCollapsed} onToggle={() => toggleSection("overflow")} />
+        <SectionHeader title={overflowMeta.label} collapsed={isCollapsed} onToggle={() => toggleSection("overflow")} />
+
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
             <OverflowPicker value={container.overflow} onChange={(v) => onUpdate({ overflow: v } as Partial<ElementNode>)} />
@@ -440,25 +434,12 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
   // Render element-specific section using registry
   const renderElementSection = (section: PropertySection) => {
-    // Map section name to element type that owns it
-    const sectionToType: Record<string, string> = {
-      border: "box", text: "text", input: "input", textarea: "textarea",
-      select: "select", scrollbox: "scrollbox", slider: "slider",
-      asciiFont: "ascii-font", tabSelect: "tab-select"
-    }
+    const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
+    if (!meta) return null
+    if (meta.ownerTypes && !meta.ownerTypes.includes(node.type)) return null
 
-    // Only render if this section belongs to the current element type
-    const ownerType = sectionToType[section]
-    // Border section applies to both box and scrollbox
-    if (section === "border") {
-      if (node.type !== "box" && node.type !== "scrollbox") return null
-    } else if (ownerType !== node.type) {
-      return null
-    }
-
-    // For border section on scrollbox, use box's Properties component
-    const entry = section === "border" && node.type === "scrollbox" 
-      ? ELEMENT_REGISTRY["box"] 
+    const entry = section === "border" && node.type === "scrollbox"
+      ? ELEMENT_REGISTRY["box"]
       : ELEMENT_REGISTRY[node.type]
     if (!entry?.Properties) return null
 
@@ -472,8 +453,10 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
   // Main section renderer
   const renderSection = (section: PropertySection) => {
-    // Element-specific sections use registry
-    if (ELEMENT_SPECIFIC_SECTIONS.includes(section)) {
+    const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
+    if (!meta) return null
+
+    if (meta.ownerTypes && meta.ownerTypes.length > 0) {
       return renderElementSection(section)
     }
     // Custom visual sections
@@ -491,13 +474,14 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
     return (
       <box key={section} id={`section-${section}`} style={{ flexDirection: "column" }}>
-        <SectionHeader title={SECTION_LABELS[section]} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
+        <SectionHeader title={meta.label} collapsed={isCollapsed} onToggle={() => toggleSection(section)} />
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>{sectionProps.map(renderProp)}</box>
         )}
       </box>
     )
   }
+
 
   return (
     <DragCaptureContext.Provider value={registerDrag}>

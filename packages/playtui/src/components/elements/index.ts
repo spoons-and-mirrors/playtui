@@ -75,8 +75,118 @@ export type PropertySection =
   | "asciiFont"
   | "tabSelect"
   | "scrollbox"
+ 
+interface PropertySectionMeta {
+  id: PropertySection
+  label: string
+  defaultExpanded: boolean
+  ownerTypes?: ElementType[]
+}
+
+export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
+  {
+    id: "dimensions",
+    label: "◫ Dimensions",
+    defaultExpanded: true,
+  },
+  {
+    id: "position",
+    label: "◎ Position",
+    defaultExpanded: false,
+  },
+  {
+    id: "margin",
+    label: "⊟ Margin",
+    defaultExpanded: false,
+  },
+  {
+    id: "padding",
+    label: "⊞ Padding",
+    defaultExpanded: false,
+  },
+  {
+    id: "flexContainer",
+    label: "⬓ Layout",
+    defaultExpanded: true,
+  },
+  {
+    id: "flexItem",
+    label: "▧ Flex Item",
+    defaultExpanded: false,
+  },
+  {
+    id: "background",
+    label: "▦ Fill",
+    defaultExpanded: true,
+  },
+  {
+    id: "border",
+    label: "▢ Border",
+    defaultExpanded: true,
+    ownerTypes: ["box", "scrollbox"],
+  },
+  {
+    id: "overflow",
+    label: "⋯ Overflow",
+    defaultExpanded: false,
+  },
+  {
+    id: "visibility",
+    label: "◉ Display",
+    defaultExpanded: false,
+  },
+  {
+    id: "text",
+    label: "T Text",
+    defaultExpanded: true,
+    ownerTypes: ["text"],
+  },
+  {
+    id: "input",
+    label: "▭ Input",
+    defaultExpanded: true,
+    ownerTypes: ["input"],
+  },
+  {
+    id: "textarea",
+    label: "▯ Textarea",
+    defaultExpanded: false,
+    ownerTypes: ["textarea"],
+  },
+  {
+    id: "select",
+    label: "≡ Select",
+    defaultExpanded: false,
+    ownerTypes: ["select"],
+  },
+  {
+    id: "slider",
+    label: "─ Slider",
+    defaultExpanded: false,
+    ownerTypes: ["slider"],
+  },
+  {
+    id: "asciiFont",
+    label: "A ASCII Font",
+    defaultExpanded: false,
+    ownerTypes: ["ascii-font"],
+  },
+  {
+    id: "tabSelect",
+    label: "◰ Tabs",
+    defaultExpanded: false,
+    ownerTypes: ["tab-select"],
+  },
+  {
+    id: "scrollbox",
+    label: "↕ Scrollbox",
+    defaultExpanded: false,
+    ownerTypes: ["scrollbox"],
+  },
+]
 
 export interface SerializableProp {
+
   key: string
   type: SerializablePropType
   // UI fields (for property panel rendering)
