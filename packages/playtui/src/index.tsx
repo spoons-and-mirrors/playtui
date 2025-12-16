@@ -473,8 +473,8 @@ export function Builder({ width, height }: BuilderProps) {
       <box id="builder-main" style={{ width, height: mainContentHeight, flexDirection: "row" }}>
         {/* Left Panel - Tree */}
         {showTree && (
-          <box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
-            style={{ width: treeWidth, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
+<box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
+             style={{ width: treeWidth, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
             <Title onLogoClick={() => setMode("docs")} />
             <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
               <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
@@ -543,8 +543,8 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Right Panel - Properties */}
         {showProperties && (
-          <box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
-            style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
+<box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
+             style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.bgAlt, padding: 1, flexShrink: 0 }}>
             {/* Palette - always visible */}
             <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center" }}>
               <PaletteControl
