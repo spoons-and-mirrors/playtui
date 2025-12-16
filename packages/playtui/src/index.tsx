@@ -18,7 +18,7 @@ import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
 import { useBuilderActions } from "./hooks/useBuilderActions"
 import type { DragEvent } from "./components/Renderer"
 import type { CanvasOffset } from "./components/pages/Editor"
-import { reduceViewState, type ViewAction, type ViewMode } from "./lib/viewState"
+import { reduceViewState, type ViewAction, type ViewMode, type ViewLayoutState } from "./lib/viewState"
 import { Bind } from "./lib/shortcuts"
 
 interface BuilderProps {
@@ -65,43 +65,39 @@ export function Builder({ width, height }: BuilderProps) {
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
-  const [mode, setMode] = useState<ViewMode>("editor")
+  const [viewLayout, setViewLayout] = useState<ViewLayoutState>({
+    mode: "editor",
+    showCodePanel: false,
+    showTimeline: true,
+  })
+  const mode = viewLayout.mode
+  const showCodePanel = viewLayout.showCodePanel
+  const showTimeline = viewLayout.showTimeline
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [showCodePanel, setShowCodePanel] = useState(false)
   const [codePanelExpanded, setCodePanelExpanded] = useState(false)
-  const [showTimeline, setShowTimeline] = useState(true) // Default to true in play mode
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
 
+
   const applyViewAction = useCallback(
     (action: ViewAction) => {
-      const current = {
-        mode,
-        showCodePanel,
-        showTimeline,
-      }
-
-      const next = reduceViewState(current, action)
-
-      if (next.mode !== mode) {
-        setMode(next.mode)
-      }
-
-      if (next.showCodePanel !== showCodePanel) {
-        setShowCodePanel(next.showCodePanel)
-      }
-
-      if (next.showTimeline !== showTimeline) {
-        setShowTimeline(next.showTimeline)
-      }
+      setViewLayout(prev => reduceViewState(prev, action))
     },
-    [mode, showCodePanel, showTimeline],
+    [],
   )
+
+  const setMode = useCallback((next: ViewMode) => {
+    setViewLayout(prev => ({
+      ...prev,
+      mode: next,
+    }))
+  }, [])
   
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
+
   const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
     editor: 0,
     play: 0,
@@ -436,7 +432,15 @@ export function Builder({ width, height }: BuilderProps) {
             <DocsPanel />
           )}
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
+        <NavBar
+          mode={mode}
+          width={width}
+          showCodePanel={showCodePanel}
+          showTimeline={showTimeline}
+          onModeChange={setMode}
+          onToggleCode={() => applyViewAction(Bind.TOGGLE_CODE)}
+          onPlayPress={() => applyViewAction(Bind.VIEW_PLAY)}
+        />
       </box>
     )
   }
@@ -449,7 +453,15 @@ export function Builder({ width, height }: BuilderProps) {
         <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
-        <NavBar mode={mode} width={width} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => setShowCodePanel(v => !v)} onPlayPress={() => { setMode("play"); setShowTimeline(true) }} />
+        <NavBar
+          mode={mode}
+          width={width}
+          showCodePanel={showCodePanel}
+          showTimeline={showTimeline}
+          onModeChange={setMode}
+          onToggleCode={() => applyViewAction(Bind.TOGGLE_CODE)}
+          onPlayPress={() => applyViewAction(Bind.VIEW_PLAY)}
+        />
       </box>
     )
   }
@@ -589,17 +601,23 @@ export function Builder({ width, height }: BuilderProps) {
             e.stopPropagation()
         }}>
           <CodePanel 
-            code={code} 
-            tree={tree} 
-            updateTree={updateTree} 
-            onClose={() => setShowCodePanel(false)}
-            onFocusChange={(focused) => {
-                if (focused) setFocusedField("code-panel")
-                else if (focusedField === "code-panel") setFocusedField(null)
-            }}
-            isExpanded={codePanelExpanded}
-            onToggleExpand={() => setCodePanelExpanded(v => !v)}
-          />
+             code={code} 
+             tree={tree} 
+             updateTree={updateTree} 
+             onClose={() => {
+               setViewLayout(prev => ({
+                 ...prev,
+                 showCodePanel: false,
+               }))
+             }}
+             onFocusChange={(focused) => {
+                 if (focused) setFocusedField("code-panel")
+                 else if (focusedField === "code-panel") setFocusedField(null)
+             }}
+             isExpanded={codePanelExpanded}
+             onToggleExpand={() => setCodePanelExpanded(v => !v)}
+           />
+
         </box>
       )}
       
