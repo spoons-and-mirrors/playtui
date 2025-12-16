@@ -170,22 +170,21 @@ function ElementToolbar({
       </box>
       {expanded && (
         <box style={{ flexDirection: "row", gap: 0, backgroundColor: COLORS.card, paddingLeft: 1 }}>
-          {ADD_MODE_BINDINGS.map((binding) => {
-            const entry = ELEMENT_REGISTRY[binding.type]
-            const shortcut = getShortcutLabel(binding.bind)
-            const icon = entry.icon || "?"
-            const label = entry.label
-            return (
-              <ElementToolbarBtn
-                key={binding.type}
-                type={binding.type}
-                icon={icon}
-                label={label}
-                shortcut={shortcut}
-                onPress={() => onAddElement(binding.type)}
-              />
-            )
-          })}
+           {ADD_MODE_BINDINGS.map((binding) => {
+             const entry = ELEMENT_REGISTRY[binding.type]
+             const icon = entry.icon || "?"
+             const label = entry.label
+             return (
+               <ElementToolbarBtn
+                 key={binding.type}
+                 type={binding.type}
+                 icon={icon}
+                 label={label}
+                 shortcut={binding.key}
+                 onPress={() => onAddElement(binding.type)}
+               />
+             )
+           })}
         </box>
       )}
     </box>

@@ -301,6 +301,7 @@ export interface ElementRegistryEntry {
   type: ElementType
   label: string
   icon?: string
+  addModeKey?: string  // Single character key for adding this element in add mode (e.g., "b" for box)
   Renderer: (props: RendererProps) => React.ReactNode
   Properties: ((props: ElementPropertiesProps) => React.ReactNode) | null
   defaults: Partial<ElementNode>
@@ -314,6 +315,7 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
     type: "box",
     label: "Box",
     icon: "▢",
+    addModeKey: "b",
     Renderer: BoxRenderer,
     Properties: BoxBorderProperties,
     defaults: BOX_DEFAULTS,
@@ -344,6 +346,7 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
     type: "text",
     label: "Text",
     icon: "T",
+    addModeKey: "t",
     Renderer: TextRenderer,
     Properties: TextProperties,
     defaults: TEXT_DEFAULTS,
@@ -375,6 +378,7 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
     type: "input",
     label: "Input",
     icon: "⌨",
+    addModeKey: "i",
     Renderer: InputRenderer,
     Properties: InputProperties,
     defaults: INPUT_DEFAULTS,
@@ -411,6 +415,7 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
     type: "textarea",
     label: "Textarea",
     icon: "≡",
+    addModeKey: "x",
     Renderer: TextareaRenderer,
     Properties: TextareaProperties,
     defaults: TEXTAREA_DEFAULTS,
@@ -450,6 +455,7 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
     type: "select",
     label: "Select",
     icon: "▼",
+    addModeKey: "e",
     Renderer: SelectRenderer,
     Properties: SelectProperties,
     defaults: SELECT_DEFAULTS,
@@ -486,10 +492,11 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
   },
   scrollbox: {
     type: "scrollbox",
-    label: "Scroll",
-    icon: "☰",
+    label: "Scrollbox",
+    icon: "⇟",
+    addModeKey: "s",
     Renderer: ScrollboxRenderer,
-    Properties: ScrollboxProperties,
+    Properties: null,
     defaults: SCROLLBOX_DEFAULTS,
     capabilities: {
       supportsChildren: true,
@@ -522,7 +529,8 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
   slider: {
     type: "slider",
     label: "Slider",
-    icon: "─●─",
+    icon: "▪",
+    addModeKey: "l",
     Renderer: SliderRenderer,
     Properties: SliderProperties,
     defaults: SLIDER_DEFAULTS,
@@ -554,10 +562,11 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
   },
   "ascii-font": {
     type: "ascii-font",
-    label: "AsciiFont",
-    icon: "Aa",
+    label: "ASCII Font",
+    icon: "Ⓐ",
+    addModeKey: "f",
     Renderer: AsciiFontRenderer,
-    Properties: AsciiFontProperties,
+    Properties: null,
     defaults: ASCIIFONT_DEFAULTS,
     capabilities: {
       supportsChildren: false,
@@ -583,8 +592,9 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
   },
   "tab-select": {
     type: "tab-select",
-    label: "Tabs",
-    icon: "⎔",
+    label: "Tab Select",
+    icon: "⊞",
+    addModeKey: "w",
     Renderer: TabSelectRenderer,
     Properties: TabSelectProperties,
     defaults: TABSELECT_DEFAULTS,
@@ -630,4 +640,15 @@ export const ELEMENT_TYPES = Object.keys(ELEMENT_REGISTRY) as ElementType[]
  */
 export function isContainerNode(node: ElementNode): node is BoxNode | ScrollboxNode {
   return ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren === true
+}
+
+/**
+ * Get all element types that have add-mode keybindings.
+ * Returns array of [elementType, key] tuples.
+ * Derived from ELEMENT_REGISTRY.addModeKey (single source of truth).
+ */
+export function getAddModeBindings(): Array<[ElementType, string]> {
+  return Object.entries(ELEMENT_REGISTRY)
+    .filter(([, entry]) => entry.addModeKey)
+    .map(([, entry]) => [entry.type, entry.addModeKey!])
 }

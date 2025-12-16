@@ -1,5 +1,6 @@
 import type { KeyEvent } from "@opentui/core"
 import type { ElementType } from "./types"
+import { getAddModeBindings } from "../components/elements"
 
 export enum Bind {
   // Global
@@ -31,19 +32,8 @@ export enum Bind {
   EDITOR_MOVE_UP = "editor.move_up",
   EDITOR_MOVE_DOWN = "editor.move_down",
   EDITOR_ENTER_ADD_MODE = "editor.enter_add_mode",
-  
-  // Add Mode Shortcuts (Context: Add Mode)
-  ADD_BOX = "add.box",
-  ADD_TEXT = "add.text",
-  ADD_SCROLLBOX = "add.scrollbox",
-  ADD_INPUT = "add.input",
-  ADD_TEXTAREA = "add.textarea",
-  ADD_SELECT = "add.select",
-  ADD_SLIDER = "add.slider",
-  ADD_ASCII_FONT = "add.ascii_font",
-  ADD_TAB_SELECT = "add.tab_select",
-
-  // Animation / Play
+   
+   // Animation / Play
   ANIM_PLAY_TOGGLE = "anim.play_toggle",
   ANIM_PREV_FRAME = "anim.prev_frame",
   ANIM_NEXT_FRAME = "anim.next_frame",
@@ -205,25 +195,14 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
     keys: [{ name: "down", option: true }],
     category: "Editor"
   },
-  [Bind.EDITOR_ENTER_ADD_MODE]: {
-    id: Bind.EDITOR_ENTER_ADD_MODE,
-    label: "Add Element...",
-    keys: [{ name: "a" }],
-    category: "Editor"
-  },
+   [Bind.EDITOR_ENTER_ADD_MODE]: {
+     id: Bind.EDITOR_ENTER_ADD_MODE,
+     label: "Add Element...",
+     keys: [{ name: "a" }],
+     category: "Editor"
+   },
 
-  // --- Add Mode ---
-  [Bind.ADD_BOX]: { id: Bind.ADD_BOX, label: "Add Box", keys: [{ name: "b" }], category: "Editor" },
-  [Bind.ADD_TEXT]: { id: Bind.ADD_TEXT, label: "Add Text", keys: [{ name: "t" }], category: "Editor" },
-  [Bind.ADD_SCROLLBOX]: { id: Bind.ADD_SCROLLBOX, label: "Add Scrollbox", keys: [{ name: "s" }], category: "Editor" },
-  [Bind.ADD_INPUT]: { id: Bind.ADD_INPUT, label: "Add Input", keys: [{ name: "i" }], category: "Editor" },
-  [Bind.ADD_TEXTAREA]: { id: Bind.ADD_TEXTAREA, label: "Add Textarea", keys: [{ name: "x" }], category: "Editor" },
-  [Bind.ADD_SELECT]: { id: Bind.ADD_SELECT, label: "Add Select", keys: [{ name: "e" }], category: "Editor" },
-  [Bind.ADD_SLIDER]: { id: Bind.ADD_SLIDER, label: "Add Slider", keys: [{ name: "l" }], category: "Editor" },
-  [Bind.ADD_ASCII_FONT]: { id: Bind.ADD_ASCII_FONT, label: "Add ASCII", keys: [{ name: "f" }], category: "Editor" },
-  [Bind.ADD_TAB_SELECT]: { id: Bind.ADD_TAB_SELECT, label: "Add Tab Select", keys: [{ name: "w" }], category: "Editor" },
-
-  // --- Animation ---
+   // --- Animation ---
   [Bind.ANIM_PLAY_TOGGLE]: {
     id: Bind.ANIM_PLAY_TOGGLE,
     label: "Play/Pause",
@@ -270,17 +249,15 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   },
 }
 
-export const ADD_MODE_BINDINGS: { type: ElementType; bind: Bind }[] = [
-  { type: "box", bind: Bind.ADD_BOX },
-  { type: "text", bind: Bind.ADD_TEXT },
-  { type: "ascii-font", bind: Bind.ADD_ASCII_FONT },
-  { type: "scrollbox", bind: Bind.ADD_SCROLLBOX },
-  { type: "input", bind: Bind.ADD_INPUT },
-  { type: "textarea", bind: Bind.ADD_TEXTAREA },
-  { type: "select", bind: Bind.ADD_SELECT },
-  { type: "slider", bind: Bind.ADD_SLIDER },
-  { type: "tab-select", bind: Bind.ADD_TAB_SELECT },
-]
+/**
+ * Dynamically generated from ELEMENT_REGISTRY.addModeKey
+ * Maps each element type that supports add-mode to its key.
+ * This replaces the hardcoded array that required manual sync with the registry.
+ */
+export const ADD_MODE_BINDINGS = getAddModeBindings().map(([type, key]) => ({
+  type,
+  key,
+}))
 
 export function isKeybind(event: KeyEvent, bind: Bind): boolean {
   const def = KEYBOARD_SHORTCUTS[bind]

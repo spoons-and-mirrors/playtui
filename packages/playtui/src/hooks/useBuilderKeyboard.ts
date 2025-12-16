@@ -130,9 +130,9 @@ export function useBuilderKeyboard({
     if (addMode) {
       if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) { setAddMode(false); return }
       
-      // Check all add shortcuts
+      // Check all add shortcuts (direct key matching from registry)
       for (const binding of ADD_MODE_BINDINGS) {
-        if (isKeybind(key, binding.bind)) {
+        if (key.name === binding.key) {
           onAddElement(binding.type)
           return
         }
