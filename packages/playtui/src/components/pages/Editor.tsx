@@ -21,7 +21,7 @@
 import type { MouseEvent } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 import { Renderer, type DragEvent } from "../Renderer"
 import { useRef } from "react"
 
@@ -34,7 +34,7 @@ export interface CanvasOffset {
 }
 
 interface EditorPanelProps {
-  tree: ElementNode
+  tree: RenderableNode
   treeKey: number
   selectedId: string | null
   hoveredId: string | null

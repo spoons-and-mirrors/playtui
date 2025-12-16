@@ -1,4 +1,4 @@
-import type { ElementNode, BoxNode } from "../../lib/types"
+import type { RenderableNode, BoxNode } from "../../lib/types"
 import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import {
@@ -26,7 +26,7 @@ export const BOX_DEFAULTS: Partial<BoxNode> = {
 // =============================================================================
 
 interface BoxRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -141,8 +141,8 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
 // =============================================================================
 
 interface BoxPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

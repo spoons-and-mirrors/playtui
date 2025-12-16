@@ -1,9 +1,9 @@
-import type { ElementNode } from "../lib/types"
-import { ELEMENT_REGISTRY } from "./elements"
+import type { RenderableNode } from "../lib/types"
+import { RENDERABLE_REGISTRY } from "./renderables"
 import { log } from "../lib/logger"
 
 // ============================================================================
-// Renderer - renders ElementNode tree
+// Renderer - renders RenderableNode tree
 // ============================================================================
 
 export interface DragEvent {
@@ -13,7 +13,7 @@ export interface DragEvent {
 }
 
 export interface RendererProps {
-  node: ElementNode
+  node: RenderableNode
   selectedId: string | null
   hoveredId: string | null
   onSelect: (id: string) => void
@@ -39,12 +39,12 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDra
     )
   }
 
-  const entry = ELEMENT_REGISTRY[node.type]
+  const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry) return null
 
-  const { Renderer: ElementRenderer, capabilities } = entry
+  const { Renderer: RenderableRenderer, capabilities } = entry
 
-  // Recursively render children for container elements
+  // Recursively render children for container renderables
   const children = capabilities.supportsChildren
     ? node.children.map((child) => (
         <Renderer
@@ -59,7 +59,7 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDra
       ))
     : undefined
 
-  return ElementRenderer({
+  return RenderableRenderer({
     node,
     isSelected,
     isHovered,

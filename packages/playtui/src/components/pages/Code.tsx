@@ -4,15 +4,15 @@ import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { ValueSlider } from "../ui"
 import { COLORS } from "../../theme"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 import { parseCodeMultiple } from "../../lib/parseCode"
 import { copyToClipboard } from "../../lib/clipboard"
 import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface CodePanelProps {
   code: string
-  tree: ElementNode
-  updateTree: (tree: ElementNode) => void
+  tree: RenderableNode
+  updateTree: (tree: RenderableNode) => void
   onClose: () => void
   onFocusChange?: (focused: boolean) => void
   height: number

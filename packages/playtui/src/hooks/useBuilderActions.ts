@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect, useMemo } from "react"
-import type { ElementNode, ElementType } from "../lib/types"
+import type { RenderableNode, RenderableType } from "../lib/types"
 import { log } from "../lib/logger"
 import {
   genId,
@@ -12,14 +12,14 @@ import {
   cloneNode,
   moveNode,
 } from "../lib/tree"
-import { ELEMENT_REGISTRY } from "../components/elements"
+import { RENDERABLE_REGISTRY } from "../components/renderables"
 
 interface UseBuilderActionsParams {
-  tree: ElementNode | null
+  tree: RenderableNode | null
   selectedId: string | null
-  clipboard: ElementNode | null
-  setClipboard: (node: ElementNode | null) => void
-  updateTree: (tree: ElementNode, addToHistory?: boolean, newSelectedId?: string | null) => void
+  clipboard: RenderableNode | null
+  setClipboard: (node: RenderableNode | null) => void
+  updateTree: (tree: RenderableNode, addToHistory?: boolean, newSelectedId?: string | null) => void
   setSelectedId: (id: string | null) => void
 }
 
@@ -42,26 +42,26 @@ export function useBuilderActions({
     return all.filter(n => n.id !== tree.id)
   }, [tree])
 
-  // Get the parent container for adding new elements (selected container or root)
-  const getAddParent = useCallback((): ElementNode | null => {
+  // Get the parent container for adding new renderables (selected container or root)
+  const getAddParent = useCallback((): RenderableNode | null => {
     if (!tree) return null
     if (!selectedId) return tree
     const node = findNode(tree, selectedId)
     if (!node) return tree
-    if (ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren) return node
+    if (RENDERABLE_REGISTRY[node.type]?.capabilities.supportsChildren) return node
     const parent = findParent(tree, selectedId)
     return parent || tree
   }, [tree, selectedId])
 
-  const handleAddElement = useCallback((type: ElementType) => {
+  const handleAddElement = useCallback((type: RenderableType) => {
     if (!tree) return
     const parent = getAddParent()
     if (!parent) return
 
-    const entry = ELEMENT_REGISTRY[type]
+    const entry = RENDERABLE_REGISTRY[type]
     if (!entry) return
 
-    const newNode: ElementNode = {
+    const newNode: RenderableNode = {
       id: genId(),
       type,
       name: entry.label,
@@ -121,13 +121,13 @@ export function useBuilderActions({
     if (newTree) updateTree(newTree, true)
   }, [selectedId, tree, updateTree])
 
-  const handleUpdate = useCallback((updates: Partial<ElementNode>, pushHistory = true) => {
+  const handleUpdate = useCallback((updates: Partial<RenderableNode>, pushHistory = true) => {
     const currentSelectedId = selectedIdRef.current
     log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId, pushHistory })
     if (!tree || !currentSelectedId) return
     const node = findNode(tree, currentSelectedId)
     if (!node) return
-    const updated = { ...node, ...updates } as ElementNode
+    const updated = { ...node, ...updates } as RenderableNode
     const newTree = updateNode(tree, currentSelectedId, updated)
     updateTree(newTree, pushHistory)
   }, [tree, updateTree])
@@ -137,7 +137,7 @@ export function useBuilderActions({
     if (!tree) return
     const node = findNode(tree, id)
     if (!node) return
-    const updated = { ...node, name } as ElementNode
+    const updated = { ...node, name } as RenderableNode
     const newTree = updateNode(tree, id, updated)
     updateTree(newTree)
   }, [tree, updateTree])

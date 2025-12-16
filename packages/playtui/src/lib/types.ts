@@ -12,7 +12,7 @@ import type {
   BorderSides,
 } from "@opentui/core"
 
-export type ElementType = "box" | "text" | "scrollbox" | "input" | "textarea" | "select" | "slider" | "ascii-font" | "tab-select"
+export type RenderableType = "box" | "text" | "scrollbox" | "input" | "textarea" | "select" | "slider" | "ascii-font" | "tab-select"
 
 // =============================================================================
 // LAYOUT TYPES - Derived from OpenTUI (single source of truth)
@@ -54,13 +54,13 @@ export type WrapMode = "word" | "none" | "char"
 export type SizeValue = number | "auto" | `${number}%`
 
 // =============================================================================
-// BASE NODE - Common properties shared by ALL elements
+// BASE NODE - Common properties shared by ALL renderables
 // =============================================================================
 
 export interface BaseNode {
   id: string
   name?: string
-  children: ElementNode[]
+  children: RenderableNode[]
 
   // === SIZING ===
   width?: SizeValue
@@ -95,7 +95,7 @@ export interface BaseNode {
 }
 
 // =============================================================================
-// CONTAINER MIXIN - Properties for elements that can have children (box, scrollbox)
+// CONTAINER MIXIN - Properties for renderables that can have children (box, scrollbox)
 // =============================================================================
 
 export interface ContainerProps {
@@ -134,7 +134,7 @@ export interface ContainerProps {
 }
 
 // =============================================================================
-// ELEMENT-SPECIFIC NODE TYPES (Discriminated by `type` field)
+// RENDERABLE-SPECIFIC NODE TYPES (Discriminated by `type` field)
 // =============================================================================
 
 export interface BoxNode extends BaseNode, ContainerProps {
@@ -252,10 +252,10 @@ export interface TabSelectNode extends BaseNode {
 }
 
 // =============================================================================
-// DISCRIMINATED UNION - The main ElementNode type
+// DISCRIMINATED UNION - The main RenderableNode type
 // =============================================================================
 
-export type ElementNode =
+export type RenderableNode =
   | BoxNode
   | ScrollboxNode
   | TextNode
@@ -270,52 +270,52 @@ export type ElementNode =
 // TYPE GUARDS - For proper type narrowing
 // =============================================================================
 
-export function isBoxNode(node: ElementNode): node is BoxNode {
+export function isBoxNode(node: RenderableNode): node is BoxNode {
   return node.type === "box"
 }
 
-export function isScrollboxNode(node: ElementNode): node is ScrollboxNode {
+export function isScrollboxNode(node: RenderableNode): node is ScrollboxNode {
   return node.type === "scrollbox"
 }
 
-export function isTextNode(node: ElementNode): node is TextNode {
+export function isTextNode(node: RenderableNode): node is TextNode {
   return node.type === "text"
 }
 
-export function isInputNode(node: ElementNode): node is InputNode {
+export function isInputNode(node: RenderableNode): node is InputNode {
   return node.type === "input"
 }
 
-export function isTextareaNode(node: ElementNode): node is TextareaNode {
+export function isTextareaNode(node: RenderableNode): node is TextareaNode {
   return node.type === "textarea"
 }
 
-export function isSelectNode(node: ElementNode): node is SelectNode {
+export function isSelectNode(node: RenderableNode): node is SelectNode {
   return node.type === "select"
 }
 
-export function isSliderNode(node: ElementNode): node is SliderNode {
+export function isSliderNode(node: RenderableNode): node is SliderNode {
   return node.type === "slider"
 }
 
-export function isAsciiFontNode(node: ElementNode): node is AsciiFontNode {
+export function isAsciiFontNode(node: RenderableNode): node is AsciiFontNode {
   return node.type === "ascii-font"
 }
 
-export function isTabSelectNode(node: ElementNode): node is TabSelectNode {
+export function isTabSelectNode(node: RenderableNode): node is TabSelectNode {
   return node.type === "tab-select"
 }
 
-// NOTE: isContainerNode has been moved to components/elements/index.ts
-// where it derives from ELEMENT_REGISTRY.capabilities.supportsChildren
+// NOTE: isContainerNode has been moved to components/renderables/index.ts
+// where it derives from RENDERABLE_REGISTRY.capabilities.supportsChildren
 // This eliminates duplication between the type guard and the registry.
 
 // =============================================================================
-// PROPERTY DEFINITIONS - Now centralized in components/elements/index.ts
+// PROPERTY DEFINITIONS - Now centralized in components/renderables/index.ts
 // Re-export for backwards compatibility
 // =============================================================================
 
-export type { PropertySection, SerializableProp as PropertyDef } from "../components/elements"
+export type { PropertySection, SerializableProp as PropertyDef } from "../components/renderables"
 
 // Legacy PropertyType - kept for any remaining references
 export type PropertyType = "number" | "string" | "select" | "color" | "toggle" | "size" | "borderSides"
@@ -324,7 +324,7 @@ import type { KeyframingState } from "./keyframing"
 
 export type HistoryEntry = {
   frameIndex: number
-  tree: ElementNode
+  tree: RenderableNode
   selectedId: string | null
   keyframing: KeyframingState
 }

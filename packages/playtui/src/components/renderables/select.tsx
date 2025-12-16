@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, SelectNode } from "../../lib/types"
+import type { RenderableNode, SelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -20,7 +20,7 @@ export const SELECT_DEFAULTS: Partial<SelectNode> = {
 // =============================================================================
 
 interface SelectRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -84,8 +84,8 @@ export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSel
 // =============================================================================
 
 interface SelectPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

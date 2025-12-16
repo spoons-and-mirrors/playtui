@@ -1,6 +1,6 @@
 // Keyframing + bezier curve interpolation (hybrid overlay)
 
-import type { ElementNode } from "./types"
+import type { RenderableNode } from "./types"
 import { findNode } from "./tree"
 
 export type PropertyPath = string
@@ -428,16 +428,16 @@ export function setSegmentPoint(
   return animated
 }
 
-function applyDrivenValue(frameTree: ElementNode, nodeId: string, property: PropertyPath, value: number): void {
+function applyDrivenValue(frameTree: RenderableNode, nodeId: string, property: PropertyPath, value: number): void {
   const node = findNode(frameTree, nodeId)
   if (!node) return
   ;(node as any)[property] = value
 }
 
-export function bakeFrame(frameTree: ElementNode, animated: AnimatedProperty[], frameIndex: number): ElementNode {
+export function bakeFrame(frameTree: RenderableNode, animated: AnimatedProperty[], frameIndex: number): RenderableNode {
   if (animated.length === 0) return frameTree
 
-  const nextTree = JSON.parse(JSON.stringify(frameTree)) as ElementNode
+  const nextTree = JSON.parse(JSON.stringify(frameTree)) as RenderableNode
 
   for (const prop of animated) {
     const value = getDrivenValue(prop, frameIndex)
@@ -447,7 +447,7 @@ export function bakeFrame(frameTree: ElementNode, animated: AnimatedProperty[], 
   return nextTree
 }
 
-export function bakeKeyframedFrames(frames: ElementNode[], animated: AnimatedProperty[]): ElementNode[] {
+export function bakeKeyframedFrames(frames: RenderableNode[], animated: AnimatedProperty[]): RenderableNode[] {
   if (animated.length === 0) return frames
 
   return frames.map((frameTree, frameIndex) => bakeFrame(frameTree, animated, frameIndex))

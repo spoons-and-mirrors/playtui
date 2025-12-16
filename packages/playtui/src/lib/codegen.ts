@@ -1,6 +1,6 @@
-import type { ElementNode, SizeValue, BoxNode, ScrollboxNode, TextNode, AsciiFontNode, BorderSide } from "./types"
+import type { RenderableNode, SizeValue, BoxNode, ScrollboxNode, TextNode, AsciiFontNode, BorderSide } from "./types"
 import { log } from "./logger"
-import { ELEMENT_REGISTRY, isContainerNode, type SerializableProp } from "../components/elements"
+import { RENDERABLE_REGISTRY, isContainerNode, type SerializableProp } from "../components/renderables"
 
 // Serialize a single prop value based on its schema definition
 function serializeProp(prop: SerializableProp, value: unknown): string | null {
@@ -46,8 +46,8 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
 }
 
 // Serialize all props for an element using registry
-function serializeRegistryProps(node: ElementNode): string[] {
-  const entry = ELEMENT_REGISTRY[node.type]
+function serializeRegistryProps(node: RenderableNode): string[] {
+  const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry?.properties) return []
 
   const result: string[] = []
@@ -65,7 +65,7 @@ function serializeRegistryProps(node: ElementNode): string[] {
 
 // Generate exportable animation as a TSX module with single default export
 // Note: We export children of the root frame, not the root itself (which is the editor canvas)
-export function generateAnimationModule(frames: ElementNode[], fps: number, name = "Animation"): string {
+export function generateAnimationModule(frames: RenderableNode[], fps: number, name = "Animation"): string {
   const framesCodes = frames.map((frame, i) => {
     // Export children of root, not root itself (root is the editor canvas with bg/padding)
     const children = frame.children
@@ -112,12 +112,12 @@ interface CodegenOptions {
 }
 
 // Generate code for children only (used for editor preview, hides root wrapper)
-export function generateChildrenCode(node: ElementNode, opts: CodegenOptions = {}): string {
+export function generateChildrenCode(node: RenderableNode, opts: CodegenOptions = {}): string {
   if (node.children.length === 0) return ""
   return node.children.map((c) => generateCode(c, 0, opts)).join("\n")
 }
 
-export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions = {}): string {
+export function generateCode(node: RenderableNode, indent = 0, opts: CodegenOptions = {}): string {
   const pad = "  ".repeat(indent)
   const props: string[] = []
   const { stripInternal = false } = opts
@@ -132,7 +132,7 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
   }
 
   // Get registry entry
-  const entry = ELEMENT_REGISTRY[node.type]
+  const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry) return "" // Should not happen
 
   if (isContainerNode(node)) {
@@ -248,11 +248,11 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
   }
 
   // Leaf elements - use registry-driven serialization
-  if (ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren === false) {
+  if (RENDERABLE_REGISTRY[node.type]?.capabilities.supportsChildren === false) {
     const elementProps = serializeRegistryProps(node)
     // Include name for round-trip editing (skip in clean export)
     if (!stripInternal) {
-      const name = node.name || ELEMENT_REGISTRY[node.type]?.label || node.type
+      const name = node.name || RENDERABLE_REGISTRY[node.type]?.label || node.type
       elementProps.unshift(`name="${name}"`)
     }
     // Include style props for positioning

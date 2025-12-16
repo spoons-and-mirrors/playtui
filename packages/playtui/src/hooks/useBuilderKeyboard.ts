@@ -1,5 +1,5 @@
 import { useKeyboard } from "@opentui/react"
-import type { ElementType } from "../lib/types"
+import type { RenderableType } from "../lib/types"
 import type { ViewMode, ViewAction } from "../lib/viewState"
 import { VIEW_MODES, VIEW_MODE_BY_MODE } from "../lib/viewState"
 import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
@@ -29,7 +29,7 @@ interface UseBuilderKeyboardParams {
   onRedo: () => void
   onMoveNode: (direction: "up" | "down") => void
   onNavigateTree: (direction: "up" | "down") => void
-  onAddElement: (type: ElementType) => void
+  onAddElement: (type: RenderableType) => void
 
   // Animation actions
   onAnimNextFrame?: () => void

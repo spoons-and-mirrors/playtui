@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
-import type { ElementNode } from "./lib/types"
+import type { RenderableNode } from "./lib/types"
 import { clearLog } from "./lib/logger"
 import { resetIdCounter, findNode, countNodes, updateNode, getNodePosition } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
@@ -79,7 +79,7 @@ export function Builder({ width, height }: BuilderProps) {
   const showTimeline = viewLayout.showTimeline
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
-  const [clipboard, setClipboard] = useState<ElementNode | null>(null)
+  const [clipboard, setClipboard] = useState<RenderableNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
@@ -268,7 +268,7 @@ export function Builder({ width, height }: BuilderProps) {
     const newY = dragStartRef.current.nodeY + deltaY
     
     // Update node position (without adding to history during drag)
-    const updated = { ...node, x: newX, y: newY } as ElementNode
+    const updated = { ...node, x: newX, y: newY } as RenderableNode
     const newTree = updateNode(tree, event.nodeId, updated)
     updateTree(newTree, false) // false = don't add to history
     

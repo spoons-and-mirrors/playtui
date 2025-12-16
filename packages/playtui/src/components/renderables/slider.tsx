@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, SliderNode } from "../../lib/types"
+import type { RenderableNode, SliderNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   NumberProp, SelectProp, ColorControl, SectionHeader
@@ -23,7 +23,7 @@ export const SLIDER_DEFAULTS: Partial<SliderNode> = {
 // =============================================================================
 
 interface SliderRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -85,8 +85,8 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
 // =============================================================================
 
 interface SliderPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

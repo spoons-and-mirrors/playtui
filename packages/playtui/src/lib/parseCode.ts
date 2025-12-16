@@ -1,17 +1,17 @@
 // JSX Parser - Reverse of codegen.ts
-// Parses JSX code string into ElementNode tree
+// Parses JSX code string into RenderableNode tree
 
-import type { ElementNode, ElementType, SizeValue, BorderSide } from "./types"
+import type { RenderableNode, RenderableType, SizeValue, BorderSide } from "./types"
 import { genId } from "./tree"
 import { log } from "./logger"
-import { ELEMENT_REGISTRY, ELEMENT_TYPES as REGISTRY_ELEMENT_TYPES } from "../components/elements"
+import { RENDERABLE_REGISTRY, RENDERABLE_TYPES as REGISTRY_RENDERABLE_TYPES } from "../components/renderables"
 
 // Build global style property map from registry to avoid manual mapping
 // Maps style prop key (e.g. "top") to node prop key (e.g. "y") and type
 const STYLE_PROP_MAP: Record<string, { key: string; type: string }> = {}
 
 // Populate map once
-Object.values(ELEMENT_REGISTRY).forEach((entry) => {
+Object.values(RENDERABLE_REGISTRY).forEach((entry) => {
   entry.properties.forEach((prop) => {
     if (prop.styleProp) {
       STYLE_PROP_MAP[prop.styleProp] = { key: prop.key, type: prop.type }
@@ -20,8 +20,8 @@ Object.values(ELEMENT_REGISTRY).forEach((entry) => {
 })
 
 // Apply registry-defined properties from parsed JSX props to node
-function applyRegistryProps(node: Partial<ElementNode>, type: ElementType, props: Record<string, unknown>): void {
-  const entry = ELEMENT_REGISTRY[type]
+function applyRegistryProps(node: Partial<RenderableNode>, type: RenderableType, props: Record<string, unknown>): void {
+  const entry = RENDERABLE_REGISTRY[type]
   if (!entry?.properties) return
 
   for (const propDef of entry.properties) {
@@ -42,7 +42,7 @@ function applyRegistryProps(node: Partial<ElementNode>, type: ElementType, props
 
 interface ParseResult {
   success: boolean
-  node?: ElementNode
+  node?: RenderableNode
   error?: string
 }
 
@@ -229,8 +229,8 @@ function parseProps(propsStr: string): Record<string, unknown> {
   return props
 }
 
-// Map of element types
-const ELEMENT_TYPES = new Set(REGISTRY_ELEMENT_TYPES)
+// Map of renderable types
+const RENDERABLE_TYPES = new Set(REGISTRY_RENDERABLE_TYPES)
 
 // Inline formatting tags that should be treated as text content, not elements
 const INLINE_FORMATTING_TAGS: Set<string> = new Set([
@@ -313,7 +313,7 @@ function tokenize(jsx: string): Token[] {
 }
 
 // Apply style object to node
-function applyStyle(node: Partial<ElementNode>, style: Record<string, unknown>): void {
+function applyStyle(node: Partial<RenderableNode>, style: Record<string, unknown>): void {
   for (const [styleKey, styleValue] of Object.entries(style)) {
     if (styleValue === undefined) continue
     
@@ -348,19 +348,19 @@ function applyStyle(node: Partial<ElementNode>, style: Record<string, unknown>):
 }
 
 // Helper to check if key exists in node type (at runtime this is just 'any' check but safe enough for assignment)
-function keyInNode(node: Partial<ElementNode>, key: string): boolean {
+function keyInNode(node: Partial<RenderableNode>, key: string): boolean {
   // We allow arbitrary assignment to node from style for flexibility, 
   // but strictly strictly defined registry props are preferred.
   return true 
 }
 
 // Create node from tag and props
-function createNode(tagName: string, props: Record<string, unknown>): ElementNode {
-  const type = tagName as ElementType
+function createNode(tagName: string, props: Record<string, unknown>): RenderableNode {
+  const type = tagName as RenderableType
   
   log("PARSE_CREATE_NODE", { tagName, propsName: props.name, propsKeys: Object.keys(props) })
   
-  const node: Partial<ElementNode> = {
+  const node: Partial<RenderableNode> = {
     id: genId(),
     type,
     name: props.name as string | undefined,
@@ -397,12 +397,12 @@ function createNode(tagName: string, props: Record<string, unknown>): ElementNod
     applyRegistryProps(node, type, props)
   }
   
-  // Apply registry-defined props for all other element types
+  // Apply registry-defined props for all other renderable types
   if (type !== "box" && type !== "scrollbox") {
     applyRegistryProps(node, type, props)
   }
   
-  return node as ElementNode
+  return node as RenderableNode
 }
 
 // Parse text content for formatting tags
@@ -460,7 +460,7 @@ function parseTextContent(text: string): { content: string; bold?: boolean; ital
 }
 
 // Recursive parser using token stream
-function parseTokens(tokens: Token[], index: number): { node: ElementNode | null; nextIndex: number; error?: string } {
+function parseTokens(tokens: Token[], index: number): { node: RenderableNode | null; nextIndex: number; error?: string } {
   if (index >= tokens.length) {
     return { node: null, nextIndex: index, error: "Unexpected end of input" }
   }
@@ -472,7 +472,7 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
   }
   
   if (token.type === "tagSelfClose") {
-    if (!token.name || !ELEMENT_TYPES.has(token.name as ElementType)) {
+    if (!token.name || !RENDERABLE_TYPES.has(token.name as RenderableType)) {
       // Skip inline formatting tags silently
       if (token.name && INLINE_FORMATTING_TAGS.has(token.name)) {
         return { node: null, nextIndex: index + 1 }
@@ -499,7 +499,7 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
       return { node: null, nextIndex: i }
     }
     
-    if (!token.name || !ELEMENT_TYPES.has(token.name as ElementType)) {
+    if (!token.name || !RENDERABLE_TYPES.has(token.name as RenderableType)) {
       return { node: null, nextIndex: index + 1, error: `Unknown element type: ${token.name}` }
     }
     
@@ -599,7 +599,7 @@ export function parseCode(jsx: string): ParseResult {
 }
 
 // Parse multiple elements (for pasting multiple siblings)
-export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: ElementNode[] } {
+export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: RenderableNode[] } {
   try {
     const trimmed = jsx.trim()
     if (!trimmed) {
@@ -607,7 +607,7 @@ export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: ElementN
     }
     
     const tokens = tokenize(trimmed)
-    const nodes: ElementNode[] = []
+    const nodes: RenderableNode[] = []
     let i = 0
     
     while (i < tokens.length && tokens[i].type !== "eof") {
@@ -633,7 +633,7 @@ export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: ElementN
 
 // Parse animation module TSX format
 // Extracts frames array and metadata from: export const animation = { name, fps, frames: [...] }
-export function parseAnimationModule(tsx: string): { success: boolean; frames?: ElementNode[]; fps?: number; name?: string; error?: string } {
+export function parseAnimationModule(tsx: string): { success: boolean; frames?: RenderableNode[]; fps?: number; name?: string; error?: string } {
   try {
     // Extract name
     const nameMatch = tsx.match(/name:\s*"([^"]*)"/)
@@ -654,7 +654,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
     // Split frames by "// Frame N" comments
     const frameChunks = framesContent.split(/\/\/\s*Frame\s+\d+/).filter(chunk => chunk.trim())
     
-    const frames: ElementNode[] = []
+    const frames: RenderableNode[] = []
     
     for (const chunk of frameChunks) {
       // Clean up the chunk - remove trailing comma
@@ -669,7 +669,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
       const result = parseCode(frameJsx)
       if (result.success && result.node) {
         // Wrap in root node structure expected by PlayTUI
-        const rootNode: ElementNode = {
+        const rootNode: RenderableNode = {
           id: "root",
           type: "box",
           name: "Root",
@@ -680,7 +680,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
           padding: 2,
           gap: 1,
           children: [result.node],
-        } as ElementNode
+        } as RenderableNode
         frames.push(rootNode)
       } else {
         log("PARSE_ANIMATION_FRAME_ERROR", { error: result.error, chunk: frameJsx.slice(0, 100) })

@@ -1,9 +1,9 @@
 import { COLORS } from "../../theme"
 import { Renderer } from "../Renderer"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 
 interface ProjectPreviewProps {
-  tree: ElementNode
+  tree: RenderableNode
   width: number
   height: number
   isSelected: boolean

@@ -1,7 +1,7 @@
 import { useRef } from "react"
 import { TextAttributes } from "@opentui/core"
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, TextNode } from "../../lib/types"
+import type { RenderableNode, TextNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorControl, PropRow
@@ -23,7 +23,7 @@ export const TEXT_DEFAULTS: Partial<TextNode> = {
 // =============================================================================
 
 interface TextRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -99,7 +99,7 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
 // =============================================================================
 
 interface TextPropertiesProps {
-  node: ElementNode
+  node: RenderableNode
   onUpdate: (updates: Partial<TextNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void

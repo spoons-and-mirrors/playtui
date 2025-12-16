@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, TextareaNode } from "../../lib/types"
+import type { RenderableNode, TextareaNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -22,7 +22,7 @@ export const TEXTAREA_DEFAULTS: Partial<TextareaNode> = {
 // =============================================================================
 
 interface TextareaRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -74,8 +74,8 @@ export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onS
 // =============================================================================
 
 interface TextareaPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

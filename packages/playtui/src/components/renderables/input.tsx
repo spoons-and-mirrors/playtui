@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, InputNode } from "../../lib/types"
+import type { RenderableNode, InputNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, SelectProp, ColorControl, SectionHeader
@@ -20,7 +20,7 @@ export const INPUT_DEFAULTS: Partial<InputNode> = {
 // =============================================================================
 
 interface InputRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -72,8 +72,8 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
 // =============================================================================
 
 interface InputPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

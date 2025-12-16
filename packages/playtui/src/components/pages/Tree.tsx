@@ -1,12 +1,12 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 import { Bind, isKeybind } from "../../lib/shortcuts"
-import { ELEMENT_REGISTRY } from "../elements"
+import { RENDERABLE_REGISTRY } from "../renderables"
 
 
 interface TreeNodeProps {
-  node: ElementNode
+  node: RenderableNode
   selectedId: string | null
   collapsed: Set<string>
   editingId: string | null
@@ -28,7 +28,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
   const lastClickRef = useRef<number>(0)
   
   const canCollapse = hasChildren && (node.type === "box" || node.type === "scrollbox")
-  let icon = ELEMENT_REGISTRY[node.type]?.icon || "?"
+  let icon = RENDERABLE_REGISTRY[node.type]?.icon || "?"
   if (canCollapse) {
     icon = isCollapsed ? "" : ""
   }
@@ -113,7 +113,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
 }
 
 interface TreeViewProps {
-  root: ElementNode
+  root: RenderableNode
   selectedId: string | null
   collapsed: Set<string>
   onSelect: (id: string) => void

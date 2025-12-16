@@ -6,7 +6,7 @@ import { COLORS } from "../../theme"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import * as storage from "../../lib/storage"
 import type { ProjectMeta } from "../../lib/projectTypes"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 import { Bind, isKeybind } from "../../lib/shortcuts"
 
 interface LibraryPageProps {
@@ -34,7 +34,7 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
   }, [refreshProjects])
 
   // Helper to fetch tree for preview
-  const getProjectTree = async (fileName: string): Promise<ElementNode | null> => {
+  const getProjectTree = async (fileName: string): Promise<RenderableNode | null> => {
     const proj = await storage.loadProject(fileName)
     return proj ? proj.tree : null
   }

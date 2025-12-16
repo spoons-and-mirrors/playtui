@@ -3,7 +3,7 @@ import { ProjectPreview } from "./ProjectPreview"
 import type { ProjectMeta } from "../../lib/projectTypes"
 import { useEffect, useState, useCallback, useRef } from "react"
 import { createDefaultTree } from "../../lib/projectTypes"
-import type { ElementNode } from "../../lib/types"
+import type { RenderableNode } from "../../lib/types"
 import type { ScrollBoxRenderable } from "@opentui/core"
 
 const ROW_HEIGHT = 12
@@ -15,7 +15,7 @@ interface ProjectListProps {
   selectedRow: number
   onSelect: (column: number, row: number) => void
   onConfirm: (project: ProjectMeta) => void
-  getProjectTree: (fileName: string) => Promise<ElementNode | null>
+  getProjectTree: (fileName: string) => Promise<RenderableNode | null>
 }
 
 export function ProjectList({ 
@@ -30,7 +30,7 @@ export function ProjectList({
   const scrollRefB = useRef<ScrollBoxRenderable>(null)
   
   // Cache for loaded trees
-  const [treeCache, setTreeCache] = useState<Record<string, ElementNode>>({})
+  const [treeCache, setTreeCache] = useState<Record<string, RenderableNode>>({})
 
   // Split projects into two columns
   const columnA = projects.filter((_, i) => i % 2 === 0)

@@ -1,4 +1,4 @@
-// Element-specific components (defaults are internal to registry)
+// Renderable-specific components (defaults are internal to registry)
 export { BoxRenderer, BoxBorderProperties } from "./box"
 export { TextRenderer, TextProperties } from "./text"
 export { InputRenderer, InputProperties } from "./input"
@@ -18,12 +18,12 @@ import { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_DEFAULTS } from "./sc
 import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
 import { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
 import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
-import type { ElementType, ElementNode, BoxNode, ScrollboxNode } from "../../lib/types"
+import type { RenderableType, RenderableNode, BoxNode, ScrollboxNode } from "../../lib/types"
 import type { ColorPalette } from "../../lib/projectTypes"
 
-// Renderer props shared by all element renderers
+// Renderer props shared by all renderable renderers
 export interface RendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -34,15 +34,15 @@ export interface RendererProps {
   children?: React.ReactNode
 }
 
-// Properties panel props shared by all element property panels
-export interface ElementPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+// Properties panel props shared by all renderable property panels
+export interface RenderablePropertiesProps {
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
-  // Palette support (optional - not all elements need it)
+  // Palette support (optional - not all renderables need it)
   palettes?: ColorPalette[]
   activePaletteIndex?: number
   onUpdateSwatch?: (id: string, color: string) => void
@@ -53,7 +53,7 @@ export interface ElementPropertiesProps {
 }
 
 // Property schema - SINGLE SOURCE OF TRUTH for both UI and serialization
-// Consolidates property metadata that was previously split between PROPERTIES and ELEMENT_REGISTRY
+// Consolidates property metadata that was previously split between PROPERTIES and RENDERABLE_REGISTRY
 export type SerializablePropType = "string" | "boolean" | "number" | "color" | "options" | "size" | "select" | "toggle" | "borderSides"
 
 export type PropertySection =
@@ -80,7 +80,7 @@ interface PropertySectionMeta {
   id: PropertySection
   label: string
   defaultExpanded: boolean
-  ownerTypes?: ElementType[]
+  ownerTypes?: RenderableType[]
 }
 
 export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
@@ -205,7 +205,7 @@ export interface SerializableProp {
 }
 
 // =============================================================================
-// SHARED PROPERTY DEFINITIONS - Reusable across element types
+// SHARED PROPERTY DEFINITIONS - Reusable across renderable types
 // =============================================================================
 
 // Dimensions - common to most elements
@@ -280,8 +280,8 @@ const BACKGROUND_PROPS: SerializableProp[] = [
   { key: "backgroundColor", label: "BG Color", type: "color", section: "background", styleProp: "backgroundColor" },
 ]
 
-// Element capability metadata
-export interface ElementCapabilities {
+// Renderable capability metadata
+export interface RenderableCapabilities {
   // Layout capabilities
   supportsChildren: boolean
   supportsBorder: boolean
@@ -297,20 +297,20 @@ export interface ElementCapabilities {
 }
 
 // Registry entry type
-export interface ElementRegistryEntry {
-  type: ElementType
+export interface RenderableRegistryEntry {
+  type: RenderableType
   label: string
   icon?: string
-  addModeKey?: string  // Single character key for adding this element in add mode (e.g., "b" for box)
+  addModeKey?: string  // Single character key for adding this renderable in add mode (e.g., "b" for box)
   Renderer: (props: RendererProps) => React.ReactNode
-  Properties: ((props: ElementPropertiesProps) => React.ReactNode) | null
-  defaults: Partial<ElementNode>
-  capabilities: ElementCapabilities
-  properties: SerializableProp[]  // Element-specific props for codegen/parseCode
+  Properties: ((props: RenderablePropertiesProps) => React.ReactNode) | null
+  defaults: Partial<RenderableNode>
+  capabilities: RenderableCapabilities
+  properties: SerializableProp[]  // Renderable-specific props for codegen/parseCode
 }
 
-// Central registry - single source of truth for all element types
-export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
+// Central registry - single source of truth for all renderable types
+export const RENDERABLE_REGISTRY: Record<RenderableType, RenderableRegistryEntry> = {
   box: {
     type: "box",
     label: "Box",
@@ -627,28 +627,28 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
   },
 }
 
-// All element types
-export const ELEMENT_TYPES = Object.keys(ELEMENT_REGISTRY) as ElementType[]
+// All renderable types
+export const RENDERABLE_TYPES = Object.keys(RENDERABLE_REGISTRY) as RenderableType[]
 
 // =============================================================================
 // TYPE GUARDS - Derived from registry (single source of truth)
 // =============================================================================
 
 /**
- * Check if a node supports children. Derived from ELEMENT_REGISTRY.capabilities.
+ * Check if a node supports children. Derived from RENDERABLE_REGISTRY.capabilities.
  * This replaces the hardcoded check that was previously in types.ts.
  */
-export function isContainerNode(node: ElementNode): node is BoxNode | ScrollboxNode {
-  return ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren === true
+export function isContainerNode(node: RenderableNode): node is BoxNode | ScrollboxNode {
+  return RENDERABLE_REGISTRY[node.type]?.capabilities.supportsChildren === true
 }
 
 /**
- * Get all element types that have add-mode keybindings.
- * Returns array of [elementType, key] tuples.
- * Derived from ELEMENT_REGISTRY.addModeKey (single source of truth).
+ * Get all renderable types that have add-mode keybindings.
+ * Returns array of [renderableType, key] tuples.
+ * Derived from RENDERABLE_REGISTRY.addModeKey (single source of truth).
  */
-export function getAddModeBindings(): Array<[ElementType, string]> {
-  return Object.entries(ELEMENT_REGISTRY)
+export function getAddModeBindings(): Array<[RenderableType, string]> {
+  return Object.entries(RENDERABLE_REGISTRY)
     .filter(([, entry]) => entry.addModeKey)
     .map(([, entry]) => [entry.type, entry.addModeKey!])
 }

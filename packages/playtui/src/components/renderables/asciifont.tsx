@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { ElementNode, AsciiFontNode } from "../../lib/types"
+import type { RenderableNode, AsciiFontNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, SelectProp, ColorControl, SectionHeader
@@ -20,7 +20,7 @@ export const ASCIIFONT_DEFAULTS: Partial<AsciiFontNode> = {
 // =============================================================================
 
 interface AsciiFontRendererProps {
-  node: ElementNode
+  node: RenderableNode
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -80,8 +80,8 @@ export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, on
 // =============================================================================
 
 interface AsciiFontPropertiesProps {
-  node: ElementNode
-  onUpdate: (updates: Partial<ElementNode>) => void
+  node: RenderableNode
+  onUpdate: (updates: Partial<RenderableNode>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

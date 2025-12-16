@@ -1,6 +1,6 @@
 import type { KeyEvent } from "@opentui/core"
-import type { ElementType } from "./types"
-import { getAddModeBindings } from "../components/elements"
+import type { RenderableType } from "./types"
+import { getAddModeBindings } from "../components/renderables"
 
 export enum Bind {
   // Global
@@ -250,7 +250,7 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
 }
 
 /**
- * Dynamically generated from ELEMENT_REGISTRY.addModeKey
+ * Dynamically generated from RENDERABLE_REGISTRY.addModeKey
  * Maps each element type that supports add-mode to its key.
  * This replaces the hardcoded array that required manual sync with the registry.
  */

@@ -9,8 +9,8 @@ A native TUI design and animation tool built on sst/opentui.
 PlayTUI is a visual editor for building terminal UIs. The interface consists of:
 
 - **Canvas** (center): Live preview of your component tree
-- **Tree Panel** (left): Hierarchical view of all elements
-- **Properties Panel** (right): Edit styles and properties of selected element
+- **Tree Panel** (left): Hierarchical view of all renderables
+- **Properties Panel** (right): Edit styles and properties of selected renderable
 - **NavBar** (bottom): Switch modes and see project status
 
 Press `Tab` to cycle panel visibility (both, none, tree-only, properties-only).
@@ -31,20 +31,20 @@ Switch between modes using F-keys or clicking the NavBar buttons.
 
 The main editing mode for building your UI.
 
-### Selecting Elements
+### Selecting Renderables
 
-Click elements on the canvas or in the tree panel. The selected element is highlighted and its properties appear in the right panel.
+Click renderables on the canvas or in the tree panel. The selected renderable is highlighted and its properties appear in the right panel.
 
 | Key | Action |
 |-----|--------|
 | ↑ / ↓ | Navigate tree selection |
-| Escape | Deselect current element |
+| Escape | Deselect current renderable |
 
-### Adding Elements
+### Adding Renderables
 
-Press `A` to enter Add Mode, then press the element key:
+Press `A` to enter Add Mode, then press the renderable key:
 
-| Key | Element |
+| Key | Renderable |
 |-----|---------|
 | B | Box (container) |
 | T | Text |
@@ -58,16 +58,16 @@ Press `A` to enter Add Mode, then press the element key:
 
 Press `A` or `Escape` to exit Add Mode without adding.
 
-### Editing Elements
+### Editing Renderables
 
 | Key | Action |
 |-----|--------|
-| Delete | Delete selected element |
-| D | Duplicate element |
-| Shift+C | Copy element |
-| V | Paste element |
-| Alt+↑ | Move element up in parent |
-| Alt+↓ | Move element down in parent |
+| Delete | Delete selected renderable |
+| D | Duplicate renderable |
+| Shift+C | Copy renderable |
+| V | Paste renderable |
+| Alt+↑ | Move renderable up in parent |
+| Alt+↓ | Move renderable down in parent |
 
 ### History
 
@@ -78,7 +78,7 @@ Press `A` or `Escape` to exit Add Mode without adding.
 
 ### Drag Positioning
 
-Elements with `position: absolute` or `position: relative` can be dragged directly on the canvas to reposition.
+Renderables with `position: absolute` or `position: relative` can be dragged directly on the canvas to reposition.
 
 ## Play Mode
 
@@ -159,13 +159,13 @@ Export format:
 export const animation = {
   name: "Animation",
   fps: 12,
-  frames: [/* JSX elements */]
+  frames: [/* JSX renderables */]
 }
 ```
 
 ## Properties Panel
 
-The right panel shows editable properties for the selected element:
+The right panel shows editable properties for the selected renderable:
 
 - **Dimensions**: Width, height, min/max constraints
 - **Layout**: Flex direction, alignment, gap
@@ -196,6 +196,6 @@ History is persisted per project (up to 10,000 entries).
 
 ## Tips
 
-- Double-click tree items to rename elements
+- Double-click tree items to rename renderables
 - `Tab` cycles panel visibility for more canvas space
 - `Ctrl+Q` to quit

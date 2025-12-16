@@ -1,7 +1,7 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { ElementType, ElementNode } from "../../lib/types"
-import { ELEMENT_REGISTRY } from "../elements"
+import type { RenderableType, RenderableNode } from "../../lib/types"
+import { RENDERABLE_REGISTRY } from "../renderables"
 import { ADD_MODE_BINDINGS, getShortcutLabel } from "../../lib/shortcuts"
 
 // ============================================================================
@@ -22,10 +22,10 @@ interface HeaderProps {
   addMode: boolean
   onFileAction: (action: MenuAction) => void
   onToggleAddMode: () => void
-  onAddElement: (type: ElementType) => void
+  onAddElement: (type: RenderableType) => void
   // Selected node for type/name display
-  selectedNode?: ElementNode | null
-  onUpdateNode?: (updates: Partial<ElementNode>) => void
+  selectedNode?: RenderableNode | null
+  onUpdateNode?: (updates: Partial<RenderableNode>) => void
   focusedField?: string | null
   setFocusedField?: (field: string | null) => void
 }
@@ -117,7 +117,7 @@ function FileMenu({ onAction }: { onAction: (action: MenuAction) => void }) {
 // Element Toolbar
 // ============================================================================
 
-function ElementToolbarBtn({ type, icon, label, shortcut, onPress }: { type: ElementType; icon: string; label: string; shortcut: string; onPress: () => void }) {
+function ElementToolbarBtn({ type, icon, label, shortcut, onPress }: { type: RenderableType; icon: string; label: string; shortcut: string; onPress: () => void }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -150,7 +150,7 @@ function ElementToolbar({
 }: {
   expanded: boolean
   onToggle: () => void
-  onAddElement: (type: ElementType) => void
+  onAddElement: (type: RenderableType) => void
 }) {
   return (
     <box id="element-toolbar" style={{ flexDirection: "row", gap: 0 }}>
@@ -171,7 +171,7 @@ function ElementToolbar({
       {expanded && (
         <box style={{ flexDirection: "row", gap: 0, backgroundColor: COLORS.card, paddingLeft: 1 }}>
            {ADD_MODE_BINDINGS.map((binding) => {
-             const entry = ELEMENT_REGISTRY[binding.type]
+             const entry = RENDERABLE_REGISTRY[binding.type]
              const icon = entry.icon || "?"
              const label = entry.label
              return (
@@ -219,7 +219,7 @@ export function Header({
             <box 
               id="element-type" 
               style={{ backgroundColor: selectedNode.visible !== false ? COLORS.accent : COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
-              onMouseDown={() => onUpdateNode({ visible: !selectedNode.visible } as Partial<ElementNode>)}
+              onMouseDown={() => onUpdateNode({ visible: !selectedNode.visible } as Partial<RenderableNode>)}
             >
               <text fg={selectedNode.visible !== false ? COLORS.bg : COLORS.muted}><strong>{selectedNode.type}</strong></text>
             </box>
@@ -236,7 +236,7 @@ export function Header({
                     height={1}
                     backgroundColor={COLORS.bg}
                     textColor={COLORS.text}
-                    onInput={(v) => onUpdateNode({ name: v } as Partial<ElementNode>)}
+                    onInput={(v) => onUpdateNode({ name: v } as Partial<RenderableNode>)}
                     onSubmit={() => setFocusedField(null)}
                   />
                 </box>
@@ -252,8 +252,8 @@ export function Header({
                     lastNameClickRef.current = now
                   }}
                 >
-                  <text fg={selectedNode.name && selectedNode.name !== ELEMENT_REGISTRY[selectedNode.type]?.label ? COLORS.accent : COLORS.muted}>
-                    {selectedNode.name && selectedNode.name !== ELEMENT_REGISTRY[selectedNode.type]?.label ? selectedNode.name : "unnamed"}
+                  <text fg={selectedNode.name && selectedNode.name !== RENDERABLE_REGISTRY[selectedNode.type]?.label ? COLORS.accent : COLORS.muted}>
+                    {selectedNode.name && selectedNode.name !== RENDERABLE_REGISTRY[selectedNode.type]?.label ? selectedNode.name : "unnamed"}
                   </text>
                 </box>
               )}

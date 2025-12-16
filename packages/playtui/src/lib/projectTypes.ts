@@ -1,6 +1,6 @@
 // Project system types
 
-import type { ElementNode, HistoryEntry } from "./types"
+import type { RenderableNode, HistoryEntry } from "./types"
 import type { KeyframingState } from "./keyframing"
 import { createDefaultKeyframingState } from "./keyframing"
 
@@ -24,7 +24,7 @@ export interface Project {
   updatedAt: string // ISO timestamp
 
   // Current state
-  tree: ElementNode
+  tree: RenderableNode
   selectedId: string | null
   collapsed: string[] // Collapsed node IDs in tree view
   
@@ -35,7 +35,7 @@ export interface Project {
   // Animation state
   animation: {
     fps: number
-    frames: ElementNode[] // Array of root trees, one per frame
+    frames: RenderableNode[] // Array of root trees, one per frame
     currentFrameIndex: number
     keyframing: KeyframingState
   }
@@ -52,7 +52,7 @@ export interface ProjectMeta {
   updatedAt: string
 }
 
-export function createDefaultTree(): ElementNode {
+export function createDefaultTree(): RenderableNode {
   return {
     id: "root",
     type: "box",
