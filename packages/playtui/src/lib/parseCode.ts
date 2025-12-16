@@ -4,7 +4,7 @@
 import type { ElementNode, ElementType, SizeValue, BorderSide } from "./types"
 import { genId } from "./tree"
 import { log } from "./logger"
-import { ELEMENT_REGISTRY } from "../components/elements"
+import { ELEMENT_REGISTRY, ELEMENT_TYPES as REGISTRY_ELEMENT_TYPES } from "../components/elements"
 
 // Apply registry-defined properties from parsed JSX props to node
 function applyRegistryProps(node: Partial<ElementNode>, type: ElementType, props: Record<string, unknown>): void {
@@ -217,10 +217,7 @@ function parseProps(propsStr: string): Record<string, unknown> {
 }
 
 // Map of element types
-const ELEMENT_TYPES: Set<string> = new Set([
-  "box", "text", "scrollbox", "input", "textarea", 
-  "select", "slider", "ascii-font", "tab-select"
-])
+const ELEMENT_TYPES = new Set(REGISTRY_ELEMENT_TYPES)
 
 // Inline formatting tags that should be treated as text content, not elements
 const INLINE_FORMATTING_TAGS: Set<string> = new Set([
@@ -471,7 +468,7 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
   }
   
   if (token.type === "tagSelfClose") {
-    if (!token.name || !ELEMENT_TYPES.has(token.name)) {
+    if (!token.name || !ELEMENT_TYPES.has(token.name as ElementType)) {
       // Skip inline formatting tags silently
       if (token.name && INLINE_FORMATTING_TAGS.has(token.name)) {
         return { node: null, nextIndex: index + 1 }
@@ -498,7 +495,7 @@ function parseTokens(tokens: Token[], index: number): { node: ElementNode | null
       return { node: null, nextIndex: i }
     }
     
-    if (!token.name || !ELEMENT_TYPES.has(token.name)) {
+    if (!token.name || !ELEMENT_TYPES.has(token.name as ElementType)) {
       return { node: null, nextIndex: index + 1, error: `Unknown element type: ${token.name}` }
     }
     

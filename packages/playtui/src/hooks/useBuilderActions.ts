@@ -48,7 +48,7 @@ export function useBuilderActions({
     if (!selectedId) return tree
     const node = findNode(tree, selectedId)
     if (!node) return tree
-    if (node.type === "box" || node.type === "scrollbox") return node
+    if (ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren) return node
     const parent = findParent(tree, selectedId)
     return parent || tree
   }, [tree, selectedId])

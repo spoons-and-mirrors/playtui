@@ -132,8 +132,8 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
     props.push(`name="${name}"`)
   }
 
-  if (node.type === "box" || node.type === "scrollbox") {
-    // Border properties
+  if (isContainerNode(node)) {
+    // Border properties (container-only)
     if (node.border) {
       if (node.borderSides && node.borderSides.length > 0) {
         props.push(`border={[${node.borderSides.map(s => `"${s}"`).join(", ")}]}`)
@@ -270,8 +270,7 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
   }
 
   // Leaf elements - use registry-driven serialization
-  if (node.type === "input" || node.type === "textarea" || node.type === "select" || 
-      node.type === "slider" || node.type === "ascii-font" || node.type === "tab-select") {
+  if (ELEMENT_REGISTRY[node.type]?.capabilities.supportsChildren === false) {
     const elementProps = serializeRegistryProps(node)
     // Include name for round-trip editing (skip in clean export)
     if (!stripInternal) {
