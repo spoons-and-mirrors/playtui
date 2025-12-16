@@ -1,8 +1,8 @@
 import { useState, useRef, createContext, useContext } from "react"
 import { MouseButton, type MouseEvent, type ScrollBoxRenderable } from "@opentui/core"
-import type { ElementNode, BorderSide, PropertySection, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
+import type { ElementNode, BorderSide, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
 import { isContainerNode } from "../../lib/types"
-import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
+import { SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
@@ -10,7 +10,7 @@ import {
    OverflowPicker, DimensionsControl
 } from "../controls"
 import { ValueSlider } from "../ui/ValueSlider"
-import { ELEMENT_REGISTRY } from "../elements"
+import { ELEMENT_REGISTRY, type SerializableProp, type PropertySection } from "../elements"
 import { COLORS } from "../../theme"
 
 // Drag capture context - allows value controls to register drags at the panel level
@@ -99,10 +99,11 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
-  const props = PROPERTIES.filter((p) => !p.appliesTo || p.appliesTo.includes(node.type))
+  // Get properties from the element registry - single source of truth
+  const props = ELEMENT_REGISTRY[node.type].properties
   const unsectioned = props.filter((p) => !p.section)
   
-  // Get active sections: sections with props defined in PROPERTIES + element-specific sections for this node type
+  // Get active sections: sections with props defined for this element + element-specific sections
   const sectionToType: Record<string, string> = {
     border: "box", text: "text", input: "input", textarea: "textarea",
     select: "select", scrollbox: "scrollbox", slider: "slider",
@@ -113,54 +114,57 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     if (props.some(p => p.section === section)) return true
     // Include element-specific sections for matching node type
     if (ELEMENT_SPECIFIC_SECTIONS.includes(section) && sectionToType[section] === node.type) return true
+    // Border section applies to both box and scrollbox
+    if (section === "border" && (node.type === "box" || node.type === "scrollbox")) return true
     return false
   })
 
-  const renderProp = (prop: (typeof props)[0]) => {
+  const renderProp = (prop: SerializableProp) => {
     const nodeProps = node as unknown as AnyNodeProps
     const val = nodeProps[prop.key]
     const key = prop.key
+    const label = prop.label || prop.key
 
     if (prop.type === "number") {
       return (
-        <NumberProp key={key} id={`prop-${prop.key}`} label={prop.label} value={typeof val === "number" ? val : 0}
+        <NumberProp key={key} id={`prop-${prop.key}`} label={label} value={typeof val === "number" ? val : 0}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} min={prop.min} max={prop.max} />
       )
     }
     if (prop.type === "size") {
       return (
-        <SizeProp key={key} label={prop.label} value={val as number | "auto" | `${number}%` | undefined}
+        <SizeProp key={key} label={label} value={val as number | "auto" | `${number}%` | undefined}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
       )
     }
     if (prop.type === "select" && prop.options) {
       return (
-        <SelectProp key={key} label={prop.label} value={String(val || prop.options[0])} options={prop.options}
+        <SelectProp key={key} label={label} value={String(val || prop.options[0])} options={prop.options}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
       )
     }
     if (prop.type === "color") {
       return (
-        <ColorControl key={key} label={prop.label} value={String(val || "")} focused={focusedField === prop.key}
+        <ColorControl key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
           onFocus={() => setFocusedField(prop.key)} onBlur={() => setFocusedField(null)}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)}
           pickMode={pickingForField === prop.key} onPickStart={() => setPickingForField(prop.key)} />
       )
     }
-    if (prop.type === "toggle") {
+    if (prop.type === "toggle" || prop.type === "boolean") {
       return (
-        <ToggleProp key={key} label={prop.label} value={Boolean(val)}
+        <ToggleProp key={key} label={label} value={Boolean(val)}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
       )
     }
     if (prop.type === "borderSides") {
       return (
-        <BorderSidesProp key={key} label={prop.label} value={val as BorderSide[] | undefined}
+        <BorderSidesProp key={key} label={label} value={val as BorderSide[] | undefined}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
       )
     }
     return (
-      <StringProp key={key} label={prop.label} value={String(val || "")} focused={focusedField === prop.key}
+      <StringProp key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
         onFocus={() => setFocusedField(prop.key)} onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
     )
   }
@@ -423,8 +427,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     const container = node as BoxNode | ScrollboxNode
     
     const isCollapsed = collapsed["overflow"]
-    const overflowProp = props.find(p => p.key === "overflow")
-    if (!overflowProp) return null
+    const hasOverflowProp = props.some(p => p.key === "overflow")
+    if (!hasOverflowProp) return null
 
     return (
       <box key="overflow" id="section-overflow" style={{ flexDirection: "column" }}>

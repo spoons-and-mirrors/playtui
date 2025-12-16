@@ -52,18 +52,121 @@ export interface ElementPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-// Property schema for serialization/deserialization (codegen + parseCode)
-// This is the single source of truth for element-specific props
-export type SerializablePropType = "string" | "boolean" | "number" | "color" | "options"
+// Property schema - SINGLE SOURCE OF TRUTH for both UI and serialization
+// Consolidates property metadata that was previously split between PROPERTIES and ELEMENT_REGISTRY
+export type SerializablePropType = "string" | "boolean" | "number" | "color" | "options" | "size" | "select" | "toggle" | "borderSides"
+
+export type PropertySection =
+  | "dimensions"
+  | "flexContainer"
+  | "flexItem"
+  | "padding"
+  | "margin"
+  | "position"
+  | "overflow"
+  | "visibility"
+  | "background"
+  | "border"
+  | "text"
+  | "input"
+  | "textarea"
+  | "select"
+  | "slider"
+  | "asciiFont"
+  | "tabSelect"
+  | "scrollbox"
 
 export interface SerializableProp {
   key: string
   type: SerializablePropType
+  // UI fields (for property panel rendering)
+  label?: string              // Display label in property panel
+  section?: PropertySection   // Which section to group under
+  options?: string[]          // For select type
+  min?: number                // For number type
+  max?: number                // For number type
+  // Serialization fields (for codegen/parseCode)
   default?: unknown           // Skip serialization if value equals default
   escape?: boolean            // Escape string for JSX (quotes, special chars)
   jsxBoolean?: boolean        // Serialize as standalone prop when true, {false} when false
   jsxBooleanDefault?: boolean // The default value for jsxBoolean props (used to determine when to omit)
 }
+
+// =============================================================================
+// SHARED PROPERTY DEFINITIONS - Reusable across element types
+// =============================================================================
+
+// Dimensions - common to most elements
+const DIMENSION_PROPS: SerializableProp[] = [
+  { key: "width", label: "Width", type: "size", section: "dimensions" },
+  { key: "height", label: "Height", type: "size", section: "dimensions" },
+]
+
+// Extended dimensions - for containers and inputs
+const EXTENDED_DIMENSION_PROPS: SerializableProp[] = [
+  ...DIMENSION_PROPS,
+  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "dimensions" },
+  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "dimensions" },
+  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "dimensions" },
+  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "dimensions" },
+  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "dimensions" },
+]
+
+// Flex container props
+const FLEX_CONTAINER_PROPS: SerializableProp[] = [
+  { key: "flexDirection", label: "Direction", type: "select", options: ["row", "column"], section: "flexContainer" },
+  { key: "flexWrap", label: "Wrap", type: "select", options: ["no-wrap", "wrap"], section: "flexContainer" },
+  { key: "justifyContent", label: "Justify", type: "select", options: ["flex-start", "center", "flex-end", "space-between", "space-around"], section: "flexContainer" },
+  { key: "alignItems", label: "Align", type: "select", options: ["flex-start", "center", "flex-end", "stretch"], section: "flexContainer" },
+  { key: "alignContent", label: "Content", type: "select", options: ["flex-start", "center", "flex-end", "stretch", "space-between", "space-around"], section: "flexContainer" },
+  { key: "gap", label: "Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
+  { key: "rowGap", label: "Row Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
+  { key: "columnGap", label: "Col Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
+]
+
+// Flex item props
+const FLEX_ITEM_PROPS: SerializableProp[] = [
+  { key: "flexGrow", label: "Grow", type: "number", min: 0, max: 10, section: "flexItem" },
+  { key: "flexShrink", label: "Shrink", type: "number", min: 0, max: 10, section: "flexItem" },
+  { key: "flexBasis", label: "Basis", type: "size", section: "flexItem" },
+  { key: "alignSelf", label: "Align Self", type: "select", options: ["auto", "flex-start", "center", "flex-end", "stretch"], section: "flexItem" },
+]
+
+// Padding props
+const PADDING_PROPS: SerializableProp[] = [
+  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding" },
+  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding" },
+  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding" },
+  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding" },
+  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding" },
+]
+
+// Margin props
+const MARGIN_PROPS: SerializableProp[] = [
+  { key: "margin", label: "All", type: "number", min: 0, max: 20, section: "margin" },
+  { key: "marginTop", label: "Top", type: "number", min: 0, max: 20, section: "margin" },
+  { key: "marginRight", label: "Right", type: "number", min: 0, max: 20, section: "margin" },
+  { key: "marginBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "margin" },
+  { key: "marginLeft", label: "Left", type: "number", min: 0, max: 20, section: "margin" },
+]
+
+// Position props - universal
+const POSITION_PROPS: SerializableProp[] = [
+  { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position" },
+  { key: "x", label: "X", type: "number", min: -100, max: 200, section: "position" },
+  { key: "y", label: "Y", type: "number", min: -100, max: 200, section: "position" },
+  { key: "zIndex", label: "Z", type: "number", min: -100, max: 100, section: "position" },
+]
+
+// Overflow prop
+const OVERFLOW_PROPS: SerializableProp[] = [
+  { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow" },
+]
+
+// Background color prop
+const BACKGROUND_PROPS: SerializableProp[] = [
+  { key: "backgroundColor", label: "BG Color", type: "color", section: "background" },
+]
 
 // Element capability metadata
 export interface ElementCapabilities {
@@ -118,8 +221,15 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
     properties: [
-      // Box-specific props are handled in codegen's container logic (border, title, backgroundColor, visible)
-      // This array is for element-specific NON-style props only
+      ...EXTENDED_DIMENSION_PROPS,
+      ...FLEX_CONTAINER_PROPS,
+      ...FLEX_ITEM_PROPS,
+      ...PADDING_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      ...OVERFLOW_PROPS,
+      ...BACKGROUND_PROPS,
+      // Box-specific border props are handled via BoxBorderProperties component
     ],
   },
   text: {
@@ -142,8 +252,13 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft"],
     },
     properties: [
-      { key: "fg", type: "color" },
-      { key: "bg", type: "color" },
+      ...DIMENSION_PROPS,
+      ...PADDING_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // Text-specific props
+      { key: "fg", type: "color", label: "Color", section: "text" },
+      { key: "bg", type: "color", label: "BG", section: "text" },
       { key: "wrapMode", type: "string", default: "none" },
       { key: "selectable", type: "boolean", jsxBoolean: true },
       { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
@@ -169,12 +284,17 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...EXTENDED_DIMENSION_PROPS.filter(p => p.key !== "aspectRatio"),
+      ...FLEX_ITEM_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      ...BACKGROUND_PROPS,
+      // Input-specific props
       { key: "placeholder", type: "string", escape: true },
       { key: "placeholderColor", type: "color" },
       { key: "maxLength", type: "number" },
       { key: "textColor", type: "color" },
       { key: "focusedTextColor", type: "color" },
-      { key: "backgroundColor", type: "color" },
       { key: "focusedBackgroundColor", type: "color" },
       { key: "cursorColor", type: "color" },
       { key: "cursorStyle", type: "string", default: "block" },
@@ -201,6 +321,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...DIMENSION_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // Textarea-specific props
       { key: "placeholder", type: "string", escape: true },
       { key: "placeholderColor", type: "color" },
       { key: "initialValue", type: "string", escape: true },
@@ -237,6 +361,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...DIMENSION_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // Select-specific props
       { key: "options", type: "options" },
       { key: "showScrollIndicator", type: "boolean", jsxBoolean: true },
       { key: "showDescription", type: "boolean", jsxBoolean: true },
@@ -272,6 +400,15 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
     properties: [
+      ...EXTENDED_DIMENSION_PROPS,
+      ...FLEX_CONTAINER_PROPS,
+      ...FLEX_ITEM_PROPS,
+      ...PADDING_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      ...OVERFLOW_PROPS,
+      ...BACKGROUND_PROPS,
+      // Scrollbox-specific props
       { key: "stickyScroll", type: "boolean", jsxBoolean: true },
       { key: "stickyStart", type: "string", default: "bottom" },
       { key: "scrollX", type: "boolean", jsxBoolean: true },
@@ -299,6 +436,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...DIMENSION_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // Slider-specific props
       { key: "orientation", type: "string" },
       { key: "value", type: "number" },
       { key: "min", type: "number" },
@@ -329,6 +470,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...DIMENSION_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // AsciiFont-specific props
       { key: "text", type: "string", escape: true },
       { key: "font", type: "string" },
       { key: "color", type: "color" },
@@ -355,6 +500,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
+      ...DIMENSION_PROPS,
+      ...MARGIN_PROPS,
+      ...POSITION_PROPS,
+      // TabSelect-specific props
       { key: "options", type: "options" },
       { key: "tabWidth", type: "number" },
       { key: "showUnderline", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },

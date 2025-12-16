@@ -311,41 +311,14 @@ export function isContainerNode(node: ElementNode): node is BoxNode | ScrollboxN
 }
 
 // =============================================================================
-// PROPERTY DEFINITIONS
+// PROPERTY DEFINITIONS - Now centralized in components/elements/index.ts
+// Re-export for backwards compatibility
 // =============================================================================
 
+export type { PropertySection, SerializableProp as PropertyDef } from "../components/elements"
+
+// Legacy PropertyType - kept for any remaining references
 export type PropertyType = "number" | "string" | "select" | "color" | "toggle" | "size" | "borderSides"
-
-export interface PropertyDef {
-  key: string  // Using string for flexibility with discriminated union
-  label: string
-  type: PropertyType
-  options?: string[]
-  appliesTo?: ElementType[]
-  min?: number
-  max?: number
-  section?: PropertySection
-}
-
-export type PropertySection =
-  | "dimensions"
-  | "flexContainer"
-  | "flexItem"
-  | "padding"
-  | "margin"
-  | "position"
-  | "overflow"
-  | "visibility"
-  | "background"
-  | "border"
-  | "text"
-  | "input"
-  | "textarea"
-  | "select"
-  | "slider"
-  | "asciiFont"
-  | "tabSelect"
-  | "scrollbox"
 
 import type { KeyframingState } from "./keyframing"
 
