@@ -1,6 +1,7 @@
 import { useKeyboard } from "@opentui/react"
 import type { ElementType } from "../lib/types"
 import type { ViewMode, ViewAction } from "../lib/viewState"
+import { VIEW_MODES } from "../lib/viewState"
 import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
 
 
@@ -81,28 +82,15 @@ export function useBuilderKeyboard({
 
     // F-key mode switching (always available except in modal)
     if (!modalMode && onViewAction) {
-      if (isKeybind(key, Bind.VIEW_EDITOR)) {
-        onViewAction(Bind.VIEW_EDITOR)
-        return
-      }
-
-      if (isKeybind(key, Bind.VIEW_PLAY)) {
-        onViewAction(Bind.VIEW_PLAY)
-        return
+      for (const cfg of VIEW_MODES) {
+        if (isKeybind(key, cfg.bind)) {
+          onViewAction(cfg.bind)
+          return
+        }
       }
 
       if (isKeybind(key, Bind.TOGGLE_CODE)) {
         onViewAction(Bind.TOGGLE_CODE)
-        return
-      }
-
-      if (isKeybind(key, Bind.VIEW_LIBRARY)) {
-        onViewAction(Bind.VIEW_LIBRARY)
-        return
-      }
-
-      if (isKeybind(key, Bind.VIEW_DOCS)) {
-        onViewAction(Bind.VIEW_DOCS)
         return
       }
     }

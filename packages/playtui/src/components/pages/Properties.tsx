@@ -504,7 +504,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       <scrollbox 
         id="prop-pane-scroll" 
         ref={scrollRef}
-        style={{ flexGrow: 1, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2 } }}
+        style={{ flexGrow: 1, backgroundColor: COLORS.accent, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2, backgroundColor: COLORS.accent } }}
         scrollbarOptions={{
           trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
         }}

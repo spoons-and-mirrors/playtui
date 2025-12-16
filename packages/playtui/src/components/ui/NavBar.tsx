@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { COLORS } from "../../theme"
 import type { SaveStatus } from "../../hooks/useProject"
 import type { ViewMode } from "../../lib/viewState"
+import { VIEW_MODES } from "../../lib/viewState"
 import { Bind, getShortcutLabel } from "../../lib/shortcuts"
 
 // ============================================================================
@@ -78,7 +79,22 @@ interface NavBarProps {
   onPlayPress?: () => void
 }
 
-export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, showTimeline, onModeChange, onToggleCode, onPlayPress }: NavBarProps) {
+export function NavBar({
+  mode,
+  width,
+  projectName,
+  saveStatus,
+  showCodePanel,
+  showTimeline,
+  onModeChange,
+  onToggleCode,
+  onPlayPress,
+}: NavBarProps) {
+  const editorViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "editor")!
+  const playViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "play")!
+  const libraryViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "library")!
+  const docsViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "docs")!
+
   return (
     <box
       id="app-header"
@@ -94,11 +110,36 @@ export function NavBar({ mode, width, projectName, saveStatus, showCodePanel, sh
     >
       {/* Left: Mode tabs */}
       <box id="app-header-tabs" style={{ flexDirection: "row", gap: 1 }}>
-        <ModeTab fKey={getShortcutLabel(Bind.VIEW_EDITOR)} label="Edit" isActive={mode === "editor"} onPress={() => onModeChange("editor")} />
-        <ModeTab fKey={getShortcutLabel(Bind.VIEW_PLAY)} label="Play" isActive={mode === "play"} onPress={() => onPlayPress?.()} />
-        <ModeTab fKey={getShortcutLabel(Bind.TOGGLE_CODE)} label="Code" isActive={!!showCodePanel && (mode === "editor" || mode === "play")} onPress={() => onToggleCode?.()} />
-        <ModeTab fKey={getShortcutLabel(Bind.VIEW_LIBRARY)} label="Library" isActive={mode === "library"} onPress={() => onModeChange("library")} />
-        <ModeTab fKey={getShortcutLabel(Bind.VIEW_DOCS)} label="Docs" isActive={mode === "docs"} onPress={() => onModeChange("docs")} />
+        <ModeTab
+          fKey={getShortcutLabel(editorViewMode.bind)}
+          label={editorViewMode.label}
+          isActive={mode === editorViewMode.mode}
+          onPress={() => onModeChange(editorViewMode.mode)}
+        />
+        <ModeTab
+          fKey={getShortcutLabel(playViewMode.bind)}
+          label={playViewMode.label}
+          isActive={mode === playViewMode.mode}
+          onPress={() => onPlayPress?.()}
+        />
+        <ModeTab
+          fKey={getShortcutLabel(Bind.TOGGLE_CODE)}
+          label="Code"
+          isActive={!!showCodePanel && (mode === "editor" || mode === "play")}
+          onPress={() => onToggleCode?.()}
+        />
+        <ModeTab
+          fKey={getShortcutLabel(libraryViewMode.bind)}
+          label={libraryViewMode.label}
+          isActive={mode === libraryViewMode.mode}
+          onPress={() => onModeChange(libraryViewMode.mode)}
+        />
+        <ModeTab
+          fKey={getShortcutLabel(docsViewMode.bind)}
+          label={docsViewMode.label}
+          isActive={mode === docsViewMode.mode}
+          onPress={() => onModeChange(docsViewMode.mode)}
+        />
       </box>
 
       {/* Right: Save indicator + Project name in card */}

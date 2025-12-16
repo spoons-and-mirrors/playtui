@@ -8,24 +8,49 @@ export interface ViewLayoutState {
   showTimeline: boolean
 }
 
+export interface ViewModeConfig {
+  mode: ViewMode
+  bind: Bind
+  label: string
+}
+
+export const VIEW_MODES: ViewModeConfig[] = [
+  {
+    mode: "editor",
+    bind: Bind.VIEW_EDITOR,
+    label: "Edit",
+  },
+  {
+    mode: "play",
+    bind: Bind.VIEW_PLAY,
+    label: "Play",
+  },
+  {
+    mode: "library",
+    bind: Bind.VIEW_LIBRARY,
+    label: "Library",
+  },
+  {
+    mode: "docs",
+    bind: Bind.VIEW_DOCS,
+    label: "Docs",
+  },
+]
+
+const VIEW_MODE_BY_BIND: Partial<Record<Bind, ViewMode>> = {}
+
+for (const cfg of VIEW_MODES) {
+  VIEW_MODE_BY_BIND[cfg.bind] = cfg.mode
+}
+
 export type ViewAction =
-  | Bind.VIEW_EDITOR
-  | Bind.VIEW_PLAY
+  | (typeof VIEW_MODES)[number]["bind"]
   | Bind.TOGGLE_CODE
-  | Bind.VIEW_LIBRARY
-  | Bind.VIEW_DOCS
 
 export function reduceViewState(
   state: ViewLayoutState,
   action: ViewAction,
 ): ViewLayoutState {
-  if (action === Bind.VIEW_EDITOR) {
-    return {
-      ...state,
-      mode: "editor",
-    }
-  }
-
   if (action === Bind.VIEW_PLAY) {
     if (state.mode !== "play") {
       return {
@@ -41,20 +66,6 @@ export function reduceViewState(
     }
   }
 
-  if (action === Bind.VIEW_LIBRARY) {
-    return {
-      ...state,
-      mode: "library",
-    }
-  }
-
-  if (action === Bind.VIEW_DOCS) {
-    return {
-      ...state,
-      mode: "docs",
-    }
-  }
-
   if (action === Bind.TOGGLE_CODE) {
     if (state.mode === "editor" || state.mode === "play") {
       return {
@@ -64,6 +75,15 @@ export function reduceViewState(
     }
 
     return state
+  }
+
+  const nextMode = VIEW_MODE_BY_BIND[action]
+
+  if (nextMode) {
+    return {
+      ...state,
+      mode: nextMode,
+    }
   }
 
   return state
