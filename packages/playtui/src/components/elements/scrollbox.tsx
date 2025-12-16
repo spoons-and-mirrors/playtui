@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, ScrollboxNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, ColorPropWithHex, SectionHeader
+  ToggleProp, SelectProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -141,9 +141,11 @@ interface ScrollboxPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: ScrollboxPropertiesProps) {
+export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: ScrollboxPropertiesProps) {
   const node = genericNode as ScrollboxNode
   return (
     <box id="section-scrollbox" style={{ flexDirection: "column" }}>
@@ -205,21 +207,27 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
 
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="FG"
                 value={node.scrollbarForeground || ""}
                 focused={focusedField === "scrollbarForeground"}
                 onFocus={() => setFocusedField("scrollbarForeground")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ scrollbarForeground: v })}
+                pickMode={pickingForField === "scrollbarForeground"}
+                onPickStart={() => setPickingForField?.("scrollbarForeground")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="BG"
                 value={node.scrollbarBackground || ""}
                 focused={focusedField === "scrollbarBackground"}
                 onFocus={() => setFocusedField("scrollbarBackground")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ scrollbarBackground: v })}
+                pickMode={pickingForField === "scrollbarBackground"}
+                onPickStart={() => setPickingForField?.("scrollbarBackground")}
               />
             </box>
           </box>

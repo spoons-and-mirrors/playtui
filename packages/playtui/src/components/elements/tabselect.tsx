@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TabSelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, NumberProp, StringProp, ColorPropWithHex, SectionHeader
+  StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -85,9 +85,11 @@ interface TabSelectPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function TabSelectProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: TabSelectPropertiesProps) {
+export function TabSelectProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: TabSelectPropertiesProps) {
   const node = genericNode as TabSelectNode
   return (
     <box id="section-tabselect" style={{ flexDirection: "column" }}>
@@ -141,21 +143,27 @@ export function TabSelectProperties({ node: genericNode, onUpdate, focusedField,
           {/* Background colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="BG"
                 value={node.backgroundColor || ""}
                 focused={focusedField === "backgroundColor"}
                 onFocus={() => setFocusedField("backgroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ backgroundColor: v })}
+                pickMode={pickingForField === "backgroundColor"}
+                onPickStart={() => setPickingForField?.("backgroundColor")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Sel BG"
                 value={node.selectedBackgroundColor || ""}
                 focused={focusedField === "selectedBackgroundColor"}
                 onFocus={() => setFocusedField("selectedBackgroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ selectedBackgroundColor: v })}
+                pickMode={pickingForField === "selectedBackgroundColor"}
+                onPickStart={() => setPickingForField?.("selectedBackgroundColor")}
               />
             </box>
           </box>
@@ -163,21 +171,27 @@ export function TabSelectProperties({ node: genericNode, onUpdate, focusedField,
           {/* Text colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Text"
                 value={node.textColor || ""}
                 focused={focusedField === "textColor"}
                 onFocus={() => setFocusedField("textColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ textColor: v })}
+                pickMode={pickingForField === "textColor"}
+                onPickStart={() => setPickingForField?.("textColor")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Sel Text"
                 value={node.selectedTextColor || ""}
                 focused={focusedField === "selectedTextColor"}
                 onFocus={() => setFocusedField("selectedTextColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ selectedTextColor: v })}
+                pickMode={pickingForField === "selectedTextColor"}
+                onPickStart={() => setPickingForField?.("selectedTextColor")}
               />
             </box>
           </box>

@@ -1,107 +1,35 @@
 import { useRef, useState } from "react"
 import { COLORS } from "../../theme"
-import { COLOR_PALETTE } from "../../lib/constants"
 import { PropRow } from "./PropRow"
 import type { ColorSwatch, ColorPalette } from "../../lib/projectTypes"
 
-export function ColorProp({ label, value, onChange }: {
-  label: string; value: string; onChange: (v: string) => void
-}) {
-  return (
-    <PropRow label={label}>
-      <box style={{ flexDirection: "row", gap: 0 }}>
-        {COLOR_PALETTE.map((c) => {
-          const isSelected = c.value === value
-          const isTrans = c.value === "transparent"
-          return (
-            <box
-              key={c.name}
-              id={`clr-${label}-${c.name}`}
-              onMouseDown={() => onChange(c.value)}
-              style={{ width: 2, height: 1 }}
-            >
-              <text fg={isTrans ? COLORS.muted : c.value}>
-                {isTrans ? "╳╳" : isSelected ? "▓▓" : "░░"}
-              </text>
-            </box>
-          )
-        })}
-      </box>
-    </PropRow>
-  )
-}
-
-export function ColorPropWithHex({ label, value, onChange, focused, onFocus }: {
-  label: string; value: string; onChange: (v: string) => void; focused?: boolean; onFocus?: () => void
-}) {
-  return (
-    <box id={`color-hex-${label}`} style={{ flexDirection: "column", gap: 0 }}>
-      <PropRow label={label}>
-        <box style={{ flexDirection: "row", gap: 0 }}>
-          {COLOR_PALETTE.slice(0, 8).map((c) => {
-            const isSelected = c.value === value
-            const isTrans = c.value === "transparent"
-            return (
-              <box
-                key={c.name}
-                id={`clr-${label}-${c.name}`}
-                onMouseDown={() => onChange(c.value)}
-                style={{ width: 2, height: 1 }}
-              >
-                <text fg={isTrans ? COLORS.muted : c.value}>
-                  {isTrans ? "╳╳" : isSelected ? "▓▓" : "░░"}
-                </text>
-              </box>
-            )
-          })}
-        </box>
-      </PropRow>
-      <box style={{ flexDirection: "row", gap: 1, height: 1, paddingLeft: 9 }}>
-        <text fg={COLORS.muted}>#</text>
-        <box
-          id={`hex-input-${label}`}
-          onMouseDown={onFocus}
-          style={{ width: 8, backgroundColor: focused ? COLORS.bgAlt : COLORS.input }}
-        >
-          <input
-            value={value.replace("#", "").replace("transparent", "")}
-            focused={focused}
-            placeholder="hex..."
-            onInput={(v) => {
-              const hex = v.replace("#", "").slice(0, 6)
-              if (/^[0-9a-fA-F]*$/.test(hex)) {
-                onChange(hex.length > 0 ? `#${hex}` : "")
-              }
-            }}
-          />
-        </box>
-        <text fg={value || COLORS.muted}>■■</text>
-      </box>
-    </box>
-  )
-}
-
 // Single editable swatch component
-function EditableSwatch({ swatch, isSelected, onSelect, onUpdateColor, focused, onFocus, onBlur }: {
+function EditableSwatch({ swatch, onSelect, onUpdateColor, focused, onFocus, onBlur, pickMode }: {
   swatch: ColorSwatch
-  isSelected: boolean
   onSelect: () => void
   onUpdateColor: (color: string) => void
   focused: boolean
   onFocus: () => void
   onBlur: () => void
+  pickMode?: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const lastClickRef = useRef<number>(0)
   
   const handleClick = () => {
+    // In pick mode, single click selects immediately
+    if (pickMode) {
+      onSelect()
+      return
+    }
+
     const now = Date.now()
     if (now - lastClickRef.current < 400) {
       // Double click - edit swatch
       setEditing(true)
       onFocus()
     } else {
-      // Single click - select this color
+      // Single click - just show hex (handled by onSelect)
       onSelect()
     }
     lastClickRef.current = now
@@ -140,25 +68,31 @@ function EditableSwatch({ swatch, isSelected, onSelect, onUpdateColor, focused, 
       onMouseDown={handleClick}
       style={{ height: 1 }}
     >
-      <text fg={swatch.color} onMouseDown={handleClick}>
-        {isSelected ? "▓▓" : "██"}
-      </text>
+      <text fg={swatch.color} onMouseDown={handleClick}>██</text>
     </box>
   )
 }
 
-// Fill color input - 2 column layout via PropRow
-// [Fill] [██ #hexinput]
-export function FillColorProp({ 
+// Reusable color control with hex input and palette picker button
+// [Label] [██ #hexinput [pick]]
+export function ColorControl({ 
+  label,
   value, 
   onChange, 
   focused,
   onFocus,
+  onBlur,
+  pickMode,
+  onPickStart,
 }: {
+  label: string
   value: string
   onChange: (v: string) => void
   focused?: boolean
   onFocus?: () => void
+  onBlur?: () => void
+  pickMode?: boolean
+  onPickStart?: () => void
 }) {
   const handleInput = (v: string) => {
     // Handle both typed and pasted input - strip # and non-hex chars
@@ -175,13 +109,17 @@ export function FillColorProp({
   }
 
   return (
-    <PropRow label="Fill">
+    <PropRow label={label}>
       <box 
         style={{ flexDirection: "row", alignItems: "center", gap: 1 }}
       >
         <text fg={value || COLORS.muted}>██</text>
         <box
-          onMouseDown={onFocus}
+          id={`color-input-${label}`}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onFocus?.()
+          }}
           style={{ flexDirection: "row", backgroundColor: focused ? COLORS.bgAlt : "transparent" }}
         >
           <text fg={COLORS.muted}>#</text>
@@ -191,7 +129,24 @@ export function FillColorProp({
             width={8}
             onInput={handleInput}
             onPaste={handlePaste}
+            onSubmit={() => onBlur?.()}
           />
+        </box>
+        <box
+          id={`color-pick-${label}`}
+          onMouseDown={(e) => {
+            e.stopPropagation()
+            onPickStart?.()
+          }}
+          style={{ 
+            backgroundColor: pickMode ? COLORS.accent : COLORS.cardHover,
+            paddingLeft: 1,
+            paddingRight: 1,
+          }}
+        >
+          <text fg={pickMode ? COLORS.bg : COLORS.text} selectable={false}>
+            {pickMode ? <strong>pick</strong> : "pick"}
+          </text>
         </box>
       </box>
     </PropRow>
@@ -204,17 +159,19 @@ export function FillColorProp({
 export function PaletteProp({
   palettes,
   activePaletteIndex,
-  selectedColor,
-  onSelectColor,
+  onShowHex,
   onUpdateSwatch,
   onChangePalette,
+  pickMode,
+  onPickComplete,
 }: {
   palettes: ColorPalette[]
   activePaletteIndex: number
-  selectedColor?: string
-  onSelectColor: (color: string) => void
+  onShowHex?: (color: string) => void
   onUpdateSwatch?: (swatchId: string, color: string) => void
   onChangePalette?: (index: number) => void
+  pickMode?: boolean
+  onPickComplete?: (color: string) => void
 }) {
   const [editingSwatchId, setEditingSwatchId] = useState<string | null>(null)
 
@@ -233,6 +190,15 @@ export function PaletteProp({
     onChangePalette?.(newIndex)
   }
 
+  const handleSwatchClick = (swatch: ColorSwatch) => {
+    if (pickMode) {
+      onPickComplete?.(swatch.color)
+    } else {
+      // Just show the hex code, don't apply to any control
+      onShowHex?.(swatch.color)
+    }
+  }
+
   return (
     <box style={{ flexDirection: "column", gap: 1 }}>
       {/* Row 1: chevrons + swatches, centered */}
@@ -245,17 +211,14 @@ export function PaletteProp({
           <EditableSwatch
             key={swatch.id}
             swatch={swatch}
-            isSelected={swatch.color === selectedColor}
-            onSelect={() => onSelectColor(swatch.color)}
+            onSelect={() => handleSwatchClick(swatch)}
             onUpdateColor={(color) => {
               onUpdateSwatch?.(swatch.id, color)
-              if (swatch.color === selectedColor) {
-                onSelectColor(color)
-              }
             }}
             focused={editingSwatchId === swatch.id}
             onFocus={() => setEditingSwatchId(swatch.id)}
             onBlur={() => setEditingSwatchId(null)}
+            pickMode={pickMode}
           />
         ))}
         
@@ -266,7 +229,9 @@ export function PaletteProp({
       
       {/* Row 2: palette name centered */}
       <box style={{ flexDirection: "row", justifyContent: "center" }}>
-        <text fg={COLORS.muted}>{paletteName}</text>
+        <text fg={pickMode ? COLORS.accent : COLORS.muted}>
+          {pickMode ? <strong>{paletteName}</strong> : paletteName}
+        </text>
       </box>
     </box>
   )

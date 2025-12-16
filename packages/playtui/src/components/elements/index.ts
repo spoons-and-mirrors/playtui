@@ -47,6 +47,9 @@ export interface ElementPropertiesProps {
   activePaletteIndex?: number
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
+  // Color picking support
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
 // Element capability metadata

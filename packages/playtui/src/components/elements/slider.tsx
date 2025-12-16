@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, SliderNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  NumberProp, SelectProp, ColorPropWithHex, SectionHeader
+  NumberProp, SelectProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -91,9 +91,11 @@ interface SliderPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function SliderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: SliderPropertiesProps) {
+export function SliderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: SliderPropertiesProps) {
   const node = genericNode as SliderNode
   const min = node.min ?? 0
   const max = node.max ?? 100
@@ -168,21 +170,27 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
 
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="BG"
                 value={node.backgroundColor || ""}
                 focused={focusedField === "backgroundColor"}
                 onFocus={() => setFocusedField("backgroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ backgroundColor: v })}
+                pickMode={pickingForField === "backgroundColor"}
+                onPickStart={() => setPickingForField?.("backgroundColor")}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorPropWithHex
+              <ColorControl
                 label="Thumb"
                 value={node.foregroundColor || ""}
                 focused={focusedField === "foregroundColor"}
                 onFocus={() => setFocusedField("foregroundColor")}
+                onBlur={() => setFocusedField(null)}
                 onChange={(v) => onUpdate({ foregroundColor: v })}
+                pickMode={pickingForField === "foregroundColor"}
+                onPickStart={() => setPickingForField?.("foregroundColor")}
               />
             </box>
           </box>

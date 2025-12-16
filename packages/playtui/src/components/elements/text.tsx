@@ -4,7 +4,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, FillColorProp, PropRow
+  ToggleProp, SelectProp, ColorControl, PropRow
 } from "../controls"
 
 import type { ColorPalette } from "../../lib/projectTypes"
@@ -110,9 +110,11 @@ interface TextPropertiesProps {
   activePaletteIndex?: number
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
+  pickingForField?: string | null
+  setPickingForField?: (field: string | null) => void
 }
 
-export function TextProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, palettes = [], activePaletteIndex = 0, onUpdateSwatch, onChangePalette }: TextPropertiesProps) {
+export function TextProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, palettes = [], activePaletteIndex = 0, onUpdateSwatch, onChangePalette, pickingForField, setPickingForField }: TextPropertiesProps) {
   const node = genericNode as TextNode
   
   const lastContentClickRef = useRef<number>(0)
@@ -166,11 +168,15 @@ export function TextProperties({ node: genericNode, onUpdate, focusedField, setF
         </PropRow>
 
         {/* Fill color */}
-        <FillColorProp
+        <ColorControl
+          label="Fill"
           value={node.fg || ""}
           onChange={(v) => onUpdate({ fg: v || undefined })}
           focused={focusedField === "fg"}
           onFocus={() => setFocusedField("fg")}
+          onBlur={() => setFocusedField(null)}
+          pickMode={pickingForField === "fg"}
+          onPickStart={() => setPickingForField?.("fg")}
         />
 
         {/* Wrap */}

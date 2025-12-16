@@ -2,7 +2,7 @@ import type { MouseEvent } from "@opentui/core"
 import type { ElementNode, TextareaNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, StringProp, ColorPropWithHex, NumberProp, SectionHeader
+  StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
 } from "../controls"
 
 // =============================================================================
@@ -80,9 +80,11 @@ interface TextareaPropertiesProps {
   setFocusedField: (f: string | null) => void
   collapsed: boolean
   onToggle: () => void
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function TextareaProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle }: TextareaPropertiesProps) {
+export function TextareaProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: TextareaPropertiesProps) {
   const node = genericNode as TextareaNode
   return (
     <box id="section-textarea" style={{ flexDirection: "column" }}>
@@ -132,12 +134,15 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
           />
 
           {/* Tab indicator color */}
-          <ColorPropWithHex
+          <ColorControl
             label="Tab Clr"
             value={node.tabIndicatorColor || ""}
             focused={focusedField === "tabIndicatorColor"}
             onFocus={() => setFocusedField("tabIndicatorColor")}
+            onBlur={() => setFocusedField(null)}
             onChange={(v) => onUpdate({ tabIndicatorColor: v })}
+            pickMode={pickingForField === "tabIndicatorColor"}
+            onPickStart={() => setPickingForField?.("tabIndicatorColor")}
           />
         </box>
       )}

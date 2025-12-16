@@ -549,13 +549,9 @@ export function Builder({ width, height }: BuilderProps) {
               <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
                 focusedField={focusedField} setFocusedField={setFocusedField}
                 palettes={palettes} activePaletteIndex={activePaletteIndex}
-                selectedColor={selectedNode?.type === "text" ? (selectedNode as any).fg : (selectedNode as any)?.backgroundColor}
-                onSelectColor={(color) => {
-                  if (selectedNode?.type === "text") {
-                    handleUpdate({ fg: color })
-                  } else if (selectedNode?.type === "box" || selectedNode?.type === "scrollbox") {
-                    handleUpdate({ backgroundColor: color })
-                  }
+                onShowHex={(color) => {
+                  // Show hex in console or similar - just for reference, not applying
+                  console.log("Palette color:", color)
                 }}
                 onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
             ) : (

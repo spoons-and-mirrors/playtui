@@ -5,7 +5,7 @@ import { isContainerNode } from "../../lib/types"
 import { PROPERTIES, SECTION_LABELS, SECTION_ORDER, EXPANDED_BY_DEFAULT } from "../../lib/constants"
 import { 
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
-   SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorPropWithHex, 
+   SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
    OverflowPicker, DimensionsControl, PaletteProp
 } from "../controls"
@@ -42,13 +42,12 @@ interface PropertyPaneProps {
   // Palette support
   palettes?: Array<{ id: string; name: string; swatches: Array<{ id: string; color: string }> }>
   activePaletteIndex?: number
-  selectedColor?: string
-  onSelectColor?: (color: string) => void
+  onShowHex?: (color: string) => void
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
 }
 
-export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, selectedColor, onSelectColor, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
+export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onShowHex, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     SECTION_ORDER.forEach(section => {
@@ -56,6 +55,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     })
     return initial
   })
+
+  const [pickingForField, setPickingForField] = useState<string | null>(null)
 
   const scrollRef = useRef<ScrollBoxRenderable>(null)
 
@@ -140,8 +141,10 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     }
     if (prop.type === "color") {
       return (
-        <ColorPropWithHex key={key} label={prop.label} value={String(val || "")} focused={focusedField === prop.key}
-          onFocus={() => setFocusedField(prop.key)} onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} />
+        <ColorControl key={key} label={prop.label} value={String(val || "")} focused={focusedField === prop.key}
+          onFocus={() => setFocusedField(prop.key)} onBlur={() => setFocusedField(null)}
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)}
+          pickMode={pickingForField === prop.key} onPickStart={() => setPickingForField(prop.key)} />
       )
     }
     if (prop.type === "toggle") {
@@ -462,7 +465,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     return entry.Properties({
       node, onUpdate, focusedField, setFocusedField,
       collapsed: collapsed[section], onToggle: () => toggleSection(section),
-      palettes, activePaletteIndex, onUpdateSwatch, onChangePalette
+      palettes, activePaletteIndex, onUpdateSwatch, onChangePalette,
+      pickingForField, setPickingForField
     })
   }
 
@@ -512,17 +516,31 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         }}
         onMouseDrag={handlePanelDrag}
         onMouseDragEnd={handlePanelDragEnd}
+        onMouseDown={(e) => {
+          // Clicking on the panel background (not on controls) deselects focused fields
+          // Controls that should maintain focus will stopPropagation
+          if (e.target === scrollRef.current) {
+            setFocusedField(null)
+            setPickingForField(null)
+          }
+        }}
       >
         {/* Palette header - centered */}
-        {palettes && palettes.length > 0 && onSelectColor && (
+        {palettes && palettes.length > 0 && (
           <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 0, paddingBottom: 0, justifyContent: "center" }}>
             <PaletteProp
               palettes={palettes}
               activePaletteIndex={activePaletteIndex ?? 0}
-              selectedColor={selectedColor}
-              onSelectColor={onSelectColor}
+              onShowHex={onShowHex}
               onUpdateSwatch={onUpdateSwatch}
               onChangePalette={onChangePalette}
+              pickMode={pickingForField !== null}
+              onPickComplete={(color) => {
+                if (pickingForField) {
+                  onUpdate({ [pickingForField]: color } as Partial<ElementNode>, true)
+                  setPickingForField(null)
+                }
+              }}
             />
           </box>
         )}
