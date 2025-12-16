@@ -52,6 +52,19 @@ export interface ElementPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
+// Property schema for serialization/deserialization (codegen + parseCode)
+// This is the single source of truth for element-specific props
+export type SerializablePropType = "string" | "boolean" | "number" | "color" | "options"
+
+export interface SerializableProp {
+  key: string
+  type: SerializablePropType
+  default?: unknown           // Skip serialization if value equals default
+  escape?: boolean            // Escape string for JSX (quotes, special chars)
+  jsxBoolean?: boolean        // Serialize as standalone prop when true, {false} when false
+  jsxBooleanDefault?: boolean // The default value for jsxBoolean props (used to determine when to omit)
+}
+
 // Element capability metadata
 export interface ElementCapabilities {
   // Layout capabilities
@@ -80,6 +93,7 @@ export interface ElementRegistryEntry {
   Properties: ((props: ElementPropertiesProps) => React.ReactNode) | null
   defaults: Partial<ElementNode>
   capabilities: ElementCapabilities
+  properties: SerializableProp[]  // Element-specific props for codegen/parseCode
 }
 
 // Central registry - single source of truth for all element types
@@ -103,6 +117,10 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
+    properties: [
+      // Box-specific props are handled in codegen's container logic (border, title, backgroundColor, visible)
+      // This array is for element-specific NON-style props only
+    ],
   },
   text: {
     type: "text",
@@ -123,6 +141,13 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: true,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft"],
     },
+    properties: [
+      { key: "fg", type: "color" },
+      { key: "bg", type: "color" },
+      { key: "wrapMode", type: "string", default: "none" },
+      { key: "selectable", type: "boolean", jsxBoolean: true },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   input: {
     type: "input",
@@ -143,6 +168,18 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "placeholder", type: "string", escape: true },
+      { key: "placeholderColor", type: "color" },
+      { key: "maxLength", type: "number" },
+      { key: "textColor", type: "color" },
+      { key: "focusedTextColor", type: "color" },
+      { key: "backgroundColor", type: "color" },
+      { key: "focusedBackgroundColor", type: "color" },
+      { key: "cursorColor", type: "color" },
+      { key: "cursorStyle", type: "string", default: "block" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   textarea: {
     type: "textarea",
@@ -163,6 +200,22 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "placeholder", type: "string", escape: true },
+      { key: "placeholderColor", type: "color" },
+      { key: "initialValue", type: "string", escape: true },
+      { key: "textColor", type: "color" },
+      { key: "focusedTextColor", type: "color" },
+      { key: "backgroundColor", type: "color" },
+      { key: "focusedBackgroundColor", type: "color" },
+      { key: "cursorColor", type: "color" },
+      { key: "cursorStyle", type: "string", default: "block" },
+      { key: "blinking", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+      { key: "showCursor", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+      { key: "scrollMargin", type: "number" },
+      { key: "tabIndicatorColor", type: "color" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   select: {
     type: "select",
@@ -183,6 +236,21 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "options", type: "options" },
+      { key: "showScrollIndicator", type: "boolean", jsxBoolean: true },
+      { key: "showDescription", type: "boolean", jsxBoolean: true },
+      { key: "wrapSelection", type: "boolean", jsxBoolean: true },
+      { key: "itemSpacing", type: "number" },
+      { key: "fastScrollStep", type: "number", default: 5 },
+      { key: "backgroundColor", type: "color" },
+      { key: "textColor", type: "color" },
+      { key: "selectedBackgroundColor", type: "color" },
+      { key: "selectedTextColor", type: "color" },
+      { key: "descriptionColor", type: "color" },
+      { key: "selectedDescriptionColor", type: "color" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   scrollbox: {
     type: "scrollbox",
@@ -203,6 +271,13 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
+    properties: [
+      { key: "stickyScroll", type: "boolean", jsxBoolean: true },
+      { key: "stickyStart", type: "string", default: "bottom" },
+      { key: "scrollX", type: "boolean", jsxBoolean: true },
+      { key: "scrollY", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+      { key: "viewportCulling", type: "boolean", jsxBoolean: true },
+    ],
   },
   slider: {
     type: "slider",
@@ -223,6 +298,16 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "orientation", type: "string" },
+      { key: "value", type: "number" },
+      { key: "min", type: "number" },
+      { key: "max", type: "number" },
+      { key: "viewPortSize", type: "number" },
+      { key: "backgroundColor", type: "color" },
+      { key: "foregroundColor", type: "color" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   "ascii-font": {
     type: "ascii-font",
@@ -243,6 +328,12 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "text", type: "string", escape: true },
+      { key: "font", type: "string" },
+      { key: "color", type: "color" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
   "tab-select": {
     type: "tab-select",
@@ -263,6 +354,17 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsTextStyling: false,
       animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
+    properties: [
+      { key: "options", type: "options" },
+      { key: "tabWidth", type: "number" },
+      { key: "showUnderline", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+      { key: "wrapSelection", type: "boolean", jsxBoolean: true },
+      { key: "backgroundColor", type: "color" },
+      { key: "textColor", type: "color" },
+      { key: "selectedBackgroundColor", type: "color" },
+      { key: "selectedTextColor", type: "color" },
+      { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
+    ],
   },
 }
 
