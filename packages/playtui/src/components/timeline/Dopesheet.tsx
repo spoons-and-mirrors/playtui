@@ -7,7 +7,8 @@ import { DopesheetRow } from "./DopesheetRow"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import { findNode } from "../../lib/tree"
 import { Bind, isKeybind } from "../../lib/shortcuts"
-
+import { getPrevKeyframeFrameForNode, getNextKeyframeFrameForNode } from "../../lib/keyframing"
+ 
 // Get display name for an element (capitalize type)
 function getElementName(tree: any, nodeId: string): string {
   const node = findNode(tree, nodeId)
@@ -15,40 +16,9 @@ function getElementName(tree: any, nodeId: string): string {
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
-
-// Find previous keyframe frame number across ALL properties for a node
-function findPrevKeyframeForNode(props: any[], currentFrame: number): number | null {
-  let bestPrev: number | null = null
-  
-  for (const prop of props) {
-    for (const kf of prop.keyframes) {
-      if (kf.frame < currentFrame) {
-        if (bestPrev === null || kf.frame > bestPrev) {
-          bestPrev = kf.frame
-        }
-      }
-    }
-  }
-  return bestPrev
-}
-
-// Find next keyframe frame number across ALL properties for a node
-function findNextKeyframeForNode(props: any[], currentFrame: number): number | null {
-  let bestNext: number | null = null
-  
-  for (const prop of props) {
-    for (const kf of prop.keyframes) {
-      if (kf.frame > currentFrame) {
-        if (bestNext === null || kf.frame < bestNext) {
-          bestNext = kf.frame
-        }
-      }
-    }
-  }
-  return bestNext
-}
-
+ 
 export function Dopesheet({ 
+
   projectHook,
   width: _width,
   onSelectProperty 
@@ -119,14 +89,15 @@ export function Dopesheet({
 
     const props = grouped[selectedId]
     if (!props || props.length === 0) return
-
+ 
     if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
-      const prev = findPrevKeyframeForNode(props, currentFrame)
+      const prev = getPrevKeyframeFrameForNode(props, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
     } else if (isKeybind(key, Bind.TIMELINE_NEXT_KEYFRAME)) {
-      const next = findNextKeyframeForNode(props, currentFrame)
+      const next = getNextKeyframeFrameForNode(props, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }
+
   })
 
   return (

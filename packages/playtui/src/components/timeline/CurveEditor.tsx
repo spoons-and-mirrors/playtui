@@ -4,11 +4,11 @@ import type { MouseEvent, ScrollBoxRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import type { UseProjectReturn } from "../../hooks/useProject"
-import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle } from "../../lib/keyframing"
+import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle, getPrevKeyframeFrame, getNextKeyframeFrame } from "../../lib/keyframing"
 import { ValueSlider } from "../ui/ValueSlider"
 import { findNode } from "../../lib/tree"
 import { Bind, isKeybind } from "../../lib/shortcuts"
-
+ 
 // Get display name for an element (capitalize type)
 function getElementName(tree: any, nodeId: string): string {
   const node = findNode(tree, nodeId)
@@ -16,26 +16,9 @@ function getElementName(tree: any, nodeId: string): string {
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
-
-// Find previous keyframe frame number
-function findPrevKeyframe(keyframes: { frame: number }[], currentFrame: number): number | null {
-  const sorted = [...keyframes].sort((a, b) => b.frame - a.frame) // descending
-  for (const kf of sorted) {
-    if (kf.frame < currentFrame) return kf.frame
-  }
-  return null
-}
-
-// Find next keyframe frame number
-function findNextKeyframe(keyframes: { frame: number }[], currentFrame: number): number | null {
-  const sorted = [...keyframes].sort((a, b) => a.frame - b.frame) // ascending
-  for (const kf of sorted) {
-    if (kf.frame > currentFrame) return kf.frame
-  }
-  return null
-}
-
+ 
 // Graph height in rows (fills TimelinePanel height: 14 - 1 header - 1 border = 12)
+
 const GRAPH_HEIGHT = 12
 
 export function ValueGraph({ 
@@ -66,10 +49,10 @@ export function ValueGraph({
     if (!animProp) return
     
     if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
-      const prev = findPrevKeyframe(animProp.keyframes, currentFrame)
+      const prev = getPrevKeyframeFrame(animProp.keyframes, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
     } else if (isKeybind(key, Bind.TIMELINE_NEXT_KEYFRAME)) {
-      const next = findNextKeyframe(animProp.keyframes, currentFrame)
+      const next = getNextKeyframeFrame(animProp.keyframes, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }
   })

@@ -91,6 +91,66 @@ function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
   return [...keyframes].sort((a, b) => a.frame - b.frame)
 }
 
+export function getPrevKeyframeFrame(
+  keyframes: Keyframe[],
+  currentFrame: number,
+): number | null {
+  const sorted = [...keyframes].sort((a, b) => b.frame - a.frame)
+  for (const kf of sorted) {
+    if (kf.frame < currentFrame) return kf.frame
+  }
+  return null
+}
+
+export function getNextKeyframeFrame(
+  keyframes: Keyframe[],
+  currentFrame: number,
+): number | null {
+  const sorted = [...keyframes].sort((a, b) => a.frame - b.frame)
+  for (const kf of sorted) {
+    if (kf.frame > currentFrame) return kf.frame
+  }
+  return null
+}
+
+export function getPrevKeyframeFrameForNode(
+  props: AnimatedProperty[],
+  currentFrame: number,
+): number | null {
+  let bestPrev: number | null = null
+
+  for (const prop of props) {
+    for (const kf of prop.keyframes) {
+      if (kf.frame < currentFrame) {
+        if (bestPrev === null || kf.frame > bestPrev) {
+          bestPrev = kf.frame
+        }
+      }
+    }
+  }
+
+  return bestPrev
+}
+
+export function getNextKeyframeFrameForNode(
+  props: AnimatedProperty[],
+  currentFrame: number,
+): number | null {
+  let bestNext: number | null = null
+
+  for (const prop of props) {
+    for (const kf of prop.keyframes) {
+      if (kf.frame > currentFrame) {
+        if (bestNext === null || kf.frame < bestNext) {
+          bestNext = kf.frame
+        }
+      }
+    }
+  }
+
+  return bestNext
+}
+
 // Solve cubic bezier for t given x using Newton-Raphson iteration
 // This finds the parameter t where the bezier curve has the given x value
 function solveCubicBezierX(x: number, p1x: number, p2x: number, epsilon = 0.0001): number {
