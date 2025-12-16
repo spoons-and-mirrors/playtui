@@ -7,7 +7,7 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-   OverflowPicker, DimensionsControl, PaletteProp
+   OverflowPicker, DimensionsControl
 } from "../controls"
 import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY } from "../elements"
@@ -525,26 +525,6 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           }
         }}
       >
-        {/* Palette header - centered */}
-        {palettes && palettes.length > 0 && (
-          <box id="element-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 0, paddingBottom: 0, justifyContent: "center" }}>
-            <PaletteProp
-              palettes={palettes}
-              activePaletteIndex={activePaletteIndex ?? 0}
-              onShowHex={onShowHex}
-              onUpdateSwatch={onUpdateSwatch}
-              onChangePalette={onChangePalette}
-              pickMode={pickingForField !== null}
-              onPickComplete={(color) => {
-                if (pickingForField) {
-                  onUpdate({ [pickingForField]: color } as Partial<ElementNode>, true)
-                  setPickingForField(null)
-                }
-              }}
-            />
-          </box>
-        )}
-        
         {unsectioned.map(renderProp)}
         {activeSections.map(renderSection)}
       </scrollbox>

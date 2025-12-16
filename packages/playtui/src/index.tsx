@@ -5,6 +5,7 @@ import { clearLog } from "./lib/logger"
 import { resetIdCounter, findNode, countNodes, updateNode, getNodePosition } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
 import { TreeView } from "./components/pages/Tree"
+import { PaletteControl } from "./components/controls/PaletteControl"
 import { PropertyPane } from "./components/pages/Properties"
 import { LibraryPage } from "./components/pages/Library"
 import { PlayPage } from "./components/pages/Play"
@@ -544,7 +545,18 @@ export function Builder({ width, height }: BuilderProps) {
         {showProperties && (
           <box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
             style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.card, padding: 1, flexShrink: 0 }}>
-            {!selectedNode && <text fg={COLORS.muted} style={{ marginBottom: 1 }}>Properties</text>}
+            {/* Palette - always visible */}
+            <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center" }}>
+              <PaletteControl
+                palettes={palettes}
+                activePaletteIndex={activePaletteIndex}
+                onShowHex={(color) => console.log("Palette color:", color)}
+                onUpdateSwatch={updateSwatch}
+                onChangePalette={setActivePalette}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+              />
+            </box>
             {selectedNode ? (
               <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
                 focusedField={focusedField} setFocusedField={setFocusedField}
