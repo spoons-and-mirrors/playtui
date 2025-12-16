@@ -2,8 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { TextAttributes } from "@opentui/core"
 import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
+import { ValueSlider } from "../ui"
 import { COLORS } from "../../theme"
-import { log } from "../../lib/logger"
 import type { ElementNode } from "../../lib/types"
 import { parseCodeMultiple } from "../../lib/parseCode"
 import { copyToClipboard } from "../../lib/clipboard"
@@ -15,11 +15,11 @@ interface CodePanelProps {
   updateTree: (tree: ElementNode) => void
   onClose: () => void
   onFocusChange?: (focused: boolean) => void
-  isExpanded?: boolean
-  onToggleExpand?: () => void
+  height: number
+  onHeightChange: (height: number) => void
 }
 
-export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isExpanded, onToggleExpand }: CodePanelProps) {
+export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, height, onHeightChange }: CodePanelProps) {
   const [isFocused, setIsFocused] = useState(true) // Start focused since panel is open
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
@@ -141,16 +141,16 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, isEx
           <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>Code</text>
         </box>
         
-        {/* Expand/Collapse button */}
-        {onToggleExpand && (
-          <box 
-            id="code-expand-btn" 
-            onMouseDown={onToggleExpand} 
-            paddingRight={1}
-          >
-            <text fg={isExpanded ? COLORS.accent : COLORS.muted} selectable={false}>⛶</text>
-          </box>
-        )}
+        {/* Height Slider */}
+        <box paddingRight={1}>
+          <ValueSlider
+            id="code-height"
+            label="Height"
+            value={height}
+            onChange={onHeightChange}
+            resetTo={12}
+          />
+        </box>
         
         {/* Error indicator */}
         {error && (

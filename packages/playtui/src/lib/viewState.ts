@@ -5,6 +5,7 @@ export type ViewMode = "editor" | "play" | "library" | "docs"
 export interface ViewLayoutState {
   mode: ViewMode
   showCodePanel: boolean
+  codePanelHeight: number
   showTimeline: boolean
 }
 

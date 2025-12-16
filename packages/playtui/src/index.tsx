@@ -69,16 +69,17 @@ export function Builder({ width, height }: BuilderProps) {
   const [viewLayout, setViewLayout] = useState<ViewLayoutState>({
     mode: "editor",
     showCodePanel: false,
+    codePanelHeight: 12,
     showTimeline: true,
   })
   const mode = viewLayout.mode
   const showCodePanel = viewLayout.showCodePanel
+  const codePanelHeight = viewLayout.codePanelHeight
   const showTimeline = viewLayout.showTimeline
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<ElementNode | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [codePanelExpanded, setCodePanelExpanded] = useState(false)
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
 
@@ -312,7 +313,6 @@ export function Builder({ width, height }: BuilderProps) {
   const treeWidth = 27
   const sidebarWidth = 35
   const filmStripHeight = 6
-  const codePanelHeight = codePanelExpanded ? Math.floor(height / 2) : 12
   const timelineHeight = 14
   const footerHeight = 1
   const mainContentHeight = height - footerHeight 
@@ -622,8 +622,8 @@ export function Builder({ width, height }: BuilderProps) {
                  if (focused) setFocusedField("code-panel")
                  else if (focusedField === "code-panel") setFocusedField(null)
              }}
-             isExpanded={codePanelExpanded}
-             onToggleExpand={() => setCodePanelExpanded(v => !v)}
+             height={codePanelHeight}
+             onHeightChange={(h) => setViewLayout(prev => ({ ...prev, codePanelHeight: Math.max(5, h) }))}
            />
 
         </box>
