@@ -7,9 +7,8 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-   OverflowPicker, DimensionsControl
+    OverflowPicker, DimensionsControl
 } from "../controls"
-import { ValueSlider } from "../ui/ValueSlider"
 import { ELEMENT_REGISTRY, type SerializableProp, type PropertySection } from "../elements"
 import { COLORS } from "../../theme"
 
@@ -127,8 +126,16 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
     if (prop.type === "number") {
       return (
-        <NumberProp key={key} id={`prop-${prop.key}`} label={label} value={typeof val === "number" ? val : 0}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} min={prop.min} max={prop.max} />
+        <NumberProp 
+          key={key} 
+          id={`prop-${prop.key}`} 
+          label={label} 
+          value={typeof val === "number" ? val : 0}
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<ElementNode>)} 
+          min={prop.min} 
+          max={prop.max}
+          property={prop.animatable ? prop.key : undefined}
+        />
       )
     }
     if (prop.type === "size") {
@@ -181,54 +188,49 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       left: container.paddingLeft ?? 0,
     }
 
-    const handleChange = (key: "top" | "right" | "bottom" | "left", val: number) => {
+    const handleChange = (key: "top" | "right" | "bottom" | "left" | "all", val: number) => {
+      if (key === "all") {
+        onUpdate({
+          paddingTop: val,
+          paddingRight: val,
+          paddingBottom: val,
+          paddingLeft: val
+        } as Partial<ElementNode>, false)
+        return
+      }
       const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
       onUpdate({ [propKey]: val } as Partial<ElementNode>, false)
     }
 
-    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left", val: number) => {
+    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left" | "all", val: number) => {
+      if (key === "all") {
+        onUpdate({
+          paddingTop: val,
+          paddingRight: val,
+          paddingBottom: val,
+          paddingLeft: val
+        } as Partial<ElementNode>, true)
+        return
+      }
       const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
       onUpdate({ [propKey]: val } as Partial<ElementNode>, true)
     }
 
+    // Using SpacingControl which wraps ValueCounter (supporting context menus)
     return (
-      <box key="padding" id="section-padding" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
-        <text fg={COLORS.text}><strong>Padding</strong></text>
-        <box id="padding-sliders" flexDirection="row" gap={1}>
-          <ValueSlider
-            id="padding-t"
-            label="t"
-            property="paddingTop"
-            value={values.top}
-            onChange={(v) => handleChange("top", v)}
-            onChangeEnd={(v) => handleChangeEnd("top", v)}
-          />
-          <ValueSlider
-            id="padding-r"
-            label="r"
-            property="paddingRight"
-            value={values.right}
-            onChange={(v) => handleChange("right", v)}
-            onChangeEnd={(v) => handleChangeEnd("right", v)}
-          />
-          <ValueSlider
-            id="padding-b"
-            label="b"
-            property="paddingBottom"
-            value={values.bottom}
-            onChange={(v) => handleChange("bottom", v)}
-            onChangeEnd={(v) => handleChangeEnd("bottom", v)}
-          />
-          <ValueSlider
-            id="padding-l"
-            label="l"
-            property="paddingLeft"
-            value={values.left}
-            onChange={(v) => handleChange("left", v)}
-            onChangeEnd={(v) => handleChangeEnd("left", v)}
-          />
-        </box>
-
+      <box key="padding" id="section-padding" flexDirection="column" marginTop={1}>
+        <SpacingControl
+          label="Padding"
+          values={values}
+          properties={{
+            top: "paddingTop",
+            right: "paddingRight",
+            bottom: "paddingBottom",
+            left: "paddingLeft"
+          }}
+          onChange={(key, v) => handleChange(key, v ?? 0)}
+          onChangeEnd={(key, v) => handleChangeEnd(key, v ?? 0)}
+        />
       </box>
     )
   }
@@ -242,58 +244,53 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       left: node.marginLeft ?? 0,
     }
 
-    const handleChange = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
+    const handleChange = (key: "top" | "right" | "bottom" | "left" | "all", val: number | undefined) => {
+      if (key === "all") {
+        onUpdate({
+          marginTop: val,
+          marginRight: val,
+          marginBottom: val,
+          marginLeft: val
+        } as Partial<ElementNode>, false)
+        return
+      }
       if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>, false)
       if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>, false)
       if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>, false)
       if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>, false)
     }
 
-    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left", val: number | undefined) => {
+    const handleChangeEnd = (key: "top" | "right" | "bottom" | "left" | "all", val: number | undefined) => {
+      if (key === "all") {
+        onUpdate({
+          marginTop: val,
+          marginRight: val,
+          marginBottom: val,
+          marginLeft: val
+        } as Partial<ElementNode>, true)
+        return
+      }
       if (key === "top") onUpdate({ marginTop: val } as Partial<ElementNode>, true)
       if (key === "right") onUpdate({ marginRight: val } as Partial<ElementNode>, true)
       if (key === "bottom") onUpdate({ marginBottom: val } as Partial<ElementNode>, true)
       if (key === "left") onUpdate({ marginLeft: val } as Partial<ElementNode>, true)
     }
 
+    // Using SpacingControl which wraps ValueCounter (supporting context menus)
     return (
-      <box key="margin" id="section-margin" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
-        <text fg={COLORS.text}><strong>Margin</strong></text>
-        <box id="margin-sliders" flexDirection="row" gap={1}>
-          <ValueSlider
-            id="margin-t"
-            label="t"
-            property="marginTop"
-            value={values.top}
-            onChange={(v) => handleChange("top", v)}
-            onChangeEnd={(v) => handleChangeEnd("top", v)}
-          />
-          <ValueSlider
-            id="margin-r"
-            label="r"
-            property="marginRight"
-            value={values.right}
-            onChange={(v) => handleChange("right", v)}
-            onChangeEnd={(v) => handleChangeEnd("right", v)}
-          />
-          <ValueSlider
-            id="margin-b"
-            label="b"
-            property="marginBottom"
-            value={values.bottom}
-            onChange={(v) => handleChange("bottom", v)}
-            onChangeEnd={(v) => handleChangeEnd("bottom", v)}
-          />
-          <ValueSlider
-            id="margin-l"
-            label="l"
-            property="marginLeft"
-            value={values.left}
-            onChange={(v) => handleChange("left", v)}
-            onChangeEnd={(v) => handleChangeEnd("left", v)}
-          />
-        </box>
-
+      <box key="margin" id="section-margin" flexDirection="column" marginTop={1}>
+        <SpacingControl
+          label="Margin"
+          values={values}
+          properties={{
+            top: "marginTop",
+            right: "marginRight",
+            bottom: "marginBottom",
+            left: "marginLeft"
+          }}
+          onChange={handleChange}
+          onChangeEnd={handleChangeEnd}
+        />
       </box>
     )
   }
@@ -313,10 +310,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             maxWidth={node.maxWidth}
             minHeight={node.minHeight}
             maxHeight={node.maxHeight}
-            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, false)}
-            onChangeEnd={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, true)}
-            onBatchUpdate={(updates) => onUpdate(updates as Partial<ElementNode>, false)}
-            onBatchUpdateEnd={(updates) => onUpdate(updates as Partial<ElementNode>, true)}
+            onChange={(update, isFinal) => onUpdate(update as Partial<ElementNode>, isFinal)}
           />
         </box>
       </box>
@@ -411,11 +405,13 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         {/* Position title left, x y z right */}
         <box id="pos-row" flexDirection="row" alignItems="center" justifyContent="space-between">
           <text fg={COLORS.text}><strong>Position</strong></text>
-          <box id="pos-xyz" flexDirection="row" gap={1}>
-            <ValueSlider id="pos-x" label="x" property="x" value={node.x ?? 0} onChange={(v) => onUpdate({ x: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ x: v } as Partial<ElementNode>, true)} />
-            <ValueSlider id="pos-y" label="y" property="y" value={node.y ?? 0} onChange={(v) => onUpdate({ y: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ y: v } as Partial<ElementNode>, true)} />
-            <ValueSlider id="pos-z" label="z" property="zIndex" value={node.zIndex ?? 0} onChange={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, false)} onChangeEnd={(v) => onUpdate({ zIndex: v } as Partial<ElementNode>, true)} />
-          </box>
+          <PositionControl 
+            x={node.x} 
+            y={node.y} 
+            zIndex={node.zIndex}
+            onChange={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, false)}
+            onChangeEnd={(k, v) => onUpdate({ [k]: v } as Partial<ElementNode>, true)}
+          />
         </box>
       </box>
     )

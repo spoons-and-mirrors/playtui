@@ -1,27 +1,30 @@
-import { useRef, useState } from "react"
-import type { MouseEvent } from "@opentui/core"
+import { useState, useRef } from "react"
+import { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import { useDragCapture } from "../pages/Properties"
+import type { SizeValue } from "../../lib/types"
 
-type SizeValue = number | "auto" | `${number}%` | undefined
-type SizeMode = "fixed" | "hug" | "fill" | "percent"
+type SizeMode = "hug" | "fill" | "fixed" | "percent"
 
 interface DimensionRowProps {
   id: string
   label: string
-  value: SizeValue
+  value: SizeValue | undefined
+  property?: string
   flexGrow?: number
   onChange: (value: SizeValue, flexGrow?: number) => void
   onChangeEnd?: (value: SizeValue, flexGrow?: number) => void
   minValue?: number
   maxValue?: number
+  minProperty?: string
+  maxProperty?: string
   onMinChange: (v: number | undefined) => void
   onMaxChange: (v: number | undefined) => void
   onMinChangeEnd?: (v: number | undefined) => void
   onMaxChangeEnd?: (v: number | undefined) => void
 }
 
-function getMode(value: SizeValue, flexGrow?: number): SizeMode {
+function getMode(value: SizeValue | undefined, flexGrow?: number): SizeMode {
   if (flexGrow && flexGrow > 0) return "fill"
   if (value === "auto" || value === undefined) return "hug"
   if (typeof value === "string" && value.endsWith("%")) return "percent"
@@ -135,7 +138,7 @@ function DimensionRow({ id, label, value, flexGrow, onChange, onChangeEnd, minVa
         </box>
         {/* Value counter right-aligned */}
         {canAdjust && (
-          <box id={`${id}-value-ctrl`} flexDirection="row">
+              <box id={`${id}-value-ctrl`} flexDirection="row">
             <box
               id={`${id}-dec`}
               backgroundColor={COLORS.bg}
@@ -285,27 +288,35 @@ function BoundToggle({ id, label, value, enabled, onToggle, onChange, onChangeEn
 }
 
 export interface DimensionsControlProps {
-  width: SizeValue
-  height: SizeValue
+  width: SizeValue | undefined
+  height: SizeValue | undefined
   flexGrow?: number
-  minWidth?: number
-  maxWidth?: number
-  minHeight?: number
-  maxHeight?: number
-  onChange: (key: string, val: SizeValue | number | undefined) => void
-  onChangeEnd?: (key: string, val: SizeValue | number | undefined) => void
-  onBatchUpdate?: (updates: Record<string, SizeValue | number | undefined>) => void
-  onBatchUpdateEnd?: (updates: Record<string, SizeValue | number | undefined>) => void
+  flexShrink?: number
+  minWidth?: SizeValue
+  maxWidth?: SizeValue
+  minHeight?: SizeValue
+  maxHeight?: SizeValue
+  onChange: (update: Partial<{ 
+    width: SizeValue
+    height: SizeValue 
+    flexGrow: number 
+    flexShrink: number
+    minWidth: SizeValue
+    maxWidth: SizeValue
+    minHeight: SizeValue
+    maxHeight: SizeValue
+  }>, isFinal: boolean) => void
 }
 
 export function DimensionsControl({ 
-  width, height, flexGrow,
+  width, height, flexGrow, flexShrink,
   minWidth, maxWidth, minHeight, maxHeight,
-  onChange,
-  onChangeEnd,
-  onBatchUpdate,
-  onBatchUpdateEnd
+  onChange
 }: DimensionsControlProps) {
+  
+  const asNumber = (v: SizeValue | undefined): number | undefined => 
+    typeof v === "number" ? v : undefined
+
   return (
     <box id="dimensions-ctrl" style={{ flexDirection: "column", gap: 1, backgroundColor: COLORS.bgAlt, paddingTop: 1, paddingBottom: 1 }}>
       {/* Width */}
@@ -314,28 +325,14 @@ export function DimensionsControl({
         label="W" 
         value={width} 
         flexGrow={flexGrow}
-        onChange={(v, fg) => {
-          if (onBatchUpdate && fg !== undefined) {
-            onBatchUpdate({ width: v, flexGrow: fg })
-          } else {
-            onChange("width", v)
-            if (fg !== undefined) onChange("flexGrow", fg)
-          }
-        }}
-        onChangeEnd={(v, fg) => {
-          if (onBatchUpdateEnd && fg !== undefined) {
-            onBatchUpdateEnd({ width: v, flexGrow: fg })
-          } else if (onChangeEnd) {
-            onChangeEnd("width", v)
-            if (fg !== undefined) onChangeEnd("flexGrow", fg)
-          }
-        }}
-        minValue={minWidth}
-        maxValue={maxWidth}
-        onMinChange={(v) => onChange("minWidth", v)}
-        onMaxChange={(v) => onChange("maxWidth", v)}
-        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minWidth", v) : undefined}
-        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxWidth", v) : undefined}
+        onChange={(v, fg) => onChange({ width: v, flexGrow: fg }, false)}
+        onChangeEnd={(v, fg) => onChange({ width: v, flexGrow: fg }, true)}
+        minValue={asNumber(minWidth)}
+        maxValue={asNumber(maxWidth)}
+        onMinChange={(v) => onChange({ minWidth: v }, false)}
+        onMaxChange={(v) => onChange({ maxWidth: v }, false)}
+        onMinChangeEnd={(v) => onChange({ minWidth: v }, true)}
+        onMaxChangeEnd={(v) => onChange({ maxWidth: v }, true)}
       />
       {/* Height */}
       <DimensionRow 
@@ -343,28 +340,14 @@ export function DimensionsControl({
         label="H" 
         value={height}
         flexGrow={flexGrow}
-        onChange={(v, fg) => {
-          if (onBatchUpdate && fg !== undefined) {
-            onBatchUpdate({ height: v, flexGrow: fg })
-          } else {
-            onChange("height", v)
-            if (fg !== undefined) onChange("flexGrow", fg)
-          }
-        }}
-        onChangeEnd={(v, fg) => {
-          if (onBatchUpdateEnd && fg !== undefined) {
-            onBatchUpdateEnd({ height: v, flexGrow: fg })
-          } else if (onChangeEnd) {
-            onChangeEnd("height", v)
-            if (fg !== undefined) onChangeEnd("flexGrow", fg)
-          }
-        }}
-        minValue={minHeight}
-        maxValue={maxHeight}
-        onMinChange={(v) => onChange("minHeight", v)}
-        onMaxChange={(v) => onChange("maxHeight", v)}
-        onMinChangeEnd={onChangeEnd ? (v) => onChangeEnd("minHeight", v) : undefined}
-        onMaxChangeEnd={onChangeEnd ? (v) => onChangeEnd("maxHeight", v) : undefined}
+        onChange={(v, fg) => onChange({ height: v, flexGrow: fg }, false)}
+        onChangeEnd={(v, fg) => onChange({ height: v, flexGrow: fg }, true)}
+        minValue={asNumber(minHeight)}
+        maxValue={asNumber(maxHeight)}
+        onMinChange={(v) => onChange({ minHeight: v }, false)}
+        onMaxChange={(v) => onChange({ maxHeight: v }, false)}
+        onMinChangeEnd={(v) => onChange({ minHeight: v }, true)}
+        onMaxChangeEnd={(v) => onChange({ maxHeight: v }, true)}
       />
     </box>
   )

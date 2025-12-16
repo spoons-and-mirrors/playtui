@@ -132,6 +132,10 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
     props.push(`name="${name}"`)
   }
 
+  // Get registry entry
+  const entry = ELEMENT_REGISTRY[node.type]
+  if (!entry) return "" // Should not happen
+
   if (isContainerNode(node)) {
     // Border properties (container-only)
     if (node.border) {
@@ -152,69 +156,44 @@ export function generateCode(node: ElementNode, indent = 0, opts: CodegenOptions
     if (node.titleAlignment && node.titleAlignment !== "left") {
       props.push(`titleAlignment="${node.titleAlignment}"`)
     }
-    if (node.backgroundColor) props.push(`backgroundColor="${node.backgroundColor}"`)
+    // Background color is handled via styleProp for container nodes in registry, 
+    // BUT OpenTUI box/scrollbox also support backgroundColor as a direct prop for historical reasons.
+    // However, our registry now marks it as a styleProp. 
+    // To maintain existing behavior where some props might be direct, we rely on the registry.
+    // If a prop is NOT in styleProps, serializeRegistryProps handles it.
+    
     if (node.visible === false) props.push("visible={false}")
   }
 
   const styleProps: string[] = []
 
-  // Sizing (common to all elements)
-  const w = formatSize(node.width)
-  const h = formatSize(node.height)
-  if (w) styleProps.push(`width: ${w}`)
-  if (h) styleProps.push(`height: ${h}`)
-  if (node.minWidth) styleProps.push(`minWidth: ${node.minWidth}`)
-  if (node.maxWidth) styleProps.push(`maxWidth: ${node.maxWidth}`)
-  if (node.minHeight) styleProps.push(`minHeight: ${node.minHeight}`)
-  if (node.maxHeight) styleProps.push(`maxHeight: ${node.maxHeight}`)
-  if (node.aspectRatio) styleProps.push(`aspectRatio: ${node.aspectRatio}`)
+  // Iterate over all properties defined in the registry for this element type
+  if (entry.properties) {
+    for (const prop of entry.properties) {
+      const value = (node as unknown as Record<string, unknown>)[prop.key]
+      
+      // Skip undefined/null or default values
+      if (value === undefined || value === null) continue
+      if (value === prop.default) continue
+      
+      // If it's a style prop, format it for the style object
+      if (prop.styleProp) {
+        let formattedValue: string
+        
+        if (prop.type === "string" || prop.type === "select" || (prop.type === "color" && typeof value === "string")) {
+          formattedValue = `"${value}"`
+        } else if (prop.type === "size") {
+           const sizeVal = formatSize(value as SizeValue)
+           if (!sizeVal) continue
+           formattedValue = sizeVal
+        } else {
+          formattedValue = String(value)
+        }
 
-  // Container-only properties (flex, padding, position, overflow)
-  if (isContainerNode(node)) {
-    const container = node as BoxNode | ScrollboxNode
-    
-    // Flex container
-    if (container.flexDirection) styleProps.push(`flexDirection: "${container.flexDirection}"`)
-    if (container.flexWrap) styleProps.push(`flexWrap: "${container.flexWrap}"`)  // OpenTUI uses "no-wrap"
-    if (container.justifyContent) styleProps.push(`justifyContent: "${container.justifyContent}"`)
-    if (container.alignItems) styleProps.push(`alignItems: "${container.alignItems}"`)
-    if (container.alignContent) styleProps.push(`alignContent: "${container.alignContent}"`)
-    if (container.gap) styleProps.push(`gap: ${container.gap}`)
-    if (container.rowGap) styleProps.push(`rowGap: ${container.rowGap}`)
-    if (container.columnGap) styleProps.push(`columnGap: ${container.columnGap}`)
-
-    // Padding
-    if (container.padding) styleProps.push(`padding: ${container.padding}`)
-    if (container.paddingTop) styleProps.push(`paddingTop: ${container.paddingTop}`)
-    if (container.paddingRight) styleProps.push(`paddingRight: ${container.paddingRight}`)
-    if (container.paddingBottom) styleProps.push(`paddingBottom: ${container.paddingBottom}`)
-    if (container.paddingLeft) styleProps.push(`paddingLeft: ${container.paddingLeft}`)
-
-    // Positioning - our x/y map to OpenTUI's left/top (already handled in common section)
-    
-    // Overflow
-    if (container.overflow) styleProps.push(`overflow: "${container.overflow}"`)
+        styleProps.push(`${prop.styleProp}: ${formattedValue}`)
+      }
+    }
   }
-
-  // Flex item (common to all elements)
-  if (node.flexGrow) styleProps.push(`flexGrow: ${node.flexGrow}`)
-  if (node.flexShrink !== undefined) styleProps.push(`flexShrink: ${node.flexShrink}`)
-  const fb = formatSize(node.flexBasis)
-  if (fb) styleProps.push(`flexBasis: ${fb}`)
-  if (node.alignSelf && node.alignSelf !== "auto") styleProps.push(`alignSelf: "${node.alignSelf}"`)
-
-  // Positioning (common to all elements via BaseNode)
-  if (node.position) styleProps.push(`position: "${node.position}"`)
-  if (node.x !== undefined) styleProps.push(`left: ${node.x}`)
-  if (node.y !== undefined) styleProps.push(`top: ${node.y}`)
-  if (node.zIndex !== undefined) styleProps.push(`zIndex: ${node.zIndex}`)
-
-  // Margin (common to all elements)
-  if (node.margin) styleProps.push(`margin: ${node.margin}`)
-  if (node.marginTop) styleProps.push(`marginTop: ${node.marginTop}`)
-  if (node.marginRight) styleProps.push(`marginRight: ${node.marginRight}`)
-  if (node.marginBottom) styleProps.push(`marginBottom: ${node.marginBottom}`)
-  if (node.marginLeft) styleProps.push(`marginLeft: ${node.marginLeft}`)
 
   // Scrollbar options (for scrollbox) - must be added before style prop generation
   if (node.type === "scrollbox") {

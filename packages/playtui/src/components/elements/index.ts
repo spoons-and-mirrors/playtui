@@ -90,6 +90,8 @@ export interface SerializableProp {
   escape?: boolean            // Escape string for JSX (quotes, special chars)
   jsxBoolean?: boolean        // Serialize as standalone prop when true, {false} when false
   jsxBooleanDefault?: boolean // The default value for jsxBoolean props (used to determine when to omit)
+  styleProp?: string          // If set, this prop belongs in the style object with this key (e.g. "width", "left")
+  animatable?: boolean        // Can this property be animated?
 }
 
 // =============================================================================
@@ -98,74 +100,74 @@ export interface SerializableProp {
 
 // Dimensions - common to most elements
 const DIMENSION_PROPS: SerializableProp[] = [
-  { key: "width", label: "Width", type: "size", section: "dimensions" },
-  { key: "height", label: "Height", type: "size", section: "dimensions" },
+  { key: "width", label: "Width", type: "size", section: "dimensions", styleProp: "width", animatable: true },
+  { key: "height", label: "Height", type: "size", section: "dimensions", styleProp: "height", animatable: true },
 ]
 
 // Extended dimensions - for containers and inputs
 const EXTENDED_DIMENSION_PROPS: SerializableProp[] = [
   ...DIMENSION_PROPS,
-  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "dimensions" },
-  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "dimensions" },
-  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "dimensions" },
-  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "dimensions" },
-  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "dimensions" },
+  { key: "minWidth", label: "Min W", type: "number", min: 0, max: 200, section: "dimensions", styleProp: "minWidth", animatable: true },
+  { key: "maxWidth", label: "Max W", type: "number", min: 0, max: 200, section: "dimensions", styleProp: "maxWidth", animatable: true },
+  { key: "minHeight", label: "Min H", type: "number", min: 0, max: 100, section: "dimensions", styleProp: "minHeight", animatable: true },
+  { key: "maxHeight", label: "Max H", type: "number", min: 0, max: 100, section: "dimensions", styleProp: "maxHeight", animatable: true },
+  { key: "aspectRatio", label: "Ratio", type: "number", min: 0, max: 10, section: "dimensions", styleProp: "aspectRatio", animatable: true },
 ]
 
 // Flex container props
 const FLEX_CONTAINER_PROPS: SerializableProp[] = [
-  { key: "flexDirection", label: "Direction", type: "select", options: ["row", "column"], section: "flexContainer" },
-  { key: "flexWrap", label: "Wrap", type: "select", options: ["no-wrap", "wrap"], section: "flexContainer" },
-  { key: "justifyContent", label: "Justify", type: "select", options: ["flex-start", "center", "flex-end", "space-between", "space-around"], section: "flexContainer" },
-  { key: "alignItems", label: "Align", type: "select", options: ["flex-start", "center", "flex-end", "stretch"], section: "flexContainer" },
-  { key: "alignContent", label: "Content", type: "select", options: ["flex-start", "center", "flex-end", "stretch", "space-between", "space-around"], section: "flexContainer" },
-  { key: "gap", label: "Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
-  { key: "rowGap", label: "Row Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
-  { key: "columnGap", label: "Col Gap", type: "number", min: 0, max: 20, section: "flexContainer" },
+  { key: "flexDirection", label: "Direction", type: "select", options: ["row", "column"], section: "flexContainer", styleProp: "flexDirection" },
+  { key: "flexWrap", label: "Wrap", type: "select", options: ["no-wrap", "wrap"], section: "flexContainer", styleProp: "flexWrap" },
+  { key: "justifyContent", label: "Justify", type: "select", options: ["flex-start", "center", "flex-end", "space-between", "space-around"], section: "flexContainer", styleProp: "justifyContent" },
+  { key: "alignItems", label: "Align", type: "select", options: ["flex-start", "center", "flex-end", "stretch"], section: "flexContainer", styleProp: "alignItems" },
+  { key: "alignContent", label: "Content", type: "select", options: ["flex-start", "center", "flex-end", "stretch", "space-between", "space-around"], section: "flexContainer", styleProp: "alignContent" },
+  { key: "gap", label: "Gap", type: "number", min: 0, max: 20, section: "flexContainer", styleProp: "gap", animatable: true },
+  { key: "rowGap", label: "Row Gap", type: "number", min: 0, max: 20, section: "flexContainer", styleProp: "rowGap", animatable: true },
+  { key: "columnGap", label: "Col Gap", type: "number", min: 0, max: 20, section: "flexContainer", styleProp: "columnGap", animatable: true },
 ]
 
 // Flex item props
 const FLEX_ITEM_PROPS: SerializableProp[] = [
-  { key: "flexGrow", label: "Grow", type: "number", min: 0, max: 10, section: "flexItem" },
-  { key: "flexShrink", label: "Shrink", type: "number", min: 0, max: 10, section: "flexItem" },
-  { key: "flexBasis", label: "Basis", type: "size", section: "flexItem" },
-  { key: "alignSelf", label: "Align Self", type: "select", options: ["auto", "flex-start", "center", "flex-end", "stretch"], section: "flexItem" },
+  { key: "flexGrow", label: "Grow", type: "number", min: 0, max: 10, section: "flexItem", styleProp: "flexGrow", animatable: true },
+  { key: "flexShrink", label: "Shrink", type: "number", min: 0, max: 10, section: "flexItem", styleProp: "flexShrink", animatable: true },
+  { key: "flexBasis", label: "Basis", type: "size", section: "flexItem", styleProp: "flexBasis" },
+  { key: "alignSelf", label: "Align Self", type: "select", options: ["auto", "flex-start", "center", "flex-end", "stretch"], section: "flexItem", styleProp: "alignSelf" },
 ]
 
 // Padding props
 const PADDING_PROPS: SerializableProp[] = [
-  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding" },
-  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding" },
-  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding" },
-  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding" },
-  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding" },
+  { key: "padding", label: "All", type: "number", min: 0, max: 20, section: "padding", styleProp: "padding" },
+  { key: "paddingTop", label: "Top", type: "number", min: 0, max: 20, section: "padding", styleProp: "paddingTop", animatable: true },
+  { key: "paddingRight", label: "Right", type: "number", min: 0, max: 20, section: "padding", styleProp: "paddingRight", animatable: true },
+  { key: "paddingBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "padding", styleProp: "paddingBottom", animatable: true },
+  { key: "paddingLeft", label: "Left", type: "number", min: 0, max: 20, section: "padding", styleProp: "paddingLeft", animatable: true },
 ]
 
 // Margin props
 const MARGIN_PROPS: SerializableProp[] = [
-  { key: "margin", label: "All", type: "number", min: 0, max: 20, section: "margin" },
-  { key: "marginTop", label: "Top", type: "number", min: 0, max: 20, section: "margin" },
-  { key: "marginRight", label: "Right", type: "number", min: 0, max: 20, section: "margin" },
-  { key: "marginBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "margin" },
-  { key: "marginLeft", label: "Left", type: "number", min: 0, max: 20, section: "margin" },
+  { key: "margin", label: "All", type: "number", min: 0, max: 20, section: "margin", styleProp: "margin" },
+  { key: "marginTop", label: "Top", type: "number", min: 0, max: 20, section: "margin", styleProp: "marginTop", animatable: true },
+  { key: "marginRight", label: "Right", type: "number", min: 0, max: 20, section: "margin", styleProp: "marginRight", animatable: true },
+  { key: "marginBottom", label: "Bottom", type: "number", min: 0, max: 20, section: "margin", styleProp: "marginBottom", animatable: true },
+  { key: "marginLeft", label: "Left", type: "number", min: 0, max: 20, section: "margin", styleProp: "marginLeft", animatable: true },
 ]
 
 // Position props - universal
 const POSITION_PROPS: SerializableProp[] = [
-  { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position" },
-  { key: "x", label: "X", type: "number", min: -100, max: 200, section: "position" },
-  { key: "y", label: "Y", type: "number", min: -100, max: 200, section: "position" },
-  { key: "zIndex", label: "Z", type: "number", min: -100, max: 100, section: "position" },
+  { key: "position", label: "Position", type: "select", options: ["relative", "absolute"], section: "position", styleProp: "position" },
+  { key: "x", label: "X", type: "number", min: -100, max: 200, section: "position", styleProp: "left", animatable: true },
+  { key: "y", label: "Y", type: "number", min: -100, max: 200, section: "position", styleProp: "top", animatable: true },
+  { key: "zIndex", label: "Z", type: "number", min: -100, max: 100, section: "position", styleProp: "zIndex", animatable: true },
 ]
 
 // Overflow prop
 const OVERFLOW_PROPS: SerializableProp[] = [
-  { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow" },
+  { key: "overflow", label: "Overflow", type: "select", options: ["visible", "hidden", "scroll"], section: "overflow", styleProp: "overflow" },
 ]
 
 // Background color prop
 const BACKGROUND_PROPS: SerializableProp[] = [
-  { key: "backgroundColor", label: "BG Color", type: "color", section: "background" },
+  { key: "backgroundColor", label: "BG Color", type: "color", section: "background", styleProp: "backgroundColor" },
 ]
 
 // Element capability metadata
@@ -182,9 +184,6 @@ export interface ElementCapabilities {
   // Visual capabilities
   supportsBackgroundColor: boolean
   supportsTextStyling: boolean
-  
-  // Animation
-  animatableProperties: readonly string[]
 }
 
 // Registry entry type
@@ -218,7 +217,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
     properties: [
       ...EXTENDED_DIMENSION_PROPS,
@@ -249,7 +247,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: false,
       supportsTextStyling: true,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,
@@ -281,7 +278,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...EXTENDED_DIMENSION_PROPS.filter(p => p.key !== "aspectRatio"),
@@ -318,7 +314,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,
@@ -358,7 +353,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,
@@ -397,7 +391,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft", "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "gap", "rowGap", "columnGap", "flexGrow", "flexShrink"],
     },
     properties: [
       ...EXTENDED_DIMENSION_PROPS,
@@ -433,7 +426,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,
@@ -467,7 +459,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: false,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,
@@ -497,7 +488,6 @@ export const ELEMENT_REGISTRY: Record<ElementType, ElementRegistryEntry> = {
       supportsFlexItem: true,
       supportsBackgroundColor: true,
       supportsTextStyling: false,
-      animatableProperties: ["x", "y", "zIndex", "marginTop", "marginRight", "marginBottom", "marginLeft"],
     },
     properties: [
       ...DIMENSION_PROPS,

@@ -6,6 +6,19 @@ import { genId } from "./tree"
 import { log } from "./logger"
 import { ELEMENT_REGISTRY, ELEMENT_TYPES as REGISTRY_ELEMENT_TYPES } from "../components/elements"
 
+// Build global style property map from registry to avoid manual mapping
+// Maps style prop key (e.g. "top") to node prop key (e.g. "y") and type
+const STYLE_PROP_MAP: Record<string, { key: string; type: string }> = {}
+
+// Populate map once
+Object.values(ELEMENT_REGISTRY).forEach((entry) => {
+  entry.properties.forEach((prop) => {
+    if (prop.styleProp) {
+      STYLE_PROP_MAP[prop.styleProp] = { key: prop.key, type: prop.type }
+    }
+  })
+})
+
 // Apply registry-defined properties from parsed JSX props to node
 function applyRegistryProps(node: Partial<ElementNode>, type: ElementType, props: Record<string, unknown>): void {
   const entry = ELEMENT_REGISTRY[type]
@@ -301,53 +314,44 @@ function tokenize(jsx: string): Token[] {
 
 // Apply style object to node
 function applyStyle(node: Partial<ElementNode>, style: Record<string, unknown>): void {
-  // Sizing
-  if (style.width !== undefined) node.width = parseSizeValue(style.width)
-  if (style.height !== undefined) node.height = parseSizeValue(style.height)
-  if (style.minWidth !== undefined) node.minWidth = style.minWidth as number
-  if (style.maxWidth !== undefined) node.maxWidth = style.maxWidth as number
-  if (style.minHeight !== undefined) node.minHeight = style.minHeight as number
-  if (style.maxHeight !== undefined) node.maxHeight = style.maxHeight as number
-  if (style.aspectRatio !== undefined) node.aspectRatio = style.aspectRatio as number
-  
-  // Flex item
-  if (style.flexGrow !== undefined) node.flexGrow = style.flexGrow as number
-  if (style.flexShrink !== undefined) node.flexShrink = style.flexShrink as number
-  if (style.flexBasis !== undefined) node.flexBasis = parseSizeValue(style.flexBasis) as number | "auto"
-  if (style.alignSelf !== undefined) (node as any).alignSelf = style.alignSelf
-  
-  // Margin
-  if (style.margin !== undefined) node.margin = style.margin as number
-  if (style.marginTop !== undefined) node.marginTop = style.marginTop as number
-  if (style.marginRight !== undefined) node.marginRight = style.marginRight as number
-  if (style.marginBottom !== undefined) node.marginBottom = style.marginBottom as number
-  if (style.marginLeft !== undefined) node.marginLeft = style.marginLeft as number
-  
-  // Container-only (box/scrollbox)
-  if (style.flexDirection !== undefined) (node as any).flexDirection = style.flexDirection
-  if (style.flexWrap !== undefined) (node as any).flexWrap = style.flexWrap
-  if (style.justifyContent !== undefined) (node as any).justifyContent = style.justifyContent
-  if (style.alignItems !== undefined) (node as any).alignItems = style.alignItems
-  if (style.alignContent !== undefined) (node as any).alignContent = style.alignContent
-  if (style.gap !== undefined) (node as any).gap = style.gap
-  if (style.rowGap !== undefined) (node as any).rowGap = style.rowGap
-  if (style.columnGap !== undefined) (node as any).columnGap = style.columnGap
-  
-  // Padding
-  if (style.padding !== undefined) (node as any).padding = style.padding
-  if (style.paddingTop !== undefined) (node as any).paddingTop = style.paddingTop
-  if (style.paddingRight !== undefined) (node as any).paddingRight = style.paddingRight
-  if (style.paddingBottom !== undefined) (node as any).paddingBottom = style.paddingBottom
-  if (style.paddingLeft !== undefined) (node as any).paddingLeft = style.paddingLeft
-  
-  // Position
-  if (style.position !== undefined) (node as any).position = style.position
-  if (style.top !== undefined) (node as any).y = style.top  // OpenTUI top → PlayTUI y
-  if (style.left !== undefined) (node as any).x = style.left  // OpenTUI left → PlayTUI x
-  if (style.zIndex !== undefined) (node as any).zIndex = style.zIndex
-  
-  // Overflow
-  if (style.overflow !== undefined) (node as any).overflow = style.overflow
+  for (const [styleKey, styleValue] of Object.entries(style)) {
+    if (styleValue === undefined) continue
+    
+    // Check registry map first
+    const mapEntry = STYLE_PROP_MAP[styleKey]
+    if (mapEntry) {
+      const { key, type } = mapEntry
+      
+      // Handle special types
+      if (type === "size") {
+        (node as any)[key] = parseSizeValue(styleValue)
+      } else if (type === "number") {
+        const num = typeof styleValue === "number" ? styleValue : parseFloat(String(styleValue))
+        if (!isNaN(num)) (node as any)[key] = num
+      } else {
+        // Direct assignment for other types (string, enum, etc)
+        (node as any)[key] = styleValue
+      }
+      continue
+    }
+
+    // Fallback for known props not in registry styleProp (legacy/compatibility)
+    if (styleKey === "top") { (node as any).y = styleValue; continue }
+    if (styleKey === "left") { (node as any).x = styleValue; continue }
+    
+    // Direct map attempts (if key matches exactly)
+    // This catches anything we missed or future standard props
+    if (keyInNode(node, styleKey)) {
+        (node as any)[styleKey] = styleValue
+    }
+  }
+}
+
+// Helper to check if key exists in node type (at runtime this is just 'any' check but safe enough for assignment)
+function keyInNode(node: Partial<ElementNode>, key: string): boolean {
+  // We allow arbitrary assignment to node from style for flexibility, 
+  // but strictly strictly defined registry props are preferred.
+  return true 
 }
 
 // Create node from tag and props
