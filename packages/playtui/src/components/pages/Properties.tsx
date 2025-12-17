@@ -38,9 +38,12 @@ interface PropertyPaneProps {
   onShowHex?: (color: string) => void
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
+  // Color picking support - lifted from parent
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
-export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onShowHex, onUpdateSwatch, onChangePalette }: PropertyPaneProps) {
+export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, palettes, activePaletteIndex, onShowHex, onUpdateSwatch, onChangePalette, pickingForField, setPickingForField }: PropertyPaneProps) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     PROPERTY_SECTIONS.forEach((meta) => {
@@ -48,8 +51,6 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     })
     return initial
   })
-
-  const [pickingForField, setPickingForField] = useState<string | null>(null)
 
   const scrollRef = useRef<ScrollBoxRenderable>(null)
 
@@ -142,7 +143,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         <ColorControl key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
           onFocus={() => setFocusedField(prop.key)} onBlur={() => setFocusedField(null)}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
-          pickMode={pickingForField === prop.key} onPickStart={() => setPickingForField(prop.key)} />
+          pickMode={pickingForField === prop.key} onPickStart={() => setPickingForField?.(prop.key)} />
       )
     }
     if (prop.type === "toggle" || prop.type === "boolean") {
@@ -506,7 +507,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           // Controls that should maintain focus will stopPropagation
           if (e.target === scrollRef.current) {
             setFocusedField(null)
-            setPickingForField(null)
+            setPickingForField?.(null)
           }
         }}
       >

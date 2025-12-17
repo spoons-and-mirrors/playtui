@@ -83,6 +83,7 @@ export function Builder({ width, height }: BuilderProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
+  const [pickingForField, setPickingForField] = useState<string | null>(null) // Color picker mode
 
 
   const applyViewAction = useCallback(
@@ -560,6 +561,13 @@ export function Builder({ width, height }: BuilderProps) {
                 onChangePalette={setActivePalette}
                 focusedField={focusedField}
                 setFocusedField={setFocusedField}
+                pickMode={pickingForField !== null}
+                onPickComplete={(color) => {
+                  if (pickingForField && selectedNode) {
+                    handleUpdate({ [pickingForField]: color } as Partial<Renderable>)
+                  }
+                  setPickingForField(null)
+                }}
               />
             </box>
             {selectedNode ? (
@@ -570,7 +578,8 @@ export function Builder({ width, height }: BuilderProps) {
                   // Show hex in console or similar - just for reference, not applying
                   console.log("Palette color:", color)
                 }}
-                onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette} />
+                onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette}
+                pickingForField={pickingForField} setPickingForField={setPickingForField} />
             ) : (
               <text fg={COLORS.muted}>Select an element</text>
             )}

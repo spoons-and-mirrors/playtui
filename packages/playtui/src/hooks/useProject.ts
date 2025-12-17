@@ -55,6 +55,7 @@ export interface UseProjectReturn {
   importAnimation: (frames: Renderable[], fps: number) => void
 
   // Keyframing
+  toggleAutoKey: () => void
   addKeyframe: (renderableId: string, property: string, value: number) => void
   removeKeyframe: (renderableId: string, property: string) => void
   setKeyframeHandle: (renderableId: string, property: string, frame: number, handleX: number, handleY: number) => void
