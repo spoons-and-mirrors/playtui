@@ -1,5 +1,4 @@
-import { COLORS } from "../../theme"
-import { ValueCounter } from "../ui/ValueCounter"
+import { ValueSlider } from "../ui/ValueSlider"
 
 export function SpacingControl({ label, values, onChange, onChangeEnd, properties }: {
   label: string
@@ -8,44 +7,42 @@ export function SpacingControl({ label, values, onChange, onChangeEnd, propertie
   onChangeEnd?: (key: "all" | "top" | "right" | "bottom" | "left", val: number | undefined) => void
   properties?: { all?: string; top?: string; right?: string; bottom?: string; left?: string }
 }) {
-  const { all, top, right, bottom, left } = values
-  // Only fallback to "all" if NO individual values are set, otherwise treat as 0 for undefined individual slots
-  const hasIndividual = top !== undefined || right !== undefined || bottom !== undefined || left !== undefined
-
-  const renderVal = (key: "all" | "top" | "right" | "bottom" | "left", v: number | undefined) => {
-    const display = v ?? 0
-    const propName = properties?.[key]
-    
-    return (
-      <ValueCounter
-        id={`spacing-${label}-${key}`}
-        label=""
-        property={propName}
-        value={display}
-        onChange={(newVal) => onChange(key, Math.max(0, newVal))}
-        onChangeEnd={onChangeEnd ? (newVal) => onChangeEnd(key, Math.max(0, newVal)) : undefined}
-      />
-    )
-  }
+  const { top, right, bottom, left } = values
 
   return (
-    <box id={`spacing-ctrl-${label}`} style={{ flexDirection: "column" }}>
-      {label && <text fg={COLORS.muted} style={{ marginBottom: 0 }}>{label}</text>}
-      <box style={{ flexDirection: "column", alignItems: "center", gap: 0, backgroundColor: COLORS.bgAlt, padding: 0, width: "100%" }}>
-        {/* Top row */}
-        <box style={{ flexDirection: "row", justifyContent: "center" }}>
-          {renderVal(hasIndividual ? "top" : "all", hasIndividual ? top : all)}
-        </box>
-        {/* Middle row: Left - Spacer - Right */}
-        <box style={{ flexDirection: "row", justifyContent: "space-between", width: "100%", paddingLeft: 1, paddingRight: 1 }}>
-          {renderVal("left", left)}
-          {renderVal("right", right)}
-        </box>
-        {/* Bottom row */}
-        <box style={{ flexDirection: "row", justifyContent: "center" }}>
-          {renderVal(hasIndividual ? "bottom" : "all", hasIndividual ? bottom : all)}
-        </box>
-      </box>
+    <box id={`spacing-ctrl-${label}`} style={{ flexDirection: "row", gap: 1 }}>
+      <ValueSlider
+        id={`${label}-top`}
+        label="t"
+        property={properties?.top}
+        value={top ?? 0}
+        onChange={(v) => onChange("top", Math.max(0, v))}
+        onChangeEnd={onChangeEnd ? (v) => onChangeEnd("top", Math.max(0, v)) : undefined}
+      />
+      <ValueSlider
+        id={`${label}-right`}
+        label="r"
+        property={properties?.right}
+        value={right ?? 0}
+        onChange={(v) => onChange("right", Math.max(0, v))}
+        onChangeEnd={onChangeEnd ? (v) => onChangeEnd("right", Math.max(0, v)) : undefined}
+      />
+      <ValueSlider
+        id={`${label}-bottom`}
+        label="b"
+        property={properties?.bottom}
+        value={bottom ?? 0}
+        onChange={(v) => onChange("bottom", Math.max(0, v))}
+        onChangeEnd={onChangeEnd ? (v) => onChangeEnd("bottom", Math.max(0, v)) : undefined}
+      />
+      <ValueSlider
+        id={`${label}-left`}
+        label="l"
+        property={properties?.left}
+        value={left ?? 0}
+        onChange={(v) => onChange("left", Math.max(0, v))}
+        onChangeEnd={onChangeEnd ? (v) => onChangeEnd("left", Math.max(0, v)) : undefined}
+      />
     </box>
   )
 }

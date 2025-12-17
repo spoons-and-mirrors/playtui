@@ -203,11 +203,12 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       onUpdate({ [propKey]: val } as Partial<Renderable>, true)
     }
 
-    // Using SpacingControl which wraps ValueCounter (supporting context menus)
+    // Using SpacingControl which wraps ValueSlider (supporting keyframing)
     return (
-      <box key="padding" id="section-padding" flexDirection="column" marginTop={1}>
+      <box key="padding" id="section-padding" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
+        <text fg={COLORS.text}><strong>Padding</strong></text>
         <SpacingControl
-          label="Padding"
+          label="padding"
           values={values}
           properties={{
             top: "paddingTop",
@@ -263,11 +264,12 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
       if (key === "left") onUpdate({ marginLeft: val } as Partial<Renderable>, true)
     }
 
-    // Using SpacingControl which wraps ValueCounter (supporting context menus)
+    // Using SpacingControl which wraps ValueSlider (supporting keyframing)
     return (
-      <box key="margin" id="section-margin" flexDirection="column" marginTop={1}>
+      <box key="margin" id="section-margin" flexDirection="row" alignItems="center" justifyContent="space-between" marginTop={1}>
+        <text fg={COLORS.text}><strong>Margin</strong></text>
         <SpacingControl
-          label="Margin"
+          label="margin"
           values={values}
           properties={{
             top: "marginTop",

@@ -1,6 +1,5 @@
 import { COLORS } from "../../theme"
-import { ValueCounter } from "../ui/ValueCounter"
-import { useKeyframing } from "../contexts/KeyframingContext"
+import { ValueSlider } from "../ui/ValueSlider"
 
 interface PositionControlProps {
   x?: number
@@ -13,7 +12,7 @@ interface PositionControlProps {
 export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEnd }: PositionControlProps) {
   return (
     <box id="position-control" style={{ flexDirection: "row", gap: 1 }}>
-      <ValueCounter
+      <ValueSlider
         id="pos-x"
         label="x"
         property="x"
@@ -21,7 +20,7 @@ export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEn
         onChange={(v) => onChange("x", v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd("x", v) : undefined}
       />
-      <ValueCounter
+      <ValueSlider
         id="pos-y"
         label="y"
         property="y"
@@ -29,7 +28,7 @@ export function PositionControl({ x = 0, y = 0, zIndex = 0, onChange, onChangeEn
         onChange={(v) => onChange("y", v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd("y", v) : undefined}
       />
-      <ValueCounter
+      <ValueSlider
         id="pos-z"
         label="z"
         property="zIndex"
