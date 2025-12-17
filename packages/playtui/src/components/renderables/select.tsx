@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, SelectNode } from "../../lib/types"
+import type { Renderable, SelectRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // SELECT DEFAULTS
 // =============================================================================
 
-export const SELECT_DEFAULTS: Partial<SelectNode> = {
+export const SELECT_DEFAULTS: Partial<SelectRenderable> = {
   width: 20,
   height: 5,
   options: ["Option 1", "Option 2", "Option 3"],
@@ -29,7 +29,7 @@ interface SelectRendererProps {
 }
 
 export function SelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SelectRendererProps) {
-  const node = genericNode as SelectNode
+  const node = genericNode as SelectRenderable
   const options = node.options || ["Option 1", "Option 2"]
   const bgColor = node.backgroundColor || COLORS.bgAlt
   const selBgColor = node.selectedBackgroundColor || COLORS.accent
@@ -95,7 +95,7 @@ interface SelectPropertiesProps {
 }
 
 export function SelectProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: SelectPropertiesProps) {
-  const node = genericNode as SelectNode
+  const node = genericNode as SelectRenderable
   return (
     <box id="section-select" style={{ flexDirection: "column" }}>
       <SectionHeader title="≡ Select" collapsed={collapsed} onToggle={onToggle} />

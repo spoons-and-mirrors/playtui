@@ -1,4 +1,4 @@
-import type { Renderable, BoxNode } from "../../lib/types"
+import type { Renderable, BoxRenderable } from "../../lib/types"
 import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import {
@@ -9,7 +9,7 @@ import {
 // BOX DEFAULTS
 // =============================================================================
 
-export const BOX_DEFAULTS: Partial<BoxNode> = {
+export const BOX_DEFAULTS: Partial<BoxRenderable> = {
   width: 12,
   height: 4,
   backgroundColor: COLORS.bgAlt,
@@ -42,7 +42,7 @@ const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
 }
 
 export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: BoxRendererProps) {
-  const node = genericNode as BoxNode
+  const node = genericNode as BoxRenderable
   const hasBorder = node.border === true
   
   // Enable dragging for all positioned elements
@@ -152,7 +152,7 @@ interface BoxPropertiesProps {
 }
 
 export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: BoxPropertiesProps) {
-  const node = genericNode as BoxNode
+  const node = genericNode as BoxRenderable
   const hasBorder = node.border === true
 
   return (

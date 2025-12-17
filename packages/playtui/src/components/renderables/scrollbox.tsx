@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, ScrollboxNode } from "../../lib/types"
+import type { Renderable, ScrollboxRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // SCROLLBOX DEFAULTS
 // =============================================================================
 
-export const SCROLLBOX_DEFAULTS: Partial<ScrollboxNode> = {
+export const SCROLLBOX_DEFAULTS: Partial<ScrollboxRenderable> = {
   width: 20,
   height: 8,
   backgroundColor: COLORS.bgAlt,
@@ -34,7 +34,7 @@ interface ScrollboxRendererProps {
 }
 
 export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
-  const node = genericNode as ScrollboxNode
+  const node = genericNode as ScrollboxRenderable
   const hasBorder = node.border === true
   const borderValue = hasBorder
     ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
@@ -146,7 +146,7 @@ interface ScrollboxPropertiesProps {
 }
 
 export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: ScrollboxPropertiesProps) {
-  const node = genericNode as ScrollboxNode
+  const node = genericNode as ScrollboxRenderable
   return (
     <box id="section-scrollbox" style={{ flexDirection: "column" }}>
       <SectionHeader title="↕ Scrollbox" collapsed={collapsed} onToggle={onToggle} />

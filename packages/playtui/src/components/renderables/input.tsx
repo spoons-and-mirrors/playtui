@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, InputNode } from "../../lib/types"
+import type { Renderable, InputRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, SelectProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // INPUT DEFAULTS
 // =============================================================================
 
-export const INPUT_DEFAULTS: Partial<InputNode> = {
+export const INPUT_DEFAULTS: Partial<InputRenderable> = {
   width: 20,
   height: 1,
   placeholder: "Enter text...",
@@ -29,7 +29,7 @@ interface InputRendererProps {
 }
 
 export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
-  const node = genericNode as InputNode
+  const node = genericNode as InputRenderable
   // Enable dragging for all positioned elements
   const isDraggable = true
 
@@ -83,7 +83,7 @@ interface InputPropertiesProps {
 }
 
 export function InputProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: InputPropertiesProps) {
-  const node = genericNode as InputNode
+  const node = genericNode as InputRenderable
   return (
     <box id="section-input" style={{ flexDirection: "column" }}>
       <SectionHeader title="▭ Input" collapsed={collapsed} onToggle={onToggle} />

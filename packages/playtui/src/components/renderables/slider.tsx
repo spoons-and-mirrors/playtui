@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, SliderNode } from "../../lib/types"
+import type { Renderable, SliderRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   NumberProp, SelectProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // SLIDER DEFAULTS
 // =============================================================================
 
-export const SLIDER_DEFAULTS: Partial<SliderNode> = {
+export const SLIDER_DEFAULTS: Partial<SliderRenderable> = {
   width: 20,
   orientation: "horizontal",
   value: 50,
@@ -32,7 +32,7 @@ interface SliderRendererProps {
 }
 
 export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SliderRendererProps) {
-  const node = genericNode as SliderNode
+  const node = genericNode as SliderRenderable
   const isHorizontal = node.orientation !== "vertical"
   const val = node.value ?? 50
   const min = node.min ?? 0
@@ -96,7 +96,7 @@ interface SliderPropertiesProps {
 }
 
 export function SliderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: SliderPropertiesProps) {
-  const node = genericNode as SliderNode
+  const node = genericNode as SliderRenderable
   const min = node.min ?? 0
   const max = node.max ?? 100
 

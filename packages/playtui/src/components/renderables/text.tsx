@@ -1,7 +1,7 @@
 import { useRef } from "react"
 import { TextAttributes } from "@opentui/core"
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, TextNode } from "../../lib/types"
+import type { Renderable, TextRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorControl, PropRow
@@ -13,7 +13,7 @@ import type { ColorPalette } from "../../lib/projectTypes"
 // TEXT DEFAULTS
 // =============================================================================
 
-export const TEXT_DEFAULTS: Partial<TextNode> = {
+export const TEXT_DEFAULTS: Partial<TextRenderable> = {
   content: "Text",
   fg: COLORS.text,
 }
@@ -32,7 +32,7 @@ interface TextRendererProps {
 }
 
 export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextRendererProps) {
-  const node = genericNode as TextNode
+  const node = genericNode as TextRenderable
   
   // Enable dragging for all positioned elements
   const isDraggable = true
@@ -100,7 +100,7 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
 
 interface TextPropertiesProps {
   node: Renderable
-  onUpdate: (updates: Partial<TextNode>) => void
+  onUpdate: (updates: Partial<TextRenderable>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean  // kept for interface compatibility, but ignored
@@ -115,7 +115,7 @@ interface TextPropertiesProps {
 }
 
 export function TextProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, palettes = [], activePaletteIndex = 0, onUpdateSwatch, onChangePalette, pickingForField, setPickingForField }: TextPropertiesProps) {
-  const node = genericNode as TextNode
+  const node = genericNode as TextRenderable
   
   const lastContentClickRef = useRef<number>(0)
   
@@ -184,7 +184,7 @@ export function TextProperties({ node: genericNode, onUpdate, focusedField, setF
           label="Wrap"
           value={node.wrapMode || "none"}
           options={["none", "word", "char"]}
-          onChange={(v) => onUpdate({ wrapMode: v as TextNode["wrapMode"] })}
+          onChange={(v) => onUpdate({ wrapMode: v as TextRenderable["wrapMode"] })}
         />
 
         {/* Select */}

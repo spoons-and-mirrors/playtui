@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, TextareaNode } from "../../lib/types"
+import type { Renderable, TextareaRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // TEXTAREA DEFAULTS
 // =============================================================================
 
-export const TEXTAREA_DEFAULTS: Partial<TextareaNode> = {
+export const TEXTAREA_DEFAULTS: Partial<TextareaRenderable> = {
   width: 30,
   height: 4,
   placeholder: "Enter multi-line text...",
@@ -31,7 +31,7 @@ interface TextareaRendererProps {
 }
 
 export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
-  const node = genericNode as TextareaNode
+  const node = genericNode as TextareaRenderable
   // Enable dragging for all positioned elements
   const isDraggable = true
 
@@ -85,7 +85,7 @@ interface TextareaPropertiesProps {
 }
 
 export function TextareaProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: TextareaPropertiesProps) {
-  const node = genericNode as TextareaNode
+  const node = genericNode as TextareaRenderable
   return (
     <box id="section-textarea" style={{ flexDirection: "column" }}>
       <SectionHeader title="▯ Textarea" collapsed={collapsed} onToggle={onToggle} />

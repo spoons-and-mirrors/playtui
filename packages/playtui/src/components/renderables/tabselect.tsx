@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, TabSelectNode } from "../../lib/types"
+import type { Renderable, TabSelectRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // TABSELECT DEFAULTS
 // =============================================================================
 
-export const TABSELECT_DEFAULTS: Partial<TabSelectNode> = {
+export const TABSELECT_DEFAULTS: Partial<TabSelectRenderable> = {
   options: ["Tab 1", "Tab 2"],
   tabWidth: 15,
 }
@@ -28,7 +28,7 @@ interface TabSelectRendererProps {
 }
 
 export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TabSelectRendererProps) {
-  const node = genericNode as TabSelectNode
+  const node = genericNode as TabSelectRenderable
   const options = node.options || ["Tab 1", "Tab 2"]
   // Enable dragging for all positioned elements
   const isDraggable = true
@@ -90,7 +90,7 @@ interface TabSelectPropertiesProps {
 }
 
 export function TabSelectProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: TabSelectPropertiesProps) {
-  const node = genericNode as TabSelectNode
+  const node = genericNode as TabSelectRenderable
   return (
     <box id="section-tabselect" style={{ flexDirection: "column" }}>
       <SectionHeader title="◰ Tabs" collapsed={collapsed} onToggle={onToggle} />

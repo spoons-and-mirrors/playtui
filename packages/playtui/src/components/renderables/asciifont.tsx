@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { Renderable, AsciiFontNode } from "../../lib/types"
+import type { Renderable, AsciiFontRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, SelectProp, ColorControl, SectionHeader
@@ -9,7 +9,7 @@ import {
 // ASCIIFONT DEFAULTS
 // =============================================================================
 
-export const ASCIIFONT_DEFAULTS: Partial<AsciiFontNode> = {
+export const ASCIIFONT_DEFAULTS: Partial<AsciiFontRenderable> = {
   text: "",
   font: "block",
   color: COLORS.accent,
@@ -29,7 +29,7 @@ interface AsciiFontRendererProps {
 }
 
 export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: AsciiFontRendererProps) {
-  const node = genericNode as AsciiFontNode
+  const node = genericNode as AsciiFontRenderable
   
   // Enable dragging for all positioned elements
   const isDraggable = true
@@ -91,7 +91,7 @@ interface AsciiFontPropertiesProps {
 }
 
 export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: AsciiFontPropertiesProps) {
-  const node = genericNode as AsciiFontNode
+  const node = genericNode as AsciiFontRenderable
   return (
     <box id="section-asciifont" style={{ flexDirection: "column" }}>
       <SectionHeader title="A ASCII Font" collapsed={collapsed} onToggle={onToggle} />
