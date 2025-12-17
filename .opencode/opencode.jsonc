@@ -1,97 +1,200 @@
 {
-	"$schema": "https://opencode.ai/config.json",
-	"instructions": [".opencode/instructions/*.md"],
-	"mcp": {
-		"context7": {
-			"enabled": true,
-			"type": "local",
-			"command": ["npx", "-y", "@upstash/context7-mcp"]
-		},
-		"gh_grep": {
-			"enabled": false,
-			"type": "remote",
-			"url": "https://mcp.grep.app"
-		},
-		"deepwiki": {
-			"enabled": false,
-			"type": "remote",
-			"url": "https://mcp.deepwiki.com/sse"
-		}
-	},
-	"agent": {
-		"general": {
-			//"model": "zai-coding-plan/glm-4.6"
-		},
-		"build": {
-			//"model": "zai-coding-plan/glm-4.6"
-		}
-	},
-	"tui": {
-		"scroll_speed": 10
-	},
-	"small_model": "github-copilot/gpt-4.1",
-	"username": "spoon",
-	"provider": {
-		"github-copilot": {
-			"models": {
-				"gpt-5-mini": {
-					"name": "GPT-5 Mini",
-					"options": {
-						"reasoningEffort": "medium",
-						"textVerbosity": "low"
-					}
-				},
-				    		"gemini-3-flash-preview": {
-					"name": "Gemini 3 Flash Preview",
-					"limit": {
-						"context": 256000,
-						"output": 128000
-					}
-				},
-				"claude-opus-4.5": {
-					"name": "Claude Opus 4.5",
-					"limit": {
-						"context": 256000,
-						"output": 64000
-					}
-				},
-				"gpt-5.1": {
-					"name": "GPT-5.1",
-					"limit": {
-						"context": 256000,
-						"output": 256000
-					},
-					"options": {
-						"reasoningEffort": "medium",
-						"textVerbosity": "low"
-						//"reasoningSummary": "auto",
-						//"include": ["reasoning.encrypted_content"],
-						//"store": false
-					}
-				},
-				"gpt-5.2": {
-					"name": "GPT-5.2",
-					"limit": {
-						"context": 256000,
-						"output": 256000
-					},
-					"options": {
-						"reasoningEffort": "medium",
-						"textVerbosity": "low"
-						//"reasoningSummary": "auto",
-						//"include": ["reasoning.encrypted_content"],
-						//"store": false
-					}
-				}
-			}
-		}
-	},
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [".opencode/instructions/*.md"],
+  "mcp": {
+    "context7": {
+      "enabled": true,
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"]
+    },
+    "gh_grep": {
+      "enabled": false,
+      "type": "remote",
+      "url": "https://mcp.grep.app"
+    },
+    "deepwiki": {
+      "enabled": false,
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/sse"
+    }
+  },
+  "agent": {
+    "general": {
+      //"model": "zai-coding-plan/glm-4.6"
+    },
+    "build": {
+      //"model": "zai-coding-plan/glm-4.6"
+    }
+  },
+  "tui": {
+    "scroll_speed": 10
+  },
+  "small_model": "github-copilot/gpt-4.1",
+  "username": "spoon",
+  "provider": {
+    "github-copilot": {
+      "models": {
+        "gpt-5-mini": {
+          "name": "GPT-5 Mini",
+          "options": {
+            "reasoningEffort": "medium",
+            "textVerbosity": "low"
+          }
+        },
+        "gemini-3-flash-preview": {
+          "name": "Gemini 3 Flash Preview",
+          "limit": {
+            "context": 256000,
+            "output": 128000
+          }
+        },
+        "claude-opus-4.5": {
+          "name": "Claude Opus 4.5",
+          "limit": {
+            "context": 256000,
+            "output": 64000
+          }
+        },
+        "gpt-5.1": {
+          "name": "GPT-5.1",
+          "limit": {
+            "context": 256000,
+            "output": 256000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "textVerbosity": "low"
+            //"reasoningSummary": "auto",
+            //"include": ["reasoning.encrypted_content"],
+            //"store": false
+          }
+        },
+        "gpt-5.2": {
+          "name": "GPT-5.2",
+          "limit": {
+            "context": 256000,
+            "output": 256000
+          },
+          "options": {
+            "reasoningEffort": "medium",
+            "textVerbosity": "low"
+            //"reasoningSummary": "auto",
+            //"include": ["reasoning.encrypted_content"],
+            //"store": false
+          }
+        }
+      }
+    },
 
-	 "experimental": {
-	 "batch_tool": true,
-	// 	"mcp_registry": false,
-	// 	"primary_tools": ["prune"]
-	 },
+    "llm-proxy": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Proxy",
+      "options": {
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "VerysecretKey",
+        "timeout": 300000
+      },
+      "models": {
+        "claude-opus-4-5-thinking": {
+          "id": "antigravity/claude-opus-4-5",
+          "name": "Claude Opus 4.5 Thinking",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          },
+          "reasoning": true,
+          "options": {
+            "reasoningEffort": "high"
+          },
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        },
+        "claude-sonnet-4-5-thinking": {
+          "id": "antigravity/claude-sonnet-4-5",
+          "name": "Claude Sonnet 4.5 Thinking",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          },
+          "reasoning": true,
+          "options": {
+            "reasoningEffort": "high"
+          },
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        },
+        "claude-sonnet-4-5": {
+          "id": "antigravity/claude-sonnet-4-5",
+          "name": "Claude Sonnet 4.5",
+          "limit": {
+            "context": 200000,
+            "output": 8000
+          },
+          "reasoning": false,
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        },
+        "ant_gemini-3-flash-preview": {
+          "id": "antigravity/gemini-3-flash",
+          "name": "ANT Gemini 3 Flash",
+          "limit": {
+            "context": 1048576,
+            "output": 64000
+          },
+          "reasoning": true,
+          "options": {
+            "reasoningEffort": "high"
+          },
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        },
+        "ant_gemini-3-pro-high": {
+          "id": "antigravity/gemini-3-pro-preview",
+          "name": "ANT Gemini 3 Pro High",
+          "limit": {
+            "context": 1048576,
+            "output": 64000
+          },
+          "reasoning": true,
+          "options": {
+            "reasoningEffort": "high"
+          },
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        },
+        "ant_gemini-3-pro-low": {
+          "id": "antigravity/gemini-3-pro-preview",
+          "name": "ANT Gemini 3 Pro Low",
+          "limit": {
+            "context": 1048576,
+            "output": 64000
+          },
+          "reasoning": true,
+          "options": {
+            "reasoningEffort": "low"
+          },
+          "modalities": {
+            "input": ["image", "text"],
+            "output": ["text"]
+          }
+        }
+      }
+    }
+  },
 
-	
+  "experimental": {
+    "batch_tool": true
+    // 	"mcp_registry": false,
+    // 	"primary_tools": ["prune"]
+  }
 }
