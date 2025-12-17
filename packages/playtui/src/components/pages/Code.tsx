@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { TextAttributes } from "@opentui/core"
 import type { TextareaRenderable } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
-import { ValueSlider } from "../ui"
+import { ValueSlider, RenderPreviewModal } from "../ui"
 import { COLORS } from "../../theme"
 import type { Renderable } from "../../lib/types"
 import { parseCodeMultiple } from "../../lib/parseCode"
@@ -17,9 +17,11 @@ interface CodePanelProps {
   onFocusChange?: (focused: boolean) => void
   height: number
   onHeightChange: (height: number) => void
+  width: number
+  screenHeight: number
 }
 
-export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, height, onHeightChange }: CodePanelProps) {
+export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, height, onHeightChange, width, screenHeight }: CodePanelProps) {
   const [isFocused, setIsFocused] = useState(true) // Start focused since panel is open
   const textareaRef = useRef<TextareaRenderable>(null)
   const codeRef = useRef(code)
@@ -27,6 +29,7 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, heig
   const isUserEditingRef = useRef(false) // Track if user is actively typing
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showRenderPreview, setShowRenderPreview] = useState(false)
 
   // Notify parent of focus changes
   useEffect(() => {
@@ -57,7 +60,7 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, heig
     }
 
     // Set parsed nodes as children of root
-    const newChildren = result.nodes || (result.node ? [result.node] : [])
+    const newChildren = result.nodes || []
     updateTree({ ...tree, children: newChildren })
     setError(null)
   }, [tree, updateTree])
@@ -122,12 +125,13 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, heig
   }, [])
 
   return (
-    <box id="code-panel" flexDirection="column" flexGrow={1} backgroundColor={COLORS.bg}
-      onMouseDown={(e) => {
-        e.stopPropagation() // Prevent parent from blurring us
-        setIsFocused(true)
-      }}
-    >
+    <>
+      <box id="code-panel" flexDirection="column" flexGrow={1} backgroundColor={COLORS.bg}
+        onMouseDown={(e) => {
+          e.stopPropagation() // Prevent parent from blurring us
+          setIsFocused(true)
+        }}
+      >
       {/* Header row */}
       <box 
         id="code-header" 
@@ -161,6 +165,21 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, heig
         
         {/* Spacer */}
         <box flexGrow={1} />
+        
+        {/* Render button */}
+        <box 
+          id="code-render-btn" 
+          onMouseDown={() => setShowRenderPreview(true)} 
+          backgroundColor={COLORS.bg} 
+          border={["left"]}
+          borderStyle="heavy"
+          borderColor={COLORS.accent}
+          paddingLeft={1} 
+          paddingRight={1}
+          marginRight={1}
+        >
+          <text fg={COLORS.accent} selectable={false}>Preview</text>
+        </box>
         
         {/* Copy button */}
         <box 
@@ -222,5 +241,16 @@ export function CodePanel({ code, tree, updateTree, onClose, onFocusChange, heig
         />
       </box>
     </box>
+    
+    {/* Render Preview Modal */}
+    {showRenderPreview && (
+      <RenderPreviewModal 
+        code={code} 
+        onClose={() => setShowRenderPreview(false)}
+        width={width}
+        height={screenHeight}
+      />
+    )}
+    </>
   )
 }

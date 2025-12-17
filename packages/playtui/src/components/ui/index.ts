@@ -1,6 +1,7 @@
 export { ActionBtn } from "./ActionBtn"
 export { NavBar, Footer, ModeTabBar } from "./NavBar"
 export { ProjectModal } from "./ProjectModal"
+export { RenderPreviewModal } from "./RenderPreviewModal"
 export { ValueSlider } from "./ValueSlider"
 export { ValueSelect } from "./ValueSelect"
 

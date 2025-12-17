@@ -637,6 +637,8 @@ export function Builder({ width, height }: BuilderProps) {
              }}
              height={codePanelHeight}
              onHeightChange={(h) => setViewLayout(prev => ({ ...prev, codePanelHeight: Math.max(5, h) }))}
+             width={width}
+             screenHeight={height}
            />
 
         </box>
