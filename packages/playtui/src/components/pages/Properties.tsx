@@ -165,8 +165,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
   // Render padding section - non-collapsible, all inline
   const renderPaddingSection = () => {
-    if (!isContainerNode(node) && node.type !== "text") return null
-    const container = node as BoxNode | ScrollboxNode | TextNode
+    if (!isContainerRenderable(node) && node.type !== "text") return null
+    const container = node as BoxRenderable | ScrollboxRenderable | TextRenderable
 
     const values = {
       top: container.paddingTop ?? 0,
@@ -306,8 +306,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
   // Render flex container section with visual controls
   const renderFlexContainerSection = () => {
-    if (!isContainerNode(node)) return null
-    const container = node as BoxNode | ScrollboxNode
+    if (!isContainerRenderable(node)) return null
+    const container = node as BoxRenderable | ScrollboxRenderable
     
     const isCollapsed = collapsed["flexContainer"]
     const wrapProp = props.find(p => p.key === "flexWrap")
@@ -409,8 +409,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
   // Render overflow section
   const renderOverflowSection = () => {
-    if (!isContainerNode(node)) return null
-    const container = node as BoxNode | ScrollboxNode
+    if (!isContainerRenderable(node)) return null
+    const container = node as BoxRenderable | ScrollboxRenderable
     
     const isCollapsed = collapsed["overflow"]
     const hasOverflowProp = props.some(p => p.key === "overflow")

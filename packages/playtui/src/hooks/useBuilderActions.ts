@@ -3,14 +3,14 @@ import type { Renderable, RenderableType } from "../lib/types"
 import { log } from "../lib/logger"
 import {
   genId,
-  findNode,
+  findRenderable,
   findParent,
-  updateNode,
+  updateRenderable,
   addChild,
-  removeNode,
+  removeRenderable,
   flattenTree,
-  cloneNode,
-  moveNode,
+  cloneRenderable,
+  moveRenderable,
 } from "../lib/tree"
 import { RENDERABLE_REGISTRY } from "../components/renderables"
 

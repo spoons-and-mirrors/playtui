@@ -1,7 +1,7 @@
 // Keyframing + bezier curve interpolation (hybrid overlay)
 
 import type { Renderable } from "./types"
-import { findNode } from "./tree"
+import { findRenderable } from "./tree"
 
 export type PropertyPath = string
 export type KeyframedPropertyId = string

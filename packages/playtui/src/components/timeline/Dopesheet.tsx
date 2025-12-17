@@ -5,7 +5,7 @@ import { useKeyboard } from "@opentui/react"
 import { COLORS } from "../../theme"
 import { DopesheetRow } from "./DopesheetRow"
 import type { UseProjectReturn } from "../../hooks/useProject"
-import { findNode } from "../../lib/tree"
+import { findRenderable } from "../../lib/tree"
 import { Bind, isKeybind } from "../../lib/shortcuts"
 import { getPrevKeyframeFrameForNode, getNextKeyframeFrameForNode } from "../../lib/keyframing"
  

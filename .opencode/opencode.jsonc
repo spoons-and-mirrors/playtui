@@ -81,7 +81,7 @@
 	},
 
 	 "experimental": {
-	 "batch_tool": false,
+	 "batch_tool": true,
 	// 	"mcp_registry": false,
 	// 	"primary_tools": ["prune"]
 	 },

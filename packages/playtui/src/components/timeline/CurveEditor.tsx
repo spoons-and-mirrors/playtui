@@ -6,7 +6,7 @@ import { COLORS } from "../../theme"
 import type { UseProjectReturn } from "../../hooks/useProject"
 import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle, getPrevKeyframeFrame, getNextKeyframeFrame } from "../../lib/keyframing"
 import { ValueSlider } from "../ui/ValueSlider"
-import { findNode } from "../../lib/tree"
+import { findRenderable } from "../../lib/tree"
 import { Bind, isKeybind } from "../../lib/shortcuts"
  
 // Get display name for an element (capitalize type)
