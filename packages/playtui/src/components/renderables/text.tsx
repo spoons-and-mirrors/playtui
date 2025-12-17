@@ -130,11 +130,12 @@ export function TextProperties({ node: genericNode, onUpdate, focusedField, setF
               id="content-input"
               value={node.content || ""}
               focused
-              width={(node.content?.length || 1) + 2}
+              style={{ flexGrow: 1 }}
               backgroundColor={COLORS.cardHover}
               textColor={COLORS.text}
               onInput={(v) => onUpdate({ content: v })}
               onSubmit={() => setFocusedField(null)}
+              onPaste={(e) => onUpdate({ content: (node.content || "") + e.text })}
             />
           ) : (
             <box
