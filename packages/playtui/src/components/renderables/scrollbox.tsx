@@ -1,10 +1,13 @@
-import type { Renderable, ScrollboxRenderable } from "../../lib/types"
-import { COLORS } from "../../theme"
+import type { Renderable, ScrollboxRenderable } from '../../lib/types'
+import { COLORS } from '../../theme'
 import {
-  ToggleProp, SelectProp, ManagedColorControl, SectionHeader
-} from "../controls"
-import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
-import { buildPositioningStyle } from "./styleHelpers"
+  ToggleProp,
+  SelectProp,
+  ManagedColorControl,
+  SectionHeader,
+} from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle } from './styleHelpers'
 
 // =============================================================================
 // SCROLLBOX DEFAULTS
@@ -14,9 +17,9 @@ export const SCROLLBOX_DEFAULTS: Partial<ScrollboxRenderable> = {
   width: 20,
   height: 8,
   backgroundColor: COLORS.bgAlt,
-  flexDirection: "column",
+  flexDirection: 'column',
   border: true,
-  borderStyle: "rounded",
+  borderStyle: 'rounded',
   borderColor: COLORS.border,
 }
 
@@ -34,17 +37,26 @@ interface ScrollboxRendererProps {
   children?: React.ReactNode
 }
 
-export function ScrollboxRenderer({ node: genericNode, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
+export function ScrollboxRenderer({
+  node: genericNode,
+  onSelect,
+  onHover,
+  onDragStart,
+  children,
+}: ScrollboxRendererProps) {
   const node = genericNode as ScrollboxRenderable
   const hasBorder = node.border === true
   const borderValue = hasBorder
-    ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
+    ? node.borderSides && node.borderSides.length > 0
+      ? node.borderSides
+      : true
     : undefined
 
-  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   const scrollboxStyle = {
-    flexDirection: node.flexDirection || "column",
+    flexDirection: node.flexDirection || 'column',
     flexWrap: node.flexWrap,
     justifyContent: node.justifyContent,
     alignItems: node.alignItems,
@@ -57,17 +69,22 @@ export function ScrollboxRenderer({ node: genericNode, onSelect, onHover, onDrag
     paddingBottom: node.paddingBottom,
     paddingLeft: node.paddingLeft,
     overflow: node.overflow,
-    backgroundColor: node.backgroundColor || "transparent",
+    backgroundColor: node.backgroundColor || 'transparent',
   } as const
 
   // Build scrollbar options if any are set
-  const scrollbarOptions = (node.showScrollArrows || node.scrollbarForeground || node.scrollbarBackground) ? {
-    showArrows: node.showScrollArrows,
-    trackOptions: {
-      foregroundColor: node.scrollbarForeground,
-      backgroundColor: node.scrollbarBackground,
-    },
-  } : undefined
+  const scrollbarOptions =
+    node.showScrollArrows ||
+    node.scrollbarForeground ||
+    node.scrollbarBackground
+      ? {
+          showArrows: node.showScrollArrows,
+          trackOptions: {
+            foregroundColor: node.scrollbarForeground,
+            backgroundColor: node.scrollbarBackground,
+          },
+        }
+      : undefined
 
   return (
     <box
@@ -80,7 +97,7 @@ export function ScrollboxRenderer({ node: genericNode, onSelect, onHover, onDrag
     >
       <scrollbox
         border={borderValue}
-        borderStyle={hasBorder ? (node.borderStyle || "single") : "single"}
+        borderStyle={hasBorder ? node.borderStyle || 'single' : 'single'}
         borderColor={node.borderColor}
         visible={node.visible !== false}
         title={node.title}
@@ -92,9 +109,12 @@ export function ScrollboxRenderer({ node: genericNode, onSelect, onHover, onDrag
         viewportCulling={node.viewportCulling}
         style={{
           ...scrollboxStyle,
-          width: "100%", // Fill wrapper
-          height: "100%", // Fill wrapper
-          contentOptions: { flexDirection: node.flexDirection || "column", gap: node.gap },
+          width: '100%', // Fill wrapper
+          height: '100%', // Fill wrapper
+          contentOptions: {
+            flexDirection: node.flexDirection || 'column',
+            gap: node.gap,
+          },
           scrollbarOptions,
         }}
       >
@@ -119,15 +139,28 @@ interface ScrollboxPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: ScrollboxPropertiesProps) {
+export function ScrollboxProperties({
+  node: genericNode,
+  onUpdate,
+  focusedField,
+  setFocusedField,
+  collapsed,
+  onToggle,
+  pickingForField,
+  setPickingForField,
+}: ScrollboxPropertiesProps) {
   const node = genericNode as ScrollboxRenderable
   return (
-    <box id="section-scrollbox" style={{ flexDirection: "column" }}>
-      <SectionHeader title="↕ Scrollbox" collapsed={collapsed} onToggle={onToggle} />
+    <box id="section-scrollbox" style={{ flexDirection: 'column' }}>
+      <SectionHeader
+        title="↕ Scrollbox"
+        collapsed={collapsed}
+        onToggle={onToggle}
+      />
       {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
+        <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
           {/* Scroll direction toggles */}
-          <box style={{ flexDirection: "row", gap: 2 }}>
+          <box style={{ flexDirection: 'row', gap: 2 }}>
             <ToggleProp
               label="X"
               value={node.scrollX === true}
@@ -150,7 +183,7 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
             <text fg={COLORS.muted}>─ Sticky ─</text>
           </box>
 
-          <box style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
+          <box style={{ flexDirection: 'row', gap: 1, alignItems: 'center' }}>
             <ToggleProp
               label="Sticky"
               value={node.stickyScroll === true}
@@ -160,8 +193,8 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
               <box style={{ flexGrow: 1 }}>
                 <SelectProp
                   label="To"
-                  value={node.stickyStart || "bottom"}
-                  options={["bottom", "top", "left", "right"]}
+                  value={node.stickyStart || 'bottom'}
+                  options={['bottom', 'top', 'left', 'right']}
                   onChange={(v) => onUpdate({ stickyStart: v as any })}
                 />
               </box>
@@ -179,7 +212,7 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
             onChange={(v) => onUpdate({ showScrollArrows: v })}
           />
 
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="FG"

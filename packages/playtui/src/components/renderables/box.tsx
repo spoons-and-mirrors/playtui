@@ -1,11 +1,16 @@
-import type { Renderable, BoxRenderable } from "../../lib/types"
-import type { MouseEvent } from "@opentui/core"
-import { COLORS } from "../../theme"
+import type { Renderable, BoxRenderable } from '../../lib/types'
+import type { MouseEvent } from '@opentui/core'
+import { COLORS } from '../../theme'
 import {
-  ToggleProp, SelectProp, StringProp, SectionHeader, BorderSidesProp, ManagedColorControl
-} from "../controls"
-import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
-import { buildPositioningStyle, parseSize } from "./styleHelpers"
+  ToggleProp,
+  SelectProp,
+  StringProp,
+  SectionHeader,
+  BorderSidesProp,
+  ManagedColorControl,
+} from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle, parseSize } from './styleHelpers'
 
 // =============================================================================
 // BOX DEFAULTS
@@ -15,11 +20,11 @@ export const BOX_DEFAULTS: Partial<BoxRenderable> = {
   width: 12,
   height: 4,
   backgroundColor: COLORS.bgAlt,
-  flexDirection: "column",
-  justifyContent: "flex-start",
-  alignItems: "flex-start",
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+  alignItems: 'flex-start',
   border: true,
-  borderStyle: "single",
+  borderStyle: 'single',
   borderColor: COLORS.border,
 }
 
@@ -37,15 +42,24 @@ interface BoxRendererProps {
   children?: React.ReactNode
 }
 
-export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: BoxRendererProps) {
+export function BoxRenderer({
+  node: genericNode,
+  isSelected,
+  isHovered,
+  onSelect,
+  onHover,
+  onDragStart,
+  children,
+}: BoxRendererProps) {
   const node = genericNode as BoxRenderable
   const hasBorder = node.border === true
-  
-  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
+
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   const boxStyle = {
     ...buildPositioningStyle(node),
-    
+
     // Sizing
     width: parseSize(node.width),
     height: parseSize(node.height),
@@ -56,7 +70,7 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     aspectRatio: node.aspectRatio,
 
     // Flex container
-    flexDirection: node.flexDirection || "column",
+    flexDirection: node.flexDirection || 'column',
     flexWrap: node.flexWrap,
     justifyContent: node.justifyContent,
     alignItems: node.alignItems,
@@ -82,17 +96,22 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     overflow: node.overflow,
 
     // Background
-    backgroundColor: node.backgroundColor || "transparent",
+    backgroundColor: node.backgroundColor || 'transparent',
   } as const
 
   // Border props - only include when border is enabled
-  const borderProps = hasBorder ? {
-    border: node.borderSides && node.borderSides.length > 0 ? node.borderSides : true,
-    borderStyle: node.borderStyle || "single",
-    borderColor: node.borderColor,
-    focusedBorderColor: node.focusedBorderColor,
-    customBorderChars: node.customBorderChars,
-  } : {}
+  const borderProps = hasBorder
+    ? {
+        border:
+          node.borderSides && node.borderSides.length > 0
+            ? node.borderSides
+            : true,
+        borderStyle: node.borderStyle || 'single',
+        borderColor: node.borderColor,
+        focusedBorderColor: node.focusedBorderColor,
+        customBorderChars: node.customBorderChars,
+      }
+    : {}
 
   return (
     <box
@@ -127,15 +146,24 @@ interface BoxPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: BoxPropertiesProps) {
+export function BoxBorderProperties({
+  node: genericNode,
+  onUpdate,
+  focusedField,
+  setFocusedField,
+  collapsed,
+  onToggle,
+  pickingForField,
+  setPickingForField,
+}: BoxPropertiesProps) {
   const node = genericNode as BoxRenderable
   const hasBorder = node.border === true
 
   return (
-    <box id="section-border" style={{ flexDirection: "column" }}>
+    <box id="section-border" style={{ flexDirection: 'column' }}>
       <SectionHeader title="Border" collapsed={collapsed} onToggle={onToggle} />
       {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
+        <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
           {/* Border toggle - always visible */}
           <ToggleProp
             label="Border"
@@ -156,8 +184,8 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
               {/* Border style */}
               <SelectProp
                 label="Style"
-                value={node.borderStyle || "single"}
-                options={["single", "rounded", "double", "heavy"]}
+                value={node.borderStyle || 'single'}
+                options={['single', 'rounded', 'double', 'heavy']}
                 onChange={(v) => onUpdate({ borderStyle: v as any })}
               />
 
@@ -188,9 +216,9 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
               {/* Title */}
               <StringProp
                 label="Title"
-                value={node.title || ""}
-                focused={focusedField === "title"}
-                onFocus={() => setFocusedField("title")}
+                value={node.title || ''}
+                focused={focusedField === 'title'}
+                onFocus={() => setFocusedField('title')}
                 onChange={(v) => onUpdate({ title: v })}
               />
 
@@ -198,8 +226,8 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
               {node.title && (
                 <SelectProp
                   label="Title Pos"
-                  value={node.titleAlignment || "left"}
-                  options={["left", "center", "right"]}
+                  value={node.titleAlignment || 'left'}
+                  options={['left', 'center', 'right']}
                   onChange={(v) => onUpdate({ titleAlignment: v as any })}
                 />
               )}

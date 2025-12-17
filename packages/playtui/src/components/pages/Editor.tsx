@@ -1,32 +1,32 @@
 /**
  * EditorPanel - The central canvas area where elements are rendered and manipulated.
- * 
+ *
  * This is the mental entry point for all canvas-related concerns:
  * - Element rendering (via Renderer)
  * - Selection/hover visual feedback
  * - Auto-layout centering
  * - Background click handling
  * - Canvas panning (middle-mouse drag)
- * 
+ *
  * DRAG ARCHITECTURE:
  * Drag events are captured at the CANVAS level, not the element level.
  * This ensures smooth dragging even when the mouse moves outside an element's bounds.
  * Elements only report drag start (via onMouseDown), then the canvas tracks all movement.
- * 
+ *
  * CANVAS PANNING:
  * Middle-mouse drag pans the canvas viewport. The offset state is managed by the parent
  * and passed down, allowing the canvas position to persist across mode switches.
  */
 
-import type { MouseEvent } from "@opentui/core"
-import { MouseButton } from "@opentui/core"
-import { COLORS } from "../../theme"
-import type { Renderable } from "../../lib/types"
-import { Renderer, type DragEvent } from "../Renderer"
-import { useRef } from "react"
+import type { MouseEvent } from '@opentui/core'
+import { MouseButton } from '@opentui/core'
+import { COLORS } from '../../theme'
+import type { Renderable } from '../../lib/types'
+import { Renderer, type DragEvent } from '../Renderer'
+import { useRef } from 'react'
 
 // Re-export Renderer for consumers who need direct access
-export { Renderer } from "../Renderer"
+export { Renderer } from '../Renderer'
 
 export interface CanvasOffset {
   x: number
@@ -68,7 +68,12 @@ export function EditorPanel({
   const draggingRenderableId = useRef<string | null>(null)
 
   // Track pan start position
-  const panStartRef = useRef<{ mouseX: number; mouseY: number; offsetX: number; offsetY: number } | null>(null)
+  const panStartRef = useRef<{
+    mouseX: number
+    mouseY: number
+    offsetX: number
+    offsetY: number
+  } | null>(null)
 
   // Handle drag start from an element - store the node ID for canvas-level tracking
   const handleElementDragStart = (event: DragEvent) => {
@@ -123,7 +128,7 @@ export function EditorPanel({
       style={{
         backgroundColor: COLORS.bg,
         flexGrow: 1,
-        flexDirection: "column",
+        flexDirection: 'column',
       }}
     >
       {/* Canvas area - captures drag events at this level for smooth dragging */}
@@ -149,9 +154,9 @@ export function EditorPanel({
         onMouseDragEnd={handleCanvasDragEnd}
         style={{
           flexGrow: 1,
-          overflow: "hidden",
-          justifyContent: "center",
-          alignItems: "center",
+          overflow: 'hidden',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <box

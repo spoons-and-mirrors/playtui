@@ -1,5 +1,5 @@
-import { ColorControl } from "./index"
-import type { ColorPalette } from "../../lib/projectTypes"
+import { ColorControl } from './index'
+import type { ColorPalette } from '../../lib/projectTypes'
 
 interface ManagedColorControlProps {
   label: string
@@ -35,7 +35,7 @@ export function ManagedColorControl({
   return (
     <ColorControl
       label={label}
-      value={value || ""}
+      value={value || ''}
       focused={focusedField === field}
       onFocus={() => setFocusedField(field)}
       onBlur={() => setFocusedField(null)}

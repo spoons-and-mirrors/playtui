@@ -5,18 +5,18 @@
     "context7": {
       "enabled": true,
       "type": "local",
-      "command": ["npx", "-y", "@upstash/context7-mcp"]
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
     },
     "gh_grep": {
       "enabled": false,
       "type": "remote",
-      "url": "https://mcp.grep.app"
+      "url": "https://mcp.grep.app",
     },
     "deepwiki": {
       "enabled": false,
       "type": "remote",
-      "url": "https://mcp.deepwiki.com/sse"
-    }
+      "url": "https://mcp.deepwiki.com/sse",
+    },
   },
   "agent": {
     "general": {
@@ -24,10 +24,10 @@
     },
     "build": {
       //"model": "zai-coding-plan/glm-4.6"
-    }
+    },
   },
   "tui": {
-    "scroll_speed": 10
+    "scroll_speed": 10,
   },
   "small_model": "github-copilot/gpt-4.1",
   "username": "spoon",
@@ -38,52 +38,52 @@
           "name": "GPT-5 Mini",
           "options": {
             "reasoningEffort": "medium",
-            "textVerbosity": "low"
-          }
+            "textVerbosity": "low",
+          },
         },
         "gemini-3-flash-preview": {
           "name": "Gemini 3 Flash Preview",
           "limit": {
             "context": 256000,
-            "output": 128000
-          }
+            "output": 128000,
+          },
         },
         "claude-opus-4.5": {
           "name": "Claude Opus 4.5",
           "limit": {
             "context": 256000,
-            "output": 64000
-          }
+            "output": 64000,
+          },
         },
         "gpt-5.1": {
           "name": "GPT-5.1",
           "limit": {
             "context": 256000,
-            "output": 256000
+            "output": 256000,
           },
           "options": {
             "reasoningEffort": "medium",
-            "textVerbosity": "low"
+            "textVerbosity": "low",
             //"reasoningSummary": "auto",
             //"include": ["reasoning.encrypted_content"],
             //"store": false
-          }
+          },
         },
         "gpt-5.2": {
           "name": "GPT-5.2",
           "limit": {
             "context": 256000,
-            "output": 256000
+            "output": 256000,
           },
           "options": {
             "reasoningEffort": "medium",
-            "textVerbosity": "low"
+            "textVerbosity": "low",
             //"reasoningSummary": "auto",
             //"include": ["reasoning.encrypted_content"],
             //"store": false
-          }
-        }
-      }
+          },
+        },
+      },
     },
 
     "llm-proxy": {
@@ -92,7 +92,7 @@
       "options": {
         "baseURL": "http://127.0.0.1:8000/v1",
         "apiKey": "VerysecretKey",
-        "timeout": 300000
+        "timeout": 300000,
       },
       "models": {
         "claude-opus-4-5-thinking": {
@@ -100,101 +100,101 @@
           "name": "Claude Opus 4.5 Thinking",
           "limit": {
             "context": 200000,
-            "output": 32000
+            "output": 32000,
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "medium"
+            "reasoningEffort": "medium",
           },
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
+            "output": ["text"],
+          },
         },
         "claude-sonnet-4-5-thinking": {
           "id": "antigravity/claude-sonnet-4-5",
           "name": "Claude Sonnet 4.5 Thinking",
           "limit": {
             "context": 200000,
-            "output": 32000
+            "output": 32000,
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "high",
           },
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
+            "output": ["text"],
+          },
         },
         "claude-sonnet-4-5": {
           "id": "antigravity/claude-sonnet-4-5",
           "name": "Claude Sonnet 4.5",
           "limit": {
             "context": 200000,
-            "output": 8000
+            "output": 8000,
           },
           "reasoning": false,
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
+            "output": ["text"],
+          },
         },
         "ant_gemini-3-flash-preview": {
           "id": "antigravity/gemini-3-flash",
           "name": "ANT Gemini 3 Flash",
           "limit": {
             "context": 1048576,
-            "output": 64000
+            "output": 64000,
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "high",
           },
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
+            "output": ["text"],
+          },
         },
         "ant_gemini-3-pro-high": {
           "id": "antigravity/gemini-3-pro-preview",
           "name": "ANT Gemini 3 Pro High",
           "limit": {
             "context": 1048576,
-            "output": 64000
+            "output": 64000,
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "high",
           },
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
+            "output": ["text"],
+          },
         },
         "ant_gemini-3-pro-low": {
           "id": "antigravity/gemini-3-pro-preview",
           "name": "ANT Gemini 3 Pro Low",
           "limit": {
             "context": 1048576,
-            "output": 64000
+            "output": 64000,
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "low"
+            "reasoningEffort": "low",
           },
           "modalities": {
             "input": ["image", "text"],
-            "output": ["text"]
-          }
-        }
-      }
-    }
+            "output": ["text"],
+          },
+        },
+      },
+    },
   },
 
   "experimental": {
-    "batch_tool": true
+    "batch_tool": true,
     // 	"mcp_registry": false,
     // 	"primary_tools": ["prune"]
-  }
+  },
 }

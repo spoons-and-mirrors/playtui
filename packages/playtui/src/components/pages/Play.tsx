@@ -1,7 +1,7 @@
-import { PlayPanel } from "../play/PlayPanel"
-import type { UseProjectReturn } from "../../hooks/useProject"
-import type { DragEvent } from "../Renderer"
-import type { CanvasOffset } from "./Editor"
+import { PlayPanel } from '../play/PlayPanel'
+import type { UseProjectReturn } from '../../hooks/useProject'
+import type { DragEvent } from '../Renderer'
+import type { CanvasOffset } from './Editor'
 
 interface PlayPageProps {
   projectHook: UseProjectReturn
@@ -15,14 +15,24 @@ interface PlayPageProps {
   onDragEnd?: (renderableId: string) => void
 }
 
-export function PlayPage({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {
+export function PlayPage({
+  projectHook,
+  isPlaying,
+  canvasOffset,
+  canvasOffsetAdjustY,
+  onCanvasOffsetChange,
+  onTogglePlay,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
+}: PlayPageProps) {
   return (
     <box flexDirection="column" flexGrow={1}>
       {/* Main Play Area */}
       <box flexGrow={1}>
-        <PlayPanel 
-          projectHook={projectHook} 
-          isPlaying={isPlaying} 
+        <PlayPanel
+          projectHook={projectHook}
+          isPlaying={isPlaying}
           canvasOffset={canvasOffset}
           canvasOffsetAdjustY={canvasOffsetAdjustY}
           onCanvasOffsetChange={onCanvasOffsetChange}

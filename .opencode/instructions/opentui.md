@@ -20,6 +20,7 @@ bun install @opentui/react @opentui/core react
 ```
 
 **tsconfig.json** (critical for JSX types):
+
 ```json
 {
   "compilerOptions": {
@@ -30,19 +31,20 @@ bun install @opentui/react @opentui/core react
 ```
 
 **Entry point**:
+
 ```tsx
-import { createCliRenderer } from "@opentui/core"
-import { createRoot, useKeyboard, useTerminalDimensions } from "@opentui/react"
+import { createCliRenderer } from '@opentui/core'
+import { createRoot, useKeyboard, useTerminalDimensions } from '@opentui/react'
 
 function App() {
   const { width, height } = useTerminalDimensions()
-  
+
   useKeyboard((key) => {
-    if (key.name === "escape" || key.name === "q") process.exit(0)
+    if (key.name === 'escape' || key.name === 'q') process.exit(0)
   })
 
   return (
-    <box style={{ width, height, backgroundColor: "#1a1a2e" }}>
+    <box style={{ width, height, backgroundColor: '#1a1a2e' }}>
       {/* app content */}
     </box>
   )
@@ -69,20 +71,20 @@ All renderables support these style properties:
   gap: 2,                         // shorthand for row+column gap
   rowGap: 1,
   columnGap: 2,
-  
+
   // FLEX ITEM
   flexGrow: 1,                    // NOT `flex` - shorthand unsupported
   flexShrink: 0,
   flexBasis: "auto" | 100 | "50%",
   alignSelf: "auto" | "flex-start" | "center" | "flex-end" | "stretch" | "baseline",
-  
+
   // SIZING
   width: 40,                      // number | "auto" | "50%"
   height: 10,
   minWidth: 20, maxWidth: 100,
   minHeight: 5, maxHeight: 50,
   aspectRatio: 16/9,
-  
+
   // SPACING
   padding: 1,
   paddingTop: 2, paddingRight: 1, paddingBottom: 2, paddingLeft: 1,
@@ -90,18 +92,19 @@ All renderables support these style properties:
   margin: 1,
   marginTop: 2, marginRight: 1, marginBottom: 2, marginLeft: 1,
   marginHorizontal: 2, marginVertical: 1,     // shorthand
-  
+
   // POSITIONING
   position: "relative" | "absolute",
   top: 0, right: 0, bottom: 0, left: 0,
   zIndex: 10,
-  
+
   // OVERFLOW
   overflow: "visible" | "hidden" | "scroll",
 }}>
 ```
 
 **Responsive pattern**:
+
 ```tsx
 const { width, height } = useTerminalDimensions()
 const panelWidth = Math.min(width - 4, 80)
@@ -119,15 +122,15 @@ Container with borders, backgrounds, titles. The fundamental building block.
 ```tsx
 <box
   id="panel-main"
-  border                           // enables border (all sides)
-  border={["top", "bottom"]}       // partial borders: top|right|bottom|left
-  borderStyle="rounded"            // single | double | rounded | heavy | none
+  border // enables border (all sides)
+  border={['top', 'bottom']} // partial borders: top|right|bottom|left
+  borderStyle="rounded" // single | double | rounded | heavy | none
   borderColor="#444"
-  focusedBorderColor="#7aa2f7"     // border color when focused
+  focusedBorderColor="#7aa2f7" // border color when focused
   backgroundColor="#1a1a2e"
   title="Panel Title"
-  titleAlignment="center"          // left | center | right
-  visible={true}                   // false hides but keeps layout space
+  titleAlignment="center" // left | center | right
+  visible={true} // false hides but keeps layout space
   flexDirection="column"
   padding={2}
   gap={1}
@@ -137,6 +140,7 @@ Container with borders, backgrounds, titles. The fundamental building block.
 ```
 
 **Absolute overlay pattern**:
+
 ```tsx
 <box
   position="absolute"
@@ -155,6 +159,7 @@ Container with borders, backgrounds, titles. The fundamental building block.
 ```
 
 **Custom border characters**:
+
 ```tsx
 // All customizable: horizontal, vertical, topLeft, topRight, bottomLeft, bottomRight, cross, left, right, top, bottom
 const EmptyBorder = {
@@ -288,6 +293,7 @@ textareaRef.current.keyBindings = customBindings
 ```
 
 **All textarea actions** (for custom keybindings):
+
 ```
 Cursor:     move-left, move-right, move-up, move-down
             line-home, line-end, buffer-home, buffer-end
@@ -343,33 +349,33 @@ scrollRef.current?.scrollBy(-scrollRef.current.height / 2)  // half page up
 Vertical list selection. Navigation: up/k, down/j, enter to select.
 
 ```tsx
-<select
+;<select
   options={[
-    { name: "Option 1", description: "Description text", value: "opt1" },
-    { name: "Option 2", value: "opt2", disabled: true },
-    { name: "Option 3", value: "opt3", category: "Group A" },
+    { name: 'Option 1', description: 'Description text', value: 'opt1' },
+    { name: 'Option 2', value: 'opt2', disabled: true },
+    { name: 'Option 3', value: 'opt3', category: 'Group A' },
   ]}
   focused
-  current={selectedValue}              // marks option as active (check icon)
-  selectedIndex={0}                    // currently highlighted index
+  current={selectedValue} // marks option as active (check icon)
+  selectedIndex={0} // currently highlighted index
   backgroundColor="#1a1a2e"
   textColor="#fff"
-  selectedBackgroundColor="#3b4261"    // highlighted item bg
-  selectedTextColor="#7aa2f7"          // highlighted item text
+  selectedBackgroundColor="#3b4261" // highlighted item bg
+  selectedTextColor="#7aa2f7" // highlighted item text
   descriptionColor="#888"
   selectedDescriptionColor="#aaa"
   showScrollIndicator={true}
   showDescription={true}
-  wrapSelection={true}                 // wrap around at list ends
-  itemSpacing={0}                      // gap between items
-  fastScrollStep={5}                   // items to skip with fast scroll
+  wrapSelection={true} // wrap around at list ends
+  itemSpacing={0} // gap between items
+  fastScrollStep={5} // items to skip with fast scroll
   onChange={(index, option) => console.log(option.value)}
-  onSelect={(index, option) => {}}     // fires on enter
+  onSelect={(index, option) => {}} // fires on enter
 />
 
 // For fuzzy filtering:
-import fuzzysort from "fuzzysort"
-const filtered = fuzzysort.go(query, options, { keys: ["name", "category"] })
+import fuzzysort from 'fuzzysort'
+const filtered = fuzzysort.go(query, options, { keys: ['name', 'category'] })
 ```
 
 ### tab-select
@@ -378,10 +384,7 @@ Horizontal tabs. Navigation: left/[, right/].
 
 ```tsx
 <tab-select
-  options={[
-    { name: "Tab 1", description: "First tab" },
-    { name: "Tab 2" },
-  ]}
+  options={[{ name: 'Tab 1', description: 'First tab' }, { name: 'Tab 2' }]}
   tabWidth={20}
   focused
   backgroundColor="#1a1a2e"
@@ -492,11 +495,11 @@ Value control with mouse/keyboard.
 
 ```tsx
 <slider
-  orientation="horizontal"         // horizontal | vertical
+  orientation="horizontal" // horizontal | vertical
   value={50}
   min={0}
   max={100}
-  viewPortSize={20}                // visible portion size
+  viewPortSize={20} // visible portion size
   onChange={(value) => setValue(value)}
   backgroundColor="#252527"
   foregroundColor="#9a9ea3"
@@ -511,8 +514,8 @@ Large ASCII art text.
 ```tsx
 <ascii-font
   content="HELLO"
-  font="block"                     // tiny | block | slick | shade
-  color={RGBA.fromHex("#FFD700")}
+  font="block" // tiny | block | slick | shade
+  color={RGBA.fromHex('#FFD700')}
   selectable={false}
 />
 ```
@@ -548,24 +551,24 @@ const fbRef = useRef<FrameBufferRenderable>(null)
 ```tsx
 useKeyboard((key) => {
   // Properties
-  key.name          // "escape", "return", "tab", "a", "1", "f1", "up", "down", etc.
-  key.sequence      // raw escape sequence string
-  key.ctrl          // boolean
-  key.shift         // boolean
-  key.meta          // boolean (Cmd on macOS)
-  key.option        // boolean (Alt)
-  key.repeated      // boolean - true if key held down
-  key.eventType     // "press" | "release"
-  
+  key.name // "escape", "return", "tab", "a", "1", "f1", "up", "down", etc.
+  key.sequence // raw escape sequence string
+  key.ctrl // boolean
+  key.shift // boolean
+  key.meta // boolean (Cmd on macOS)
+  key.option // boolean (Alt)
+  key.repeated // boolean - true if key held down
+  key.eventType // "press" | "release"
+
   // Methods
-  key.preventDefault()  // stop event propagation
-  
+  key.preventDefault() // stop event propagation
+
   // Common patterns
-  if (key.name === "escape") process.exit(0)
-  if (key.ctrl && key.name === "c") process.exit(0)
-  if (key.name === "tab") cycleFocus()
-  if (key.name === "return" && !key.shift) submit()
-  if (key.name === "r" && !key.repeated) refresh()  // ignore held
+  if (key.name === 'escape') process.exit(0)
+  if (key.ctrl && key.name === 'c') process.exit(0)
+  if (key.name === 'tab') cycleFocus()
+  if (key.name === 'return' && !key.shift) submit()
+  if (key.name === 'r' && !key.repeated) refresh() // ignore held
 })
 
 // Include release events
@@ -591,11 +594,11 @@ useOnResize((width, height) => {
 
 ```tsx
 const renderer = useRenderer()
-renderer.console.show()            // show debug overlay
+renderer.console.show() // show debug overlay
 renderer.console.hide()
 renderer.console.toggle()
 renderer.toggleDebugOverlay()
-renderer.currentFocusedRenderable  // get focused element
+renderer.currentFocusedRenderable // get focused element
 ```
 
 ### useTimeline
@@ -611,10 +614,10 @@ useEffect(() => {
     {
       width: 50,
       duration: 2000,
-      ease: "linear",              // linear | easeIn | easeOut | easeInOut
+      ease: 'linear', // linear | easeIn | easeOut | easeInOut
       onUpdate: (anim) => setWidth(anim.targets[0].width),
-      onComplete: () => console.log("done"),
-    }
+      onComplete: () => console.log('done'),
+    },
   )
 }, [])
 ```
@@ -650,31 +653,31 @@ import { red, green, blue, yellow, cyan, magenta, white, black, gray } from "@op
 interface ThemeColors {
   // Primary
   primary, secondary, accent
-  
+
   // Status
   error, warning, success, info
-  
+
   // Text
   text, textMuted, selectedListItemText
-  
+
   // Backgrounds
   background, backgroundPanel, backgroundElement, backgroundMenu
-  
+
   // Borders
   border, borderActive, borderSubtle
-  
+
   // Diff
   diffAdded, diffRemoved, diffContext, diffHunkHeader,
   diffHighlightAdded, diffHighlightRemoved,
   diffAddedBg, diffRemovedBg, diffContextBg,
   diffLineNumber, diffAddedLineNumberBg, diffRemovedLineNumberBg
-  
+
   // Markdown
   markdownText, markdownHeading, markdownLink, markdownLinkText,
   markdownCode, markdownBlockQuote, markdownEmph, markdownStrong,
   markdownHorizontalRule, markdownListItem, markdownListEnumeration,
   markdownImage, markdownImageText, markdownCodeBlock
-  
+
   // Syntax
   syntaxComment, syntaxKeyword, syntaxFunction, syntaxVariable,
   syntaxString, syntaxNumber, syntaxType, syntaxOperator, syntaxPunctuation
@@ -755,10 +758,10 @@ Custom drawing before/after children.
 ```tsx
 <box
   renderBefore={(buffer, deltaTime) => {
-    buffer.drawText("prefix", x, y, color)
+    buffer.drawText('prefix', x, y, color)
   }}
   renderAfter={(buffer, deltaTime) => {
-    buffer.drawText("suffix", x, y, color)
+    buffer.drawText('suffix', x, y, color)
     buffer.fillRect(x, y, width, height, color)
     buffer.drawRect(x, y, width, height, color)
   }}
@@ -775,13 +778,13 @@ import { extend } from "@opentui/react"
 
 class CustomButton extends BoxRenderable {
   public label: string = "Button"
-  
+
   constructor(ctx: RenderContext, options: BoxOptions & { label: string }) {
     super(ctx, options)
     this.height = 3
     this.width = 24
   }
-  
+
   protected renderSelf(buffer: OptimizedBuffer): void {
     super.renderSelf(buffer)
     const centerX = this.x + Math.floor(this.width / 2 - this.label.length / 2)
@@ -807,22 +810,34 @@ extend({ customButton: CustomButton })
 ## Common Patterns
 
 **Dialog overlay**:
+
 ```tsx
 function Dialog({ children, onDismiss }) {
   const { width, height } = useTerminalDimensions()
-  
+
   useKeyboard((key) => {
-    if (key.name === "escape") onDismiss()
+    if (key.name === 'escape') onDismiss()
   })
-  
+
   return (
-    <box position="absolute" width={width} height={height} left={0} top={0}
-         backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
-         alignItems="center" justifyContent="center"
-         onMouseUp={onDismiss}>
-      <box border borderStyle="rounded" backgroundColor="#1a1a2e"
-           style={{ width: Math.min(60, width - 4), padding: 2 }}
-           onMouseUp={(e) => e.stopPropagation()}>
+    <box
+      position="absolute"
+      width={width}
+      height={height}
+      left={0}
+      top={0}
+      backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
+      alignItems="center"
+      justifyContent="center"
+      onMouseUp={onDismiss}
+    >
+      <box
+        border
+        borderStyle="rounded"
+        backgroundColor="#1a1a2e"
+        style={{ width: Math.min(60, width - 4), padding: 2 }}
+        onMouseUp={(e) => e.stopPropagation()}
+      >
         {children}
       </box>
     </box>
@@ -831,6 +846,7 @@ function Dialog({ children, onDismiss }) {
 ```
 
 **Loading spinner** (using useTimeline):
+
 ```tsx
 const frames = ["", "", "", "", "", "", "", ""]
 const [frame, setFrame] = useState(0)
@@ -853,11 +869,12 @@ useEffect(() => {
 
 ```tsx
 const renderer = useRenderer()
-renderer.console.show()           // overlay console
-console.log("Visible in overlay")
+renderer.console.show() // overlay console
+console.log('Visible in overlay')
 ```
 
 **Env vars**:
+
 - `SHOW_CONSOLE=true` - show console at startup
 - `OTUI_NO_NATIVE_RENDER=true` - disable terminal output
 - `OTUI_USE_CONSOLE=false` - disable console capture
@@ -867,7 +884,7 @@ console.log("Visible in overlay")
 ## Testing
 
 ```tsx
-import { createMockMouse, MouseButtons } from "@opentui/core/testing"
+import { createMockMouse, MouseButtons } from '@opentui/core/testing'
 
 const mockMouse = createMockMouse(renderer)
 await mockMouse.click(x, y)
@@ -875,7 +892,7 @@ await mockMouse.click(x, y, MouseButtons.RIGHT)
 await mockMouse.click(x, y, MouseButtons.LEFT, { modifiers: { ctrl: true } })
 await mockMouse.doubleClick(x, y)
 await mockMouse.drag(startX, startY, endX, endY)
-await mockMouse.scroll(x, y, "up" | "down")
+await mockMouse.scroll(x, y, 'up' | 'down')
 ```
 
 ---

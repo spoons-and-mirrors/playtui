@@ -14,7 +14,14 @@
     "dev": "bun --watch run src/cli.tsx",
     "build": "bun build src/cli.tsx --outdir dist --target bun --minify"
   },
-  "keywords": ["tui", "terminal", "ui", "builder", "opentui", "visual"],
+  "keywords": [
+    "tui",
+    "terminal",
+    "ui",
+    "builder",
+    "opentui",
+    "visual"
+  ],
   "author": "spoon",
   "license": "MIT",
   "dependencies": {

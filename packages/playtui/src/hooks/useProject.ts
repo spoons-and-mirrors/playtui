@@ -1,9 +1,9 @@
 // Project state management hook with auto-save
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import type { Project, ProjectMeta, ColorPalette } from "../lib/projectTypes"
-import { createNewProject } from "../lib/projectTypes"
-import type { Renderable, HistoryEntry } from "../lib/types"
+import { useState, useEffect, useCallback, useRef } from 'react'
+import type { Project, ProjectMeta, ColorPalette } from '../lib/projectTypes'
+import { createNewProject } from '../lib/projectTypes'
+import type { Renderable, HistoryEntry } from '../lib/types'
 import {
   createDefaultKeyframingState,
   shiftKeyframesOnDelete,
@@ -11,12 +11,12 @@ import {
   upsertKeyframe as upsertDomainKeyframe,
   removeKeyframe as removeDomainKeyframe,
   setKeyframeHandle as setDomainKeyframeHandle,
-} from "../lib/keyframing"
-import { syncIdCounter } from "../lib/tree"
-import { log } from "../lib/logger"
-import * as storage from "../lib/storage"
+} from '../lib/keyframing'
+import { syncIdCounter } from '../lib/tree'
+import { log } from '../lib/logger'
+import * as storage from '../lib/storage'
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error"
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 export interface UseProjectReturn {
   // Current project state
@@ -36,7 +36,11 @@ export interface UseProjectReturn {
   duplicateProject: (newName: string) => Promise<boolean>
 
   // State updates (triggers auto-save)
-  updateTree: (tree: Renderable, pushHistory?: boolean, selectedId?: string | null) => void
+  updateTree: (
+    tree: Renderable,
+    pushHistory?: boolean,
+    selectedId?: string | null,
+  ) => void
   setSelectedId: (id: string | null) => void
   setCollapsed: (collapsed: string[]) => void
 
@@ -58,13 +62,19 @@ export interface UseProjectReturn {
   toggleAutoKey: () => void
   addKeyframe: (renderableId: string, property: string, value: number) => void
   removeKeyframe: (renderableId: string, property: string) => void
-  setKeyframeHandle: (renderableId: string, property: string, frame: number, handleX: number, handleY: number) => void
+  setKeyframeHandle: (
+    renderableId: string,
+    property: string,
+    frame: number,
+    handleX: number,
+    handleY: number,
+  ) => void
   setTimelineView: (
     view:
-      | { type: "dopesheet" }
-      | { type: "curve"; renderableId: string; property: string }
+      | { type: 'dopesheet' }
+      | { type: 'curve'; renderableId: string; property: string },
   ) => void
- 
+
   // Palettes
 
   palettes: ColorPalette[]
@@ -79,7 +89,7 @@ export function useProject(): UseProjectReturn {
   const [project, setProject] = useState<Project | null>(null)
   const [projects, setProjects] = useState<ProjectMeta[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState<string | null>(null)
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -98,7 +108,7 @@ export function useProject(): UseProjectReturn {
       clearTimeout(saveTimeoutRef.current)
     }
 
-    setSaveStatus("saving")
+    setSaveStatus('saving')
 
     saveTimeoutRef.current = setTimeout(async () => {
       const currentProject = projectRef.current
@@ -106,12 +116,12 @@ export function useProject(): UseProjectReturn {
 
       const result = await storage.saveProject(currentProject)
       if (result.success) {
-        setSaveStatus("saved")
+        setSaveStatus('saved')
         // Reset to idle after a moment
-        setTimeout(() => setSaveStatus("idle"), 2000)
+        setTimeout(() => setSaveStatus('idle'), 2000)
       } else {
-        setSaveStatus("error")
-        setError(result.error || "Failed to save")
+        setSaveStatus('error')
+        setError(result.error || 'Failed to save')
       }
     }, AUTO_SAVE_DELAY)
   }, [])
@@ -125,14 +135,14 @@ export function useProject(): UseProjectReturn {
     const currentProject = projectRef.current
     if (!currentProject) return
 
-    setSaveStatus("saving")
+    setSaveStatus('saving')
     const result = await storage.saveProject(currentProject)
     if (result.success) {
-      setSaveStatus("saved")
-      setTimeout(() => setSaveStatus("idle"), 2000)
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
     } else {
-      setSaveStatus("error")
-      setError(result.error || "Failed to save")
+      setSaveStatus('error')
+      setError(result.error || 'Failed to save')
     }
   }, [])
 
@@ -145,15 +155,19 @@ export function useProject(): UseProjectReturn {
   // Ensure project has required data on load (handles older project files)
   const ensureProjectData = (proj: Project): Project => {
     // Migration: convert old swatches to palettes
-    const legacyProject = proj as Project & { swatches?: Array<{ id: string; color: string }> }
+    const legacyProject = proj as Project & {
+      swatches?: Array<{ id: string; color: string }>
+    }
     if (legacyProject.swatches && !proj.palettes) {
       return {
         ...proj,
-        palettes: [{
-          id: "palette-migrated",
-          name: "Migrated",
-          swatches: legacyProject.swatches
-        }],
+        palettes: [
+          {
+            id: 'palette-migrated',
+            name: 'Migrated',
+            swatches: legacyProject.swatches,
+          },
+        ],
         activePaletteIndex: 0,
         animation: proj.animation ?? {
           fps: 12,
@@ -205,13 +219,13 @@ export function useProject(): UseProjectReturn {
           setProject(migrated)
         } else {
           // Corrupted, create new
-          const newProj = createNewProject("Untitled")
+          const newProj = createNewProject('Untitled')
           setProject(newProj)
           await storage.saveProject(newProj)
         }
       } else {
         // No projects, create default
-        const newProj = createNewProject("Untitled")
+        const newProj = createNewProject('Untitled')
         setProject(newProj)
         await storage.saveProject(newProj)
         await refreshProjects()
@@ -243,11 +257,11 @@ export function useProject(): UseProjectReturn {
         setError(null)
         return true
       } else {
-        setError(result.error || "Failed to create project")
+        setError(result.error || 'Failed to create project')
         return false
       }
     },
-    [refreshProjects]
+    [refreshProjects],
   )
 
   // Open existing project
@@ -261,11 +275,11 @@ export function useProject(): UseProjectReturn {
         setError(null)
         return true
       } else {
-        setError("Failed to load project")
+        setError('Failed to load project')
         return false
       }
     },
-    []
+    [],
   )
 
   // Delete project
@@ -273,7 +287,7 @@ export function useProject(): UseProjectReturn {
     async (fileName: string): Promise<boolean> => {
       // Don't allow deleting current project
       if (project && storage.slugify(project.name) === fileName) {
-        setError("Cannot delete the currently open project")
+        setError('Cannot delete the currently open project')
         return false
       }
 
@@ -283,18 +297,18 @@ export function useProject(): UseProjectReturn {
         setError(null)
         return true
       } else {
-        setError("Failed to delete project")
+        setError('Failed to delete project')
         return false
       }
     },
-    [project, refreshProjects]
+    [project, refreshProjects],
   )
 
   // Duplicate current project with a new name (Save As)
   const duplicateProject = useCallback(
     async (newName: string): Promise<boolean> => {
       if (!project) {
-        setError("No project to duplicate")
+        setError('No project to duplicate')
         return false
       }
 
@@ -326,11 +340,11 @@ export function useProject(): UseProjectReturn {
         setError(null)
         return true
       } else {
-        setError(result.error || "Failed to save project copy")
+        setError(result.error || 'Failed to save project copy')
         return false
       }
     },
-    [project, refreshProjects]
+    [project, refreshProjects],
   )
 
   // Update tree with optional history push and optional selectedId (atomic update)
@@ -356,20 +370,23 @@ export function useProject(): UseProjectReturn {
         const newFrames = [...prev.animation.frames]
         // Ensure we have frames (migration safety)
         if (newFrames.length === 0) newFrames.push(tree)
-        
+
         // Update the current frame with the new tree state
         // If index is out of bounds, default to 0 or push
-        const safeIndex = Math.min(Math.max(0, prev.animation.currentFrameIndex), newFrames.length - 1)
+        const safeIndex = Math.min(
+          Math.max(0, prev.animation.currentFrameIndex),
+          newFrames.length - 1,
+        )
         newFrames[safeIndex] = tree
 
-        const updated: Project = { 
-          ...prev, 
+        const updated: Project = {
+          ...prev,
           tree,
           animation: {
             ...prev.animation,
             frames: newFrames,
-            currentFrameIndex: safeIndex
-          }
+            currentFrameIndex: safeIndex,
+          },
         }
 
         // If selectedId is explicitly provided (including null), update it atomically
@@ -386,10 +403,10 @@ export function useProject(): UseProjectReturn {
             selectedId: prev.selectedId,
             keyframing: prev.animation.keyframing,
           }
-          
+
           // Clear batch state
           batchStartStateRef.current = null
-          
+
           const newHistory = [...prev.history, historyEntry]
           // Cap history at 10,000 entries
           if (newHistory.length > 10000) {
@@ -403,7 +420,7 @@ export function useProject(): UseProjectReturn {
       })
       scheduleSave()
     },
-    [scheduleSave]
+    [scheduleSave],
   )
 
   // Animation: Set current frame
@@ -411,16 +428,16 @@ export function useProject(): UseProjectReturn {
     setProject((prev) => {
       if (!prev) return prev
       if (index < 0 || index >= prev.animation.frames.length) return prev
-      
+
       const newTree = prev.animation.frames[index]
-      
+
       return {
         ...prev,
         tree: newTree,
         animation: {
           ...prev.animation,
-          currentFrameIndex: index
-        }
+          currentFrameIndex: index,
+        },
         // Preserve selectedId across frame changes
       }
     })
@@ -430,26 +447,26 @@ export function useProject(): UseProjectReturn {
   const duplicateFrame = useCallback(() => {
     setProject((prev) => {
       if (!prev) return prev
-      
+
       const currentTree = prev.tree
       const currentIndex = prev.animation.currentFrameIndex
-      
+
       const newFrames = [...prev.animation.frames]
       // Deep clone to avoid ref issues
       const treeClone = JSON.parse(JSON.stringify(currentTree))
-      
+
       // Insert after current
       newFrames.splice(currentIndex + 1, 0, treeClone)
-      
+
       // Shift keyframes
       const shiftedKeyframing = {
         ...prev.animation.keyframing,
         animatedProperties: shiftKeyframesOnInsert(
           prev.animation.keyframing.animatedProperties,
-          currentIndex + 1
+          currentIndex + 1,
         ),
       }
-      
+
       return {
         ...prev,
         tree: treeClone,
@@ -458,142 +475,157 @@ export function useProject(): UseProjectReturn {
           frames: newFrames,
           currentFrameIndex: currentIndex + 1,
           keyframing: shiftedKeyframing,
-        }
+        },
       }
     })
     scheduleSave()
   }, [scheduleSave])
 
   // Animation: Delete frame
-  const deleteFrame = useCallback((index: number) => {
-    setProject((prev) => {
-      if (!prev || prev.animation.frames.length <= 1) return prev // Can't delete last frame
-      
-      const newFrames = prev.animation.frames.filter((_, i) => i !== index)
-      // If we deleted the current frame, move to previous (or 0)
-      let newIndex = prev.animation.currentFrameIndex
-      if (index <= prev.animation.currentFrameIndex) {
-        newIndex = Math.max(0, prev.animation.currentFrameIndex - 1)
-      }
-      
-      // Shift keyframes
-      const shiftedKeyframing = {
-        ...prev.animation.keyframing,
-        animatedProperties: shiftKeyframesOnDelete(
-          prev.animation.keyframing.animatedProperties,
-          index
-        ),
-      }
-      
-      return {
-        ...prev,
-        tree: newFrames[newIndex],
-        animation: {
-          ...prev.animation,
-          frames: newFrames,
-          currentFrameIndex: newIndex,
-          keyframing: shiftedKeyframing,
+  const deleteFrame = useCallback(
+    (index: number) => {
+      setProject((prev) => {
+        if (!prev || prev.animation.frames.length <= 1) return prev // Can't delete last frame
+
+        const newFrames = prev.animation.frames.filter((_, i) => i !== index)
+        // If we deleted the current frame, move to previous (or 0)
+        let newIndex = prev.animation.currentFrameIndex
+        if (index <= prev.animation.currentFrameIndex) {
+          newIndex = Math.max(0, prev.animation.currentFrameIndex - 1)
         }
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
+
+        // Shift keyframes
+        const shiftedKeyframing = {
+          ...prev.animation.keyframing,
+          animatedProperties: shiftKeyframesOnDelete(
+            prev.animation.keyframing.animatedProperties,
+            index,
+          ),
+        }
+
+        return {
+          ...prev,
+          tree: newFrames[newIndex],
+          animation: {
+            ...prev.animation,
+            frames: newFrames,
+            currentFrameIndex: newIndex,
+            keyframing: shiftedKeyframing,
+          },
+        }
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
 
   // Animation: Set FPS
-  const setFps = useCallback((fps: number) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      return {
-        ...prev,
-        animation: {
-          ...prev.animation,
-          fps
+  const setFps = useCallback(
+    (fps: number) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          animation: {
+            ...prev.animation,
+            fps,
+          },
         }
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
 
   // Animation: Set frame count (add or remove frames to reach target count)
-  const setFrameCount = useCallback((targetCount: number) => {
-    if (targetCount < 1) return
-    setProject((prev) => {
-      if (!prev) return prev
-      
-      const currentCount = prev.animation.frames.length
-      if (targetCount === currentCount) return prev
-      
-      let newFrames = [...prev.animation.frames]
-      let newKeyframing = { ...prev.animation.keyframing }
-      
-      if (targetCount > currentCount) {
-        // Add frames by duplicating the last frame
-        const lastFrame = prev.animation.frames[currentCount - 1]
-        for (let i = currentCount; i < targetCount; i++) {
-          const treeClone = JSON.parse(JSON.stringify(lastFrame))
-          newFrames.push(treeClone)
-          // Shift keyframes for each insertion
-          newKeyframing = {
-            ...newKeyframing,
-            animatedProperties: shiftKeyframesOnInsert(
-              newKeyframing.animatedProperties,
-              i
-            ),
+  const setFrameCount = useCallback(
+    (targetCount: number) => {
+      if (targetCount < 1) return
+      setProject((prev) => {
+        if (!prev) return prev
+
+        const currentCount = prev.animation.frames.length
+        if (targetCount === currentCount) return prev
+
+        let newFrames = [...prev.animation.frames]
+        let newKeyframing = { ...prev.animation.keyframing }
+
+        if (targetCount > currentCount) {
+          // Add frames by duplicating the last frame
+          const lastFrame = prev.animation.frames[currentCount - 1]
+          for (let i = currentCount; i < targetCount; i++) {
+            const treeClone = JSON.parse(JSON.stringify(lastFrame))
+            newFrames.push(treeClone)
+            // Shift keyframes for each insertion
+            newKeyframing = {
+              ...newKeyframing,
+              animatedProperties: shiftKeyframesOnInsert(
+                newKeyframing.animatedProperties,
+                i,
+              ),
+            }
           }
-        }
-      } else {
-        // Remove frames from the end
-        for (let i = currentCount - 1; i >= targetCount; i--) {
-          newKeyframing = {
-            ...newKeyframing,
-            animatedProperties: shiftKeyframesOnDelete(
-              newKeyframing.animatedProperties,
-              i
-            ),
+        } else {
+          // Remove frames from the end
+          for (let i = currentCount - 1; i >= targetCount; i--) {
+            newKeyframing = {
+              ...newKeyframing,
+              animatedProperties: shiftKeyframesOnDelete(
+                newKeyframing.animatedProperties,
+                i,
+              ),
+            }
           }
+          newFrames = newFrames.slice(0, targetCount)
         }
-        newFrames = newFrames.slice(0, targetCount)
-      }
-      
-      // Clamp current frame index if needed
-      const newIndex = Math.min(prev.animation.currentFrameIndex, targetCount - 1)
-      
-      return {
-        ...prev,
-        tree: newFrames[newIndex],
-        animation: {
-          ...prev.animation,
-          frames: newFrames,
-          currentFrameIndex: newIndex,
-          keyframing: newKeyframing,
+
+        // Clamp current frame index if needed
+        const newIndex = Math.min(
+          prev.animation.currentFrameIndex,
+          targetCount - 1,
+        )
+
+        return {
+          ...prev,
+          tree: newFrames[newIndex],
+          animation: {
+            ...prev.animation,
+            frames: newFrames,
+            currentFrameIndex: newIndex,
+            keyframing: newKeyframing,
+          },
         }
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
 
   // Animation: Import animation data (frames + fps)
-  const importAnimation = useCallback((frames: Renderable[], fps: number) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      if (frames.length === 0) return prev
-      
-      return {
-        ...prev,
-        tree: frames[0],
-        animation: {
-          fps,
-          frames,
-          currentFrameIndex: 0,
-          keyframing: createDefaultKeyframingState(),
-        },
-        // Clear history when importing
-        history: [],
-        future: []
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
+  const importAnimation = useCallback(
+    (frames: Renderable[], fps: number) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        if (frames.length === 0) return prev
+
+        return {
+          ...prev,
+          tree: frames[0],
+          animation: {
+            fps,
+            frames,
+            currentFrameIndex: 0,
+            keyframing: createDefaultKeyframingState(),
+          },
+          // Clear history when importing
+          history: [],
+          future: [],
+        }
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
 
   // Keyframing: Toggle auto-key mode
   const toggleAutoKey = useCallback(() => {
@@ -614,115 +646,134 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Keyframing: Add or update keyframe at current frame
-  const addKeyframe = useCallback((renderableId: string, property: string, value: number) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      const frame = prev.animation.currentFrameIndex
-      const nextAnimated = upsertDomainKeyframe(
-        prev.animation.keyframing.animatedProperties,
-        renderableId,
-        property,
-        frame,
-        value
-      )
-      return {
-        ...prev,
-        animation: {
-          ...prev.animation,
-          keyframing: {
-            ...prev.animation.keyframing,
-            animatedProperties: nextAnimated,
-          },
-        },
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
-
-  // Keyframing: Remove keyframe at current frame
-  const removeKeyframe = useCallback((renderableId: string, property: string) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      const frame = prev.animation.currentFrameIndex
-      const nextAnimated = removeDomainKeyframe(
-        prev.animation.keyframing.animatedProperties,
-        renderableId,
-        property,
-        frame
-      )
-      return {
-        ...prev,
-        animation: {
-          ...prev.animation,
-          keyframing: {
-            ...prev.animation.keyframing,
-            animatedProperties: nextAnimated,
-          },
-        },
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
-
-  // Keyframing: Set bezier handle for a keyframe
-  const setKeyframeHandle = useCallback((renderableId: string, property: string, frame: number, handleX: number, handleY: number) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      const nextAnimated = setDomainKeyframeHandle(
-        prev.animation.keyframing.animatedProperties,
-        renderableId,
-        property,
-        frame,
-        handleX,
-        handleY
-      )
-      return {
-        ...prev,
-        animation: {
-          ...prev.animation,
-          keyframing: {
-            ...prev.animation.keyframing,
-            animatedProperties: nextAnimated,
-          },
-        },
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
- 
-  // Keyframing: Set active timeline view (dopesheet or curve)
-  const setTimelineView = useCallback((view: { type: "dopesheet" } | { type: "curve"; renderableId: string; property: string }) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      const prevKeyframing = prev.animation.keyframing
-      return {
-        ...prev,
-        animation: {
-          ...prev.animation,
-          keyframing: {
-            ...prevKeyframing,
-            timeline: {
-              ...prevKeyframing.timeline,
-              view,
-            },
-          },
-        },
-      }
-    })
-    scheduleSave()
-  }, [scheduleSave])
- 
-  // Update selected ID (UI state only, no save needed)
-
-  const setSelectedId = useCallback(
-    (id: string | null) => {
+  const addKeyframe = useCallback(
+    (renderableId: string, property: string, value: number) => {
       setProject((prev) => {
         if (!prev) return prev
-        return { ...prev, selectedId: id }
+        const frame = prev.animation.currentFrameIndex
+        const nextAnimated = upsertDomainKeyframe(
+          prev.animation.keyframing.animatedProperties,
+          renderableId,
+          property,
+          frame,
+          value,
+        )
+        return {
+          ...prev,
+          animation: {
+            ...prev.animation,
+            keyframing: {
+              ...prev.animation.keyframing,
+              animatedProperties: nextAnimated,
+            },
+          },
+        }
       })
+      scheduleSave()
     },
-    []
+    [scheduleSave],
   )
+
+  // Keyframing: Remove keyframe at current frame
+  const removeKeyframe = useCallback(
+    (renderableId: string, property: string) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        const frame = prev.animation.currentFrameIndex
+        const nextAnimated = removeDomainKeyframe(
+          prev.animation.keyframing.animatedProperties,
+          renderableId,
+          property,
+          frame,
+        )
+        return {
+          ...prev,
+          animation: {
+            ...prev.animation,
+            keyframing: {
+              ...prev.animation.keyframing,
+              animatedProperties: nextAnimated,
+            },
+          },
+        }
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
+
+  // Keyframing: Set bezier handle for a keyframe
+  const setKeyframeHandle = useCallback(
+    (
+      renderableId: string,
+      property: string,
+      frame: number,
+      handleX: number,
+      handleY: number,
+    ) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        const nextAnimated = setDomainKeyframeHandle(
+          prev.animation.keyframing.animatedProperties,
+          renderableId,
+          property,
+          frame,
+          handleX,
+          handleY,
+        )
+        return {
+          ...prev,
+          animation: {
+            ...prev.animation,
+            keyframing: {
+              ...prev.animation.keyframing,
+              animatedProperties: nextAnimated,
+            },
+          },
+        }
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
+
+  // Keyframing: Set active timeline view (dopesheet or curve)
+  const setTimelineView = useCallback(
+    (
+      view:
+        | { type: 'dopesheet' }
+        | { type: 'curve'; renderableId: string; property: string },
+    ) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        const prevKeyframing = prev.animation.keyframing
+        return {
+          ...prev,
+          animation: {
+            ...prev.animation,
+            keyframing: {
+              ...prevKeyframing,
+              timeline: {
+                ...prevKeyframing.timeline,
+                view,
+              },
+            },
+          },
+        }
+      })
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
+
+  // Update selected ID (UI state only, no save needed)
+
+  const setSelectedId = useCallback((id: string | null) => {
+    setProject((prev) => {
+      if (!prev) return prev
+      return { ...prev, selectedId: id }
+    })
+  }, [])
 
   // Update collapsed nodes
   const setCollapsed = useCallback(
@@ -733,7 +784,7 @@ export function useProject(): UseProjectReturn {
       })
       scheduleSave()
     },
-    [scheduleSave]
+    [scheduleSave],
   )
 
   // Undo
@@ -811,22 +862,25 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Update a swatch color in the active palette
-  const updateSwatch = useCallback((id: string, color: string) => {
-    setProject((prev) => {
-      if (!prev) return prev
-      const palettes = prev.palettes.map((palette, idx) => {
-        if (idx !== prev.activePaletteIndex) return palette
-        return {
-          ...palette,
-          swatches: palette.swatches.map(s => 
-            s.id === id ? { ...s, color } : s
-          )
-        }
+  const updateSwatch = useCallback(
+    (id: string, color: string) => {
+      setProject((prev) => {
+        if (!prev) return prev
+        const palettes = prev.palettes.map((palette, idx) => {
+          if (idx !== prev.activePaletteIndex) return palette
+          return {
+            ...palette,
+            swatches: palette.swatches.map((s) =>
+              s.id === id ? { ...s, color } : s,
+            ),
+          }
+        })
+        return { ...prev, palettes }
       })
-      return { ...prev, palettes }
-    })
-    scheduleSave()
-  }, [scheduleSave])
+      scheduleSave()
+    },
+    [scheduleSave],
+  )
 
   // Change the active palette (UI state only, no save needed)
   const setActivePalette = useCallback((index: number) => {

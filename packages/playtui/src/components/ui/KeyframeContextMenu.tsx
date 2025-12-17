@@ -1,4 +1,4 @@
-import { COLORS } from "../../theme"
+import { COLORS } from '../../theme'
 
 interface KeyframeContextMenuProps {
   x: number
@@ -48,7 +48,7 @@ export function KeyframeContextMenu({
           <text fg={COLORS.bg}>Add Keyframe</text>
         </box>
       )}
-      
+
       {hasKeyframeAtCurrent && (
         <box
           height={1}

@@ -1,12 +1,12 @@
-import { COLORS } from "../../theme"
-import { useKeyframing } from "../contexts/KeyframingContext"
+import { COLORS } from '../../theme'
+import { useKeyframing } from '../contexts/KeyframingContext'
 
-export function FrameRuler({ 
-  frameCount, 
-  currentFrame, 
-  width, 
-  onSeek 
-}: { 
+export function FrameRuler({
+  frameCount,
+  currentFrame,
+  width,
+  onSeek,
+}: {
   frameCount: number
   currentFrame: number
   width: number
@@ -16,7 +16,7 @@ export function FrameRuler({
 
   // Visible range
   const visibleFrames = Math.floor((width - 20) / 2) // Rough estimate
-  
+
   return (
     <box height={1} flexDirection="row" backgroundColor={COLORS.bgAlt}>
       <box width={20} paddingRight={1} justifyContent="flex-end">
@@ -29,11 +29,11 @@ export function FrameRuler({
             width={1}
             height={1}
             justifyContent="center"
-            backgroundColor={i === currentFrame ? COLORS.accent : "transparent"}
+            backgroundColor={i === currentFrame ? COLORS.accent : 'transparent'}
             onMouseDown={() => onSeek(i)}
           >
             <text fg={i === currentFrame ? COLORS.bg : COLORS.muted}>
-              {i % 5 === 0 ? (i % 10 === 0 ? "│" : "·") : "·"}
+              {i % 5 === 0 ? (i % 10 === 0 ? '│' : '·') : '·'}
             </text>
           </box>
         ))}

@@ -1,61 +1,83 @@
-import { SyntaxStyle, RGBA } from "@opentui/core"
+import { SyntaxStyle, RGBA } from '@opentui/core'
 
 // TUI Builder Theme - Frosted Ice palette
 
 export const COLORS = {
   // Backgrounds
-  bg: "#151a22",
-  bgAlt: "#1c222c",
-  card: "#19222cff",
-  cardHover: "#282f3c",
-  input: "#151a22",
+  bg: '#151a22',
+  bgAlt: '#1c222c',
+  card: '#19222cff',
+  cardHover: '#282f3c',
+  input: '#151a22',
 
   // Borders
-  border: "#2a3545",
-  borderFocus: "#4a6a8a",
+  border: '#2a3545',
+  borderFocus: '#4a6a8a',
 
   // Text
-  text: "#d8dce5",
-  muted: "#4a5568",
+  text: '#d8dce5',
+  muted: '#4a5568',
 
   // Accents
-  accent: "#4da8da",
-  accentBright: "#5bc0de",
+  accent: '#4da8da',
+  accentBright: '#5bc0de',
 
   // Semantic
-  success: "#00d4aa",
-  warning: "#f0b860",
-  danger: "#ff6b7a",
-  dangerMuted: "#d94f5c",
+  success: '#00d4aa',
+  warning: '#f0b860',
+  danger: '#ff6b7a',
+  dangerMuted: '#d94f5c',
 
   // Syntax highlighting
-  syntaxKeyword: "#c792ea",
-  syntaxString: "#c3e88d",
-  syntaxNumber: "#f78c6c",
-  syntaxComment: "#546e7a",
-  syntaxFunction: "#82aaff",
-  syntaxVariable: "#e5c07b",
-  syntaxType: "#ffcb6b",
-  syntaxOperator: "#89ddff",
-  syntaxProperty: "#80cbc4",
-  syntaxPunctuation: "#89ddff",
-  syntaxTag: "#f07178",
-  syntaxAttribute: "#ffcb6b",
+  syntaxKeyword: '#c792ea',
+  syntaxString: '#c3e88d',
+  syntaxNumber: '#f78c6c',
+  syntaxComment: '#546e7a',
+  syntaxFunction: '#82aaff',
+  syntaxVariable: '#e5c07b',
+  syntaxType: '#ffcb6b',
+  syntaxOperator: '#89ddff',
+  syntaxProperty: '#80cbc4',
+  syntaxPunctuation: '#89ddff',
+  syntaxTag: '#f07178',
+  syntaxAttribute: '#ffcb6b',
 }
 
 // Half-char border characters for thin panel borders
 export const ThinBorderRight = {
-  horizontal: " ", vertical: "▕", topLeft: " ", topRight: " ",
-  bottomLeft: " ", bottomRight: " ", cross: " ",
-  left: " ", right: " ", top: " ", bottom: " ",
-  topT: " ", bottomT: " ", leftT: " ", rightT: " ",
+  horizontal: ' ',
+  vertical: '▕',
+  topLeft: ' ',
+  topRight: ' ',
+  bottomLeft: ' ',
+  bottomRight: ' ',
+  cross: ' ',
+  left: ' ',
+  right: ' ',
+  top: ' ',
+  bottom: ' ',
+  topT: ' ',
+  bottomT: ' ',
+  leftT: ' ',
+  rightT: ' ',
 }
 
 export const ThinBorderLeft = {
-  horizontal: " ", vertical: "▏", topLeft: " ", topRight: " ",
-  bottomLeft: " ", bottomRight: " ", cross: " ",
-  left: " ", right: " ", top: " ", bottom: " ",
-  topT: " ", bottomT: " ", leftT: " ", rightT: " ",
+  horizontal: ' ',
+  vertical: '▏',
+  topLeft: ' ',
+  topRight: ' ',
+  bottomLeft: ' ',
+  bottomRight: ' ',
+  cross: ' ',
+  left: ' ',
+  right: ' ',
+  top: ' ',
+  bottom: ' ',
+  topT: ' ',
+  bottomT: ' ',
+  leftT: ' ',
+  rightT: ' ',
 }
 
 // Semi-transparent accent color for panel borders (50% opacity)
@@ -73,7 +95,7 @@ export const syntaxStyle = SyntaxStyle.fromStyles({
   type: { fg: RGBA.fromHex(COLORS.syntaxType) },
   operator: { fg: RGBA.fromHex(COLORS.syntaxOperator) },
   property: { fg: RGBA.fromHex(COLORS.syntaxProperty) },
-  "punctuation.bracket": { fg: RGBA.fromHex(COLORS.syntaxPunctuation) },
-  "tag": { fg: RGBA.fromHex(COLORS.syntaxTag) },
-  "tag.attribute": { fg: RGBA.fromHex(COLORS.syntaxAttribute) },
+  'punctuation.bracket': { fg: RGBA.fromHex(COLORS.syntaxPunctuation) },
+  tag: { fg: RGBA.fromHex(COLORS.syntaxTag) },
+  'tag.attribute': { fg: RGBA.fromHex(COLORS.syntaxAttribute) },
 })

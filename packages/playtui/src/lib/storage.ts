@@ -1,9 +1,9 @@
 // Cross-platform persistent storage for projects
 
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
-import { homedir, platform } from "node:os"
-import type { Project, ProjectMeta } from "./projectTypes"
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
+import { homedir, platform } from 'node:os'
+import type { Project, ProjectMeta } from './projectTypes'
 
 /**
  * Get the appropriate data directory for the current platform
@@ -16,19 +16,25 @@ export function getDataDir(): string {
   const plat = platform()
 
   switch (plat) {
-    case "win32":
+    case 'win32':
       // Use APPDATA if available, fallback to home
-      return path.join(process.env.APPDATA || path.join(home, "AppData", "Roaming"), "playtui")
-    case "darwin":
-      return path.join(home, "Library", "Application Support", "playtui")
+      return path.join(
+        process.env.APPDATA || path.join(home, 'AppData', 'Roaming'),
+        'playtui',
+      )
+    case 'darwin':
+      return path.join(home, 'Library', 'Application Support', 'playtui')
     default:
       // Linux and others: use XDG_DATA_HOME or fallback
-      return path.join(process.env.XDG_DATA_HOME || path.join(home, ".local", "share"), "playtui")
+      return path.join(
+        process.env.XDG_DATA_HOME || path.join(home, '.local', 'share'),
+        'playtui',
+      )
   }
 }
 
 export function getProjectsDir(): string {
-  return path.join(getDataDir(), "projects")
+  return path.join(getDataDir(), 'projects')
 }
 
 /**
@@ -43,12 +49,14 @@ export async function ensureDataDir(): Promise<void> {
  * Convert project name to safe filename
  */
 export function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .substring(0, 50) || "untitled"
+  return (
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 50) || 'untitled'
+  )
 }
 
 /**
@@ -67,19 +75,19 @@ export async function listProjects(): Promise<ProjectMeta[]> {
 
   try {
     const files = await fs.readdir(projectsDir)
-    const jsonFiles = files.filter((f) => f.endsWith(".json"))
+    const jsonFiles = files.filter((f) => f.endsWith('.json'))
 
     const projects: ProjectMeta[] = []
 
     for (const file of jsonFiles) {
       try {
         const filePath = path.join(projectsDir, file)
-        const content = await fs.readFile(filePath, "utf-8")
+        const content = await fs.readFile(filePath, 'utf-8')
         const project = JSON.parse(content) as Project
 
         projects.push({
           name: project.name,
-          fileName: file.replace(".json", ""),
+          fileName: file.replace('.json', ''),
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
         })
@@ -90,7 +98,10 @@ export async function listProjects(): Promise<ProjectMeta[]> {
     }
 
     // Sort by updatedAt descending (most recent first)
-    return projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    return projects.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
   } catch {
     return []
   }
@@ -102,7 +113,7 @@ export async function listProjects(): Promise<ProjectMeta[]> {
 export async function loadProject(fileName: string): Promise<Project | null> {
   try {
     const filePath = getProjectPath(fileName)
-    const content = await fs.readFile(filePath, "utf-8")
+    const content = await fs.readFile(filePath, 'utf-8')
     return JSON.parse(content) as Project
   } catch {
     return null
@@ -112,7 +123,9 @@ export async function loadProject(fileName: string): Promise<Project | null> {
 /**
  * Save a project
  */
-export async function saveProject(project: Project): Promise<{ success: boolean; fileName: string; error?: string }> {
+export async function saveProject(
+  project: Project,
+): Promise<{ success: boolean; fileName: string; error?: string }> {
   await ensureDataDir()
 
   const fileName = slugify(project.name)
@@ -123,14 +136,14 @@ export async function saveProject(project: Project): Promise<{ success: boolean;
     project.updatedAt = new Date().toISOString()
 
     const content = JSON.stringify(project, null, 2)
-    await fs.writeFile(filePath, content, "utf-8")
+    await fs.writeFile(filePath, content, 'utf-8')
 
     return { success: true, fileName }
   } catch (err) {
     return {
       success: false,
       fileName,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : 'Unknown error',
     }
   }
 }

@@ -1,14 +1,21 @@
-import { useState, useRef, useEffect } from "react"
-import { TextAttributes } from "@opentui/core"
-import type { MouseEvent, ScrollBoxRenderable } from "@opentui/core"
-import { useKeyboard } from "@opentui/react"
-import { COLORS } from "../../theme"
-import type { UseProjectReturn } from "../../hooks/useProject"
-import { getAnimatedProperty, getDrivenValue, getKeyframeAt, createDefaultHandle, getPrevKeyframeFrame, getNextKeyframeFrame } from "../../lib/keyframing"
-import { ValueSlider } from "../ui/ValueSlider"
-import { findRenderable } from "../../lib/tree"
-import { Bind, isKeybind } from "../../lib/shortcuts"
- 
+import { useState, useRef, useEffect } from 'react'
+import { TextAttributes } from '@opentui/core'
+import type { MouseEvent, ScrollBoxRenderable } from '@opentui/core'
+import { useKeyboard } from '@opentui/react'
+import { COLORS } from '../../theme'
+import type { UseProjectReturn } from '../../hooks/useProject'
+import {
+  getAnimatedProperty,
+  getDrivenValue,
+  getKeyframeAt,
+  createDefaultHandle,
+  getPrevKeyframeFrame,
+  getNextKeyframeFrame,
+} from '../../lib/keyframing'
+import { ValueSlider } from '../ui/ValueSlider'
+import { findRenderable } from '../../lib/tree'
+import { Bind, isKeybind } from '../../lib/shortcuts'
+
 // Get display name for an element (capitalize type)
 function getRenderableName(tree: any, renderableId: string): string {
   const node = findRenderable(tree, renderableId)
@@ -16,25 +23,26 @@ function getRenderableName(tree: any, renderableId: string): string {
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
- 
+
 // Graph height in rows (fills TimelinePanel height: 14 - 1 header - 1 border = 12)
 
 const GRAPH_HEIGHT = 12
 
-export function ValueGraph({ 
+export function ValueGraph({
   projectHook,
   width,
-  renderableId, 
+  renderableId,
   property,
-  onBack
-}: { 
+  onBack,
+}: {
   projectHook: UseProjectReturn
   width: number
   renderableId: string
   property: string
   onBack: () => void
 }) {
-  const { project, setCurrentFrame, setKeyframeHandle, addKeyframe } = projectHook
+  const { project, setCurrentFrame, setKeyframeHandle, addKeyframe } =
+    projectHook
   const [hoveredFrame, setHoveredFrame] = useState<number | null>(null)
   const [zoom2x, setZoom2x] = useState(true)
   const scrollRef = useRef<ScrollBoxRenderable>(null)
@@ -45,9 +53,13 @@ export function ValueGraph({
   // J/K shortcuts for prev/next keyframe
   useKeyboard((key) => {
     if (!project) return
-    const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, renderableId, property)
+    const animProp = getAnimatedProperty(
+      project.animation.keyframing.animatedProperties,
+      renderableId,
+      property,
+    )
     if (!animProp) return
-    
+
     if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
       const prev = getPrevKeyframeFrame(animProp.keyframes, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
@@ -65,43 +77,47 @@ export function ValueGraph({
     const framePos = currentFrame * cellW
     const viewportWidth = sb.width ?? 0
     const scrollLeft = sb.scrollLeft ?? 0
-    
+
     const playheadLeft = framePos
     const playheadRight = framePos + cellW
-    
+
     // If playhead is left of viewport, scroll to it
     if (playheadLeft < scrollLeft) {
       sb.scrollTo({ x: playheadLeft, y: 0 })
-    // If playhead is right of viewport, scroll so it's visible at the end
+      // If playhead is right of viewport, scroll so it's visible at the end
     } else if (playheadRight > scrollLeft + viewportWidth) {
       sb.scrollTo({ x: playheadRight - viewportWidth + 4, y: 0 }) // +4 for padding
     }
   }, [currentFrame, zoom2x])
 
   if (!project) return null
-  
+
   // Removed redundant definition of currentFrame
-  
+
   const animatedProp = getAnimatedProperty(
-    project.animation.keyframing.animatedProperties, 
-    renderableId, 
-    property
+    project.animation.keyframing.animatedProperties,
+    renderableId,
+    property,
   )
 
   if (!animatedProp) {
     return (
       <box id="curve-editor-empty" flexDirection="column">
-        <text fg={COLORS.danger} selectable={false}>Property not found</text>
-        <box id="curve-back-btn" onMouseDown={onBack}><text selectable={false}>[Back]</text></box>
+        <text fg={COLORS.danger} selectable={false}>
+          Property not found
+        </text>
+        <box id="curve-back-btn" onMouseDown={onBack}>
+          <text selectable={false}>[Back]</text>
+        </box>
       </box>
     )
   }
 
   const frameCount = project.animation.frames.length
   const keyframes = animatedProp.keyframes
-  
+
   // Calculate value range for display
-  const values = keyframes.map(k => k.value)
+  const values = keyframes.map((k) => k.value)
   const minValue = Math.min(...values)
   const maxValue = Math.max(...values)
   const valueRange = maxValue - minValue || 1 // Avoid division by zero
@@ -109,11 +125,11 @@ export function ValueGraph({
   // Get the normalized percent (0-100) for a frame
   const getPercentAtFrame = (frame: number): number => {
     // If it's a keyframe, calculate based on value position in range
-    const kf = keyframes.find(k => k.frame === frame)
+    const kf = keyframes.find((k) => k.frame === frame)
     if (kf) {
       return Math.round(((kf.value - minValue) / valueRange) * 100)
     }
-    
+
     // For interpolated frames, get the driven value and normalize
     const driven = getDrivenValue(animatedProp, frame)
     return Math.round(((driven - minValue) / valueRange) * 100)
@@ -140,10 +156,12 @@ export function ValueGraph({
     project.animation.keyframing.animatedProperties,
     renderableId,
     property,
-    currentFrame
+    currentFrame,
   )
 
-  const handle = currentKeyframe ? currentKeyframe.handleOut : createDefaultHandle()
+  const handle = currentKeyframe
+    ? currentKeyframe.handleOut
+    : createDefaultHandle()
 
   // Update ref with latest handle values for slider callbacks (avoids stale closures)
   handleRef.current = handle
@@ -153,10 +171,11 @@ export function ValueGraph({
 
   // Current value at this frame (for ValueSlider)
   const currentValue = getDrivenValue(animatedProp, currentFrame)
-  
+
   // Calculate value at hovered frame (if any)
-  const hoveredValue = hoveredFrame !== null ? getDrivenValue(animatedProp, hoveredFrame) : null
-  
+  const hoveredValue =
+    hoveredFrame !== null ? getDrivenValue(animatedProp, hoveredFrame) : null
+
   // Value to display in the slider (hovered takes precedence for display)
   const displayValue = hoveredValue !== null ? hoveredValue : currentValue
 
@@ -175,25 +194,38 @@ export function ValueGraph({
   const cellWidth = zoom2x ? 2 : 1
 
   return (
-    <box id="curve-editor" flexDirection="column" width={width} overflow="hidden">
+    <box
+      id="curve-editor"
+      flexDirection="column"
+      width={width}
+      overflow="hidden"
+    >
       {/* Header row */}
-      <box 
-        id="curve-header" 
-        flexDirection="row" 
+      <box
+        id="curve-header"
+        flexDirection="row"
         alignItems="center"
         height={1}
         backgroundColor={COLORS.bgAlt}
       >
         {/* Left: Element:property name */}
         <box paddingLeft={0} paddingRight={2}>
-          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getRenderableName(project.tree, renderableId)}:{property}</text>
+          <text
+            fg={COLORS.accent}
+            attributes={TextAttributes.BOLD}
+            selectable={false}
+          >
+            {getRenderableName(project.tree, renderableId)}:{property}
+          </text>
         </box>
-        
+
         {/* Frame indicator */}
         <box paddingRight={1}>
-          <text fg={COLORS.muted} selectable={false}>f:{hoveredFrame ?? currentFrame}</text>
+          <text fg={COLORS.muted} selectable={false}>
+            f:{hoveredFrame ?? currentFrame}
+          </text>
         </box>
-        
+
         {/* Value slider - editable */}
         <ValueSlider
           id="curve-value"
@@ -201,7 +233,7 @@ export function ValueGraph({
           value={Math.round(displayValue)}
           onChange={handleValueChange}
         />
-        
+
         {/* Easing controls when keyframe selected */}
         {isKeyframeSelected && (
           <>
@@ -209,53 +241,120 @@ export function ValueGraph({
               id="handle-x"
               label="spd"
               value={handle.x}
-              onChange={(v) => setKeyframeHandle(renderableId, property, currentFrame, v, handleRef.current.y)}
+              onChange={(v) =>
+                setKeyframeHandle(
+                  renderableId,
+                  property,
+                  currentFrame,
+                  v,
+                  handleRef.current.y,
+                )
+              }
               resetTo={33}
             />
             <ValueSlider
               id="handle-y"
               label="bnc"
               value={handle.y}
-              onChange={(v) => setKeyframeHandle(renderableId, property, currentFrame, handleRef.current.x, v)}
+              onChange={(v) =>
+                setKeyframeHandle(
+                  renderableId,
+                  property,
+                  currentFrame,
+                  handleRef.current.x,
+                  v,
+                )
+              }
               resetTo={0}
             />
           </>
         )}
-        
+
         {/* Spacer pushes buttons to right */}
         <box flexGrow={1} />
-        
+
         {/* 2x zoom toggle - fixed width button */}
-        <box 
-          id="curve-zoom-btn" 
-          onMouseDown={() => setZoom2x(z => !z)} 
-          backgroundColor={zoom2x ? COLORS.accent : COLORS.bg} 
-          paddingLeft={1} 
+        <box
+          id="curve-zoom-btn"
+          onMouseDown={() => setZoom2x((z) => !z)}
+          backgroundColor={zoom2x ? COLORS.accent : COLORS.bg}
+          paddingLeft={1}
           paddingRight={1}
           marginRight={1}
         >
-          <text fg={zoom2x ? COLORS.bg : COLORS.muted} selectable={false}>2x</text>
+          <text fg={zoom2x ? COLORS.bg : COLORS.muted} selectable={false}>
+            2x
+          </text>
         </box>
-        
+
         {/* Back button */}
-        <box id="curve-back-btn" onMouseDown={onBack} backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
-          <text fg={COLORS.accent} selectable={false}>Back</text>
+        <box
+          id="curve-back-btn"
+          onMouseDown={onBack}
+          backgroundColor={COLORS.bg}
+          paddingLeft={1}
+          paddingRight={1}
+        >
+          <text fg={COLORS.accent} selectable={false}>
+            Back
+          </text>
         </box>
       </box>
-      
+
       {/* Border separator */}
-      <box height={1} border={["top"]} borderColor={COLORS.border} borderStyle="single" />
-      
-      <box id="curve-body" flexDirection="row" height={GRAPH_HEIGHT + 1} backgroundColor={COLORS.bg} overflow="hidden">
+      <box
+        height={1}
+        border={['top']}
+        borderColor={COLORS.border}
+        borderStyle="single"
+      />
+
+      <box
+        id="curve-body"
+        flexDirection="row"
+        height={GRAPH_HEIGHT + 1}
+        backgroundColor={COLORS.bg}
+        overflow="hidden"
+      >
         {/* Y Axis Labels */}
-        <box id="curve-y-axis" width={5} flexDirection="column" justifyContent="space-between" paddingRight={1} flexShrink={0}>
-          <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{maxValue}</text>
-          <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{Math.round((maxValue + minValue) / 2)}</text>
-          <text fg={COLORS.muted} attributes={TextAttributes.DIM} selectable={false}>{minValue}</text>
+        <box
+          id="curve-y-axis"
+          width={5}
+          flexDirection="column"
+          justifyContent="space-between"
+          paddingRight={1}
+          flexShrink={0}
+        >
+          <text
+            fg={COLORS.muted}
+            attributes={TextAttributes.DIM}
+            selectable={false}
+          >
+            {maxValue}
+          </text>
+          <text
+            fg={COLORS.muted}
+            attributes={TextAttributes.DIM}
+            selectable={false}
+          >
+            {Math.round((maxValue + minValue) / 2)}
+          </text>
+          <text
+            fg={COLORS.muted}
+            attributes={TextAttributes.DIM}
+            selectable={false}
+          >
+            {minValue}
+          </text>
         </box>
 
         {/* Graph Area with ScrollBox */}
-        <box id="curve-graph-container" flexGrow={1} flexShrink={1} overflow="hidden">
+        <box
+          id="curve-graph-container"
+          flexGrow={1}
+          flexShrink={1}
+          overflow="hidden"
+        >
           <scrollbox
             ref={scrollRef}
             scrollX
@@ -264,71 +363,81 @@ export function ValueGraph({
             scrollbarOptions={{
               showArrows: false,
               trackOptions: {
-                foregroundColor: "transparent",
-                backgroundColor: "transparent",
+                foregroundColor: 'transparent',
+                backgroundColor: 'transparent',
               },
             }}
             style={{
               rootOptions: {
-                overflow: "hidden",
+                overflow: 'hidden',
               },
               contentOptions: {
-                flexDirection: "column",
+                flexDirection: 'column',
                 flexShrink: 0,
-              }
+              },
             }}
             onMouseScroll={(e) => {
               const sb = scrollRef.current
               if (!sb || !e.scroll) return
-              const delta = e.scroll.direction === "up" ? -1 : 1
+              const delta = e.scroll.direction === 'up' ? -1 : 1
               sb.scrollBy({ x: delta * (zoom2x ? 10 : 5), y: 0 })
             }}
           >
             {Array.from({ length: GRAPH_HEIGHT }).map((_, row) => (
-              <box id={`curve-row-${row}`} key={row} flexDirection="row" height={1} flexShrink={0}>
+              <box
+                id={`curve-row-${row}`}
+                key={row}
+                flexDirection="row"
+                height={1}
+                flexShrink={0}
+              >
                 {Array.from({ length: frameCount }).map((_, frame) => {
                   const percent = getPercentAtFrame(frame)
                   const targetRow = percentToRow(percent)
-                  const isKeyframe = keyframes.some(k => k.frame === frame)
+                  const isKeyframe = keyframes.some((k) => k.frame === frame)
                   const isCurrent = frame === currentFrame
                   const isHovered = frame === hoveredFrame
-                  
+
                   // Determine cell content
-                  let char = " "
+                  let char = ' '
                   let fg = COLORS.muted
-                  let bg = "transparent"
-                  
+                  let bg = 'transparent'
+
                   // Grid lines
-                  if (row === 0 || row === GRAPH_HEIGHT - 1 || row === Math.floor(GRAPH_HEIGHT / 2)) {
-                    char = "·"
+                  if (
+                    row === 0 ||
+                    row === GRAPH_HEIGHT - 1 ||
+                    row === Math.floor(GRAPH_HEIGHT / 2)
+                  ) {
+                    char = '·'
                     fg = COLORS.border
                   }
-                  
+
                   // Current frame highlight
                   if (isCurrent) {
                     bg = COLORS.bgAlt
                   }
-                  
+
                   // Plot the value
                   if (row === targetRow) {
                     if (isKeyframe) {
-                      char = "◆"
+                      char = '◆'
                       fg = COLORS.danger
                     } else {
-                      char = "●"
+                      char = '●'
                       fg = COLORS.accent
                     }
                   }
-                  
+
                   // Draw vertical line connecting to value - FULL HEIGHT for cursor/keyframe
                   if (isKeyframe || isHovered) {
                     // Only draw line if NOT the value point itself
                     if (row !== targetRow) {
-                       // Determine color based on if it's keyframe or just hover
-                       fg = isKeyframe ? COLORS.danger : COLORS.muted
-                       
-                       // Draw full line
-                       char = "│"
+                      // Determine color based on if it's keyframe or just hover
+                      fg = isKeyframe ? COLORS.danger : COLORS.muted
+
+                      // Draw full line
+                      char = '│'
                     }
                   }
 
@@ -343,7 +452,9 @@ export function ValueGraph({
                       onMouseOut={handleMouseLeave}
                       onMouseDown={(e) => handleCellClick(e, frame)}
                     >
-                      <text fg={fg} selectable={false}>{zoom2x ? char + " " : char}</text>
+                      <text fg={fg} selectable={false}>
+                        {zoom2x ? char + ' ' : char}
+                      </text>
                     </box>
                   )
                 })}

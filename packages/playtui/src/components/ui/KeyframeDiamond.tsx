@@ -1,4 +1,4 @@
-import { COLORS } from "../../theme"
+import { COLORS } from '../../theme'
 
 interface KeyframeDiamondProps {
   hasKeyframe: boolean
@@ -6,16 +6,20 @@ interface KeyframeDiamondProps {
   active: boolean // Hovered or interacting
 }
 
-export function KeyframeDiamond({ hasKeyframe, isCurrentFrame, active }: KeyframeDiamondProps) {
+export function KeyframeDiamond({
+  hasKeyframe,
+  isCurrentFrame,
+  active,
+}: KeyframeDiamondProps) {
   // ◇  - No keyframes on this property (hollow, muted color)
   // ◆  - Has keyframes, but not at current frame (filled, muted)
   // ◆  - Has keyframe at current frame (filled, red/accent color)
 
-  let symbol = "◇"
+  let symbol = '◇'
   let color = COLORS.muted
 
   if (hasKeyframe) {
-    symbol = "◆"
+    symbol = '◆'
     if (isCurrentFrame) {
       color = COLORS.accent // Red/Active color
     } else {

@@ -1,14 +1,17 @@
-import { useRef, useEffect } from "react"
-import { TextAttributes } from "@opentui/core"
-import type { ScrollBoxRenderable } from "@opentui/core"
-import { useKeyboard } from "@opentui/react"
-import { COLORS } from "../../theme"
-import { DopesheetRow } from "./DopesheetRow"
-import type { UseProjectReturn } from "../../hooks/useProject"
-import { findRenderable } from "../../lib/tree"
-import { Bind, isKeybind } from "../../lib/shortcuts"
-import { getPrevKeyframeFrameForNode, getNextKeyframeFrameForNode } from "../../lib/keyframing"
- 
+import { useRef, useEffect } from 'react'
+import { TextAttributes } from '@opentui/core'
+import type { ScrollBoxRenderable } from '@opentui/core'
+import { useKeyboard } from '@opentui/react'
+import { COLORS } from '../../theme'
+import { DopesheetRow } from './DopesheetRow'
+import type { UseProjectReturn } from '../../hooks/useProject'
+import { findRenderable } from '../../lib/tree'
+import { Bind, isKeybind } from '../../lib/shortcuts'
+import {
+  getPrevKeyframeFrameForNode,
+  getNextKeyframeFrameForNode,
+} from '../../lib/keyframing'
+
 // Get display name for an element (capitalize type)
 function getRenderableName(tree: any, renderableId: string): string {
   const node = findRenderable(tree, renderableId)
@@ -16,29 +19,30 @@ function getRenderableName(tree: any, renderableId: string): string {
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
- 
-export function Dopesheet({ 
 
+export function Dopesheet({
   projectHook,
   width: _width,
-  onSelectProperty 
-}: { 
+  onSelectProperty,
+}: {
   projectHook: UseProjectReturn
   width: number
-  onSelectProperty: (renderableId: string, property: string) => void 
+  onSelectProperty: (renderableId: string, property: string) => void
 }) {
   const { project, setCurrentFrame } = projectHook
-  const scrollRefs = useRef<Map<string, React.RefObject<ScrollBoxRenderable | null>>>(new Map())
-  
+  const scrollRefs = useRef<
+    Map<string, React.RefObject<ScrollBoxRenderable | null>>
+  >(new Map())
+
   if (!project) return null
-  
+
   const animatedProperties = project.animation.keyframing.animatedProperties
   const frameCount = project.animation.frames.length
   const currentFrame = project.animation.currentFrameIndex
   const fps = project.animation.fps
   const tree = project.tree
   const selectedId = project.selectedId
-  
+
   // Group by Renderable ID
   const grouped: Record<string, typeof animatedProperties> = {}
   for (const prop of animatedProperties) {
@@ -47,12 +51,12 @@ export function Dopesheet({
   }
 
   // Create refs for each row (no hooks in loop - just create ref objects)
-  const rowKeys = Object.entries(grouped).flatMap(([_, props]) => 
-    props.map(prop => `${prop.renderableId}:${prop.property}`)
+  const rowKeys = Object.entries(grouped).flatMap(([_, props]) =>
+    props.map((prop) => `${prop.renderableId}:${prop.property}`),
   )
-  
+
   // Initialize refs for all rows
-  rowKeys.forEach(key => {
+  rowKeys.forEach((key) => {
     if (!scrollRefs.current.has(key)) {
       scrollRefs.current.set(key, { current: null })
     }
@@ -62,21 +66,21 @@ export function Dopesheet({
   useEffect(() => {
     const cellW = 1
     const framePos = currentFrame * cellW
-    
+
     // Sync all row scrollboxes
-    scrollRefs.current.forEach(ref => {
+    scrollRefs.current.forEach((ref) => {
       const sb = ref.current
       if (!sb) return
       const viewportWidth = sb.width ?? 0
       const scrollLeft = sb.scrollLeft ?? 0
-      
+
       const playheadLeft = framePos
       const playheadRight = framePos + cellW
-      
+
       // If playhead is left of viewport, scroll to it
       if (playheadLeft < scrollLeft) {
         sb.scrollTo({ x: playheadLeft, y: 0 })
-      // If playhead is right of viewport, scroll so it's visible at the end
+        // If playhead is right of viewport, scroll so it's visible at the end
       } else if (playheadRight > scrollLeft + viewportWidth) {
         sb.scrollTo({ x: playheadRight - viewportWidth + 4, y: 0 })
       }
@@ -89,7 +93,7 @@ export function Dopesheet({
 
     const props = grouped[selectedId]
     if (!props || props.length === 0) return
- 
+
     if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
       const prev = getPrevKeyframeFrameForNode(props, currentFrame)
       if (prev !== null) setCurrentFrame(prev)
@@ -97,7 +101,6 @@ export function Dopesheet({
       const next = getNextKeyframeFrameForNode(props, currentFrame)
       if (next !== null) setCurrentFrame(next)
     }
-
   })
 
   return (
@@ -107,10 +110,12 @@ export function Dopesheet({
           <box key={renderableId} flexDirection="column">
             {/* Node Header */}
             <box height={1} backgroundColor={COLORS.bgAlt} paddingLeft={1}>
-              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>{getRenderableName(tree, renderableId)}</text>
+              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>
+                {getRenderableName(tree, renderableId)}
+              </text>
             </box>
             {/* Properties */}
-            {props.map(prop => {
+            {props.map((prop) => {
               const rowKey = `${prop.renderableId}:${prop.property}`
               const scrollRef = scrollRefs.current.get(rowKey)
               return (
@@ -120,7 +125,9 @@ export function Dopesheet({
                   frameCount={frameCount}
                   currentFrame={currentFrame}
                   fps={fps}
-                  onSelect={() => onSelectProperty(prop.renderableId, prop.property)}
+                  onSelect={() =>
+                    onSelectProperty(prop.renderableId, prop.property)
+                  }
                   scrollRef={scrollRef}
                 />
               )
@@ -129,7 +136,9 @@ export function Dopesheet({
         ))}
         {animatedProperties.length === 0 && (
           <box height={3} justifyContent="center" alignItems="center">
-            <text fg={COLORS.muted}>No animated properties. Add keyframes to start.</text>
+            <text fg={COLORS.muted}>
+              No animated properties. Add keyframes to start.
+            </text>
           </box>
         )}
       </box>

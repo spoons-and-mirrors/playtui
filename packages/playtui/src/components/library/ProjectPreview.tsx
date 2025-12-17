@@ -1,6 +1,6 @@
-import { COLORS } from "../../theme"
-import { Renderer } from "../Renderer"
-import type { Renderable } from "../../lib/types"
+import { COLORS } from '../../theme'
+import { Renderer } from '../Renderer'
+import type { Renderable } from '../../lib/types'
 
 interface ProjectPreviewProps {
   tree: Renderable
@@ -9,7 +9,12 @@ interface ProjectPreviewProps {
   isSelected: boolean
 }
 
-export function ProjectPreview({ tree, width, height, isSelected }: ProjectPreviewProps) {
+export function ProjectPreview({
+  tree,
+  width,
+  height,
+  isSelected,
+}: ProjectPreviewProps) {
   return (
     <box
       width={width}

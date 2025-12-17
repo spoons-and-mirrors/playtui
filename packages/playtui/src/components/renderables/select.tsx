@@ -1,10 +1,14 @@
-import type { Renderable, SelectRenderable } from "../../lib/types"
-import { COLORS } from "../../theme"
+import type { Renderable, SelectRenderable } from '../../lib/types'
+import { COLORS } from '../../theme'
 import {
-  StringProp, NumberProp, ToggleProp, SectionHeader, ManagedColorControl
-} from "../controls"
-import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
-import { buildPositioningStyle } from "./styleHelpers"
+  StringProp,
+  NumberProp,
+  ToggleProp,
+  SectionHeader,
+  ManagedColorControl,
+} from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle } from './styleHelpers'
 
 // =============================================================================
 // SELECT DEFAULTS
@@ -13,7 +17,7 @@ import { buildPositioningStyle } from "./styleHelpers"
 export const SELECT_DEFAULTS: Partial<SelectRenderable> = {
   width: 20,
   height: 5,
-  options: ["Option 1", "Option 2", "Option 3"],
+  options: ['Option 1', 'Option 2', 'Option 3'],
 }
 
 // =============================================================================
@@ -29,14 +33,20 @@ interface SelectRendererProps {
   onDragStart?: (x: number, y: number) => void
 }
 
-export function SelectRenderer({ node: genericNode, onSelect, onHover, onDragStart }: SelectRendererProps) {
+export function SelectRenderer({
+  node: genericNode,
+  onSelect,
+  onHover,
+  onDragStart,
+}: SelectRendererProps) {
   const node = genericNode as SelectRenderable
-  const options = node.options || ["Option 1", "Option 2"]
+  const options = node.options || ['Option 1', 'Option 2']
   const selBgColor = node.selectedBackgroundColor || COLORS.accent
   const textColor = node.textColor || COLORS.text
   const selTextColor = node.selectedTextColor || COLORS.bg
-  
-  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
+
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
@@ -48,14 +58,24 @@ export function SelectRenderer({ node: genericNode, onSelect, onHover, onDragSta
       style={buildPositioningStyle(node)}
     >
       {options.slice(0, 5).map((opt, i) => (
-        <box key={i} style={{ paddingLeft: 1, backgroundColor: i === 0 ? selBgColor : "transparent" }}>
+        <box
+          key={i}
+          style={{
+            paddingLeft: 1,
+            backgroundColor: i === 0 ? selBgColor : 'transparent',
+          }}
+        >
           <text fg={i === 0 ? selTextColor : textColor}>
-            {i === 0 ? "▶ " : "  "}{opt}
+            {i === 0 ? '▶ ' : '  '}
+            {opt}
           </text>
         </box>
       ))}
       {node.showScrollIndicator && options.length > 5 && (
-        <text fg={COLORS.muted} style={{ paddingLeft: 1 }}>  ↓ more...</text>
+        <text fg={COLORS.muted} style={{ paddingLeft: 1 }}>
+          {' '}
+          ↓ more...
+        </text>
       )}
     </box>
   )
@@ -76,20 +96,40 @@ interface SelectPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-export function SelectProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: SelectPropertiesProps) {
+export function SelectProperties({
+  node: genericNode,
+  onUpdate,
+  focusedField,
+  setFocusedField,
+  collapsed,
+  onToggle,
+  pickingForField,
+  setPickingForField,
+}: SelectPropertiesProps) {
   const node = genericNode as SelectRenderable
   return (
-    <box id="section-select" style={{ flexDirection: "column" }}>
-      <SectionHeader title="≡ Select" collapsed={collapsed} onToggle={onToggle} />
+    <box id="section-select" style={{ flexDirection: 'column' }}>
+      <SectionHeader
+        title="≡ Select"
+        collapsed={collapsed}
+        onToggle={onToggle}
+      />
       {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
+        <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
           {/* Options input */}
           <StringProp
             label="Options"
-            value={(node.options || []).join(", ")}
-            focused={focusedField === "options"}
-            onFocus={() => setFocusedField("options")}
-            onChange={(v) => onUpdate({ options: v.split(",").map(s => s.trim()).filter(Boolean) })}
+            value={(node.options || []).join(', ')}
+            focused={focusedField === 'options'}
+            onFocus={() => setFocusedField('options')}
+            onChange={(v) =>
+              onUpdate({
+                options: v
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
           />
 
           {/* Behavior toggles */}
@@ -97,7 +137,7 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
             <text fg={COLORS.muted}>─ Behavior ─</text>
           </box>
 
-          <box style={{ flexDirection: "row", gap: 2 }}>
+          <box style={{ flexDirection: 'row', gap: 2 }}>
             <ToggleProp
               label="Scroll"
               value={node.showScrollIndicator === true}
@@ -117,7 +157,7 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
           />
 
           {/* Spacing controls */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <NumberProp
                 id="select-spacing"
@@ -146,7 +186,7 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
           </box>
 
           {/* Background colors row */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="BG"
@@ -174,7 +214,7 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
           </box>
 
           {/* Text colors row */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="Text"
@@ -203,7 +243,7 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
 
           {/* Description colors - only when showDescription is on */}
           {node.showDescription && (
-            <box style={{ flexDirection: "row", gap: 1 }}>
+            <box style={{ flexDirection: 'row', gap: 1 }}>
               <box style={{ flexGrow: 1 }}>
                 <ManagedColorControl
                   label="Desc"
@@ -230,7 +270,6 @@ export function SelectProperties({ node: genericNode, onUpdate, focusedField, se
               </box>
             </box>
           )}
-
         </box>
       )}
     </box>

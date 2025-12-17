@@ -1,4 +1,4 @@
-import type { MouseEvent } from "@opentui/core"
+import type { MouseEvent } from '@opentui/core'
 
 /**
  * Shared mouse event handlers for all renderable components.
@@ -7,7 +7,7 @@ import type { MouseEvent } from "@opentui/core"
 export function useRenderableMouseHandlers(
   onSelect: () => void,
   onHover: (hovering: boolean) => void,
-  onDragStart?: (x: number, y: number) => void
+  onDragStart?: (x: number, y: number) => void,
 ) {
   return {
     handleMouseDown: (e: MouseEvent) => {

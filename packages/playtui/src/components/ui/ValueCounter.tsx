@@ -1,10 +1,10 @@
-import { useRef, useState } from "react"
-import type { MouseEvent } from "@opentui/core"
-import { MouseButton } from "@opentui/core"
-import { COLORS } from "../../theme"
-import { useDragCapture } from "../pages/Properties"
-import { useKeyframing } from "../contexts/KeyframingContext"
-import { KeyframeContextMenu } from "./KeyframeContextMenu"
+import { useRef, useState } from 'react'
+import type { MouseEvent } from '@opentui/core'
+import { MouseButton } from '@opentui/core'
+import { COLORS } from '../../theme'
+import { useDragCapture } from '../pages/Properties'
+import { useKeyframing } from '../contexts/KeyframingContext'
+import { KeyframeContextMenu } from './KeyframeContextMenu'
 
 interface ValueCounterProps {
   id: string
@@ -19,25 +19,44 @@ interface ValueCounterProps {
 // Generic value counter: | - | label:value | + |
 // Shows warning color when property has keyframes
 // Auto-keyframes when property is already keyframed (always on)
-export function ValueCounter({ id, label, property, value, onChange, onChangeEnd, resetTo = 0 }: ValueCounterProps) {
-  const [pressing, setPressing] = useState<"dec" | "inc" | null>(null)
+export function ValueCounter({
+  id,
+  label,
+  property,
+  value,
+  onChange,
+  onChangeEnd,
+  resetTo = 0,
+}: ValueCounterProps) {
+  const [pressing, setPressing] = useState<'dec' | 'inc' | null>(null)
   const [dragging, setDragging] = useState(false)
   const lastClickTime = useRef<number>(0)
   const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
   const registerDrag = useDragCapture()
   const keyframing = useKeyframing()
-  const [showMenu, setShowMenu] = useState<{ x: number; y: number } | null>(null)
+  const [showMenu, setShowMenu] = useState<{ x: number; y: number } | null>(
+    null,
+  )
 
   // Check if this property is keyframed (has any keyframes)
-  const isKeyframed = keyframing && keyframing.selectedId && property 
-    ? keyframing.animatedProperties?.some(p => p.renderableId === keyframing.selectedId && p.property === property)
-    : false
+  const isKeyframed =
+    keyframing && keyframing.selectedId && property
+      ? keyframing.animatedProperties?.some(
+          (p) =>
+            p.renderableId === keyframing.selectedId && p.property === property,
+        )
+      : false
 
   // Check if there's a keyframe at the current frame
-  const hasKeyframeAtCurrent = keyframing && keyframing.selectedId && property 
-    ? keyframing.hasKeyframe(keyframing.selectedId, property, keyframing.currentFrame) 
-    : false
-  
+  const hasKeyframeAtCurrent =
+    keyframing && keyframing.selectedId && property
+      ? keyframing.hasKeyframe(
+          keyframing.selectedId,
+          property,
+          keyframing.currentFrame,
+        )
+      : false
+
   const step = 1
 
   // Auto-keyframe: when property is keyframed and value changes, add/update keyframe
@@ -81,7 +100,7 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
 
     dragStart.current = { x: e.x, y: e.y, value }
     setDragging(true)
-    
+
     if (registerDrag) {
       registerDrag(e.x, e.y, value, onChange, (v) => {
         if (onChangeEnd) onChangeEnd(v)
@@ -119,13 +138,15 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
         paddingLeft={1}
         paddingRight={1}
         onMouseDown={() => {
-          setPressing("dec")
+          setPressing('dec')
           handleDec()
         }}
         onMouseUp={() => setPressing(null)}
         onMouseOut={() => setPressing(null)}
       >
-        <text fg={COLORS.accent} selectable={false}>-</text>
+        <text fg={COLORS.accent} selectable={false}>
+          -
+        </text>
       </box>
       <box
         id={`${id}-value`}
@@ -138,7 +159,9 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
         onMouseDragEnd={handleValueDragEnd}
       >
         <text fg={valueTextColor} selectable={false}>
-          <strong>{label.toLowerCase()}:{value}</strong>
+          <strong>
+            {label.toLowerCase()}:{value}
+          </strong>
         </text>
       </box>
       <box
@@ -147,13 +170,15 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
         paddingLeft={1}
         paddingRight={1}
         onMouseDown={() => {
-          setPressing("inc")
+          setPressing('inc')
           handleInc()
         }}
         onMouseUp={() => setPressing(null)}
         onMouseOut={() => setPressing(null)}
       >
-        <text fg={COLORS.accent} selectable={false}>+</text>
+        <text fg={COLORS.accent} selectable={false}>
+          +
+        </text>
       </box>
       {showMenu && keyframing && keyframing.selectedId && property && (
         <KeyframeContextMenu

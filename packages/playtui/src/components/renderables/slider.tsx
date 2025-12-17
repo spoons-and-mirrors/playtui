@@ -1,10 +1,13 @@
-import type { Renderable, SliderRenderable } from "../../lib/types"
-import { COLORS } from "../../theme"
+import type { Renderable, SliderRenderable } from '../../lib/types'
+import { COLORS } from '../../theme'
 import {
-  NumberProp, SelectProp, ManagedColorControl, SectionHeader
-} from "../controls"
-import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
-import { buildPositioningStyle } from "./styleHelpers"
+  NumberProp,
+  SelectProp,
+  ManagedColorControl,
+  SectionHeader,
+} from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle } from './styleHelpers'
 
 // =============================================================================
 // SLIDER DEFAULTS
@@ -12,7 +15,7 @@ import { buildPositioningStyle } from "./styleHelpers"
 
 export const SLIDER_DEFAULTS: Partial<SliderRenderable> = {
   width: 20,
-  orientation: "horizontal",
+  orientation: 'horizontal',
   value: 50,
   min: 0,
   max: 100,
@@ -32,17 +35,23 @@ interface SliderRendererProps {
   onDragStart?: (x: number, y: number) => void
 }
 
-export function SliderRenderer({ node: genericNode, onSelect, onHover, onDragStart }: SliderRendererProps) {
+export function SliderRenderer({
+  node: genericNode,
+  onSelect,
+  onHover,
+  onDragStart,
+}: SliderRendererProps) {
   const node = genericNode as SliderRenderable
-  const isHorizontal = node.orientation !== "vertical"
+  const isHorizontal = node.orientation !== 'vertical'
   const val = node.value ?? 50
   const min = node.min ?? 0
   const max = node.max ?? 100
   const pct = Math.round(((val - min) / (max - min)) * 100)
-  const trackChar = isHorizontal ? "─" : "│"
-  const thumbChar = "●"
-  
-  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
+  const trackChar = isHorizontal ? '─' : '│'
+  const thumbChar = '●'
+
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
@@ -55,9 +64,10 @@ export function SliderRenderer({ node: genericNode, onSelect, onHover, onDragSta
     >
       <text fg={node.foregroundColor || COLORS.accent}>
         {isHorizontal
-          ? trackChar.repeat(Math.floor(pct / 10)) + thumbChar + trackChar.repeat(10 - Math.floor(pct / 10))
-          : `${thumbChar} ${pct}%`
-        }
+          ? trackChar.repeat(Math.floor(pct / 10)) +
+            thumbChar +
+            trackChar.repeat(10 - Math.floor(pct / 10))
+          : `${thumbChar} ${pct}%`}
       </text>
     </box>
   )
@@ -78,21 +88,34 @@ interface SliderPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-export function SliderProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: SliderPropertiesProps) {
+export function SliderProperties({
+  node: genericNode,
+  onUpdate,
+  focusedField,
+  setFocusedField,
+  collapsed,
+  onToggle,
+  pickingForField,
+  setPickingForField,
+}: SliderPropertiesProps) {
   const node = genericNode as SliderRenderable
   const min = node.min ?? 0
   const max = node.max ?? 100
 
   return (
-    <box id="section-slider" style={{ flexDirection: "column" }}>
-      <SectionHeader title="─ Slider" collapsed={collapsed} onToggle={onToggle} />
+    <box id="section-slider" style={{ flexDirection: 'column' }}>
+      <SectionHeader
+        title="─ Slider"
+        collapsed={collapsed}
+        onToggle={onToggle}
+      />
       {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
+        <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
           {/* Orientation */}
           <SelectProp
             label="Orient"
-            value={node.orientation || "horizontal"}
-            options={["horizontal", "vertical"]}
+            value={node.orientation || 'horizontal'}
+            options={['horizontal', 'vertical']}
             onChange={(v) => onUpdate({ orientation: v as any })}
           />
 
@@ -101,7 +124,7 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
             <text fg={COLORS.muted}>─ Range ─</text>
           </box>
 
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <NumberProp
                 id="slider-min"
@@ -147,7 +170,7 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
             <text fg={COLORS.muted}>─ Colors ─</text>
           </box>
 
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="BG"

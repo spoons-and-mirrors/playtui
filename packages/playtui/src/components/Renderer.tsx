@@ -1,6 +1,6 @@
-import type { Renderable } from "../lib/types"
-import { RENDERABLE_REGISTRY } from "./renderables"
-import { log } from "../lib/logger"
+import type { Renderable } from '../lib/types'
+import { RENDERABLE_REGISTRY } from './renderables'
+import { log } from '../lib/logger'
 
 // ============================================================================
 // Renderer - renders Renderable tree
@@ -21,19 +21,39 @@ export interface RendererProps {
   onDragStart?: (event: DragEvent) => void
 }
 
-export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDragStart }: RendererProps) {
+export function Renderer({
+  node,
+  selectedId,
+  hoveredId,
+  onSelect,
+  onHover,
+  onDragStart,
+}: RendererProps) {
   const isSelected = node.id === selectedId
   const isHovered = node.id === hoveredId && !isSelected
-  const isRoot = node.id === "root"
+  const isRoot = node.id === 'root'
 
-  log("RENDER", { id: node.id, type: node.type, childCount: node.children.length, childIds: node.children.map(c => c.id) })
+  log('RENDER', {
+    id: node.id,
+    type: node.type,
+    childCount: node.children.length,
+    childIds: node.children.map((c) => c.id),
+  })
 
   // Root element: render children directly (canvas is the root container)
   if (isRoot) {
     return (
       <>
         {node.children.map((child) => (
-          <Renderer key={child.id} node={child} selectedId={selectedId} hoveredId={hoveredId} onSelect={onSelect} onHover={onHover} onDragStart={onDragStart} />
+          <Renderer
+            key={child.id}
+            node={child}
+            selectedId={selectedId}
+            hoveredId={hoveredId}
+            onSelect={onSelect}
+            onHover={onHover}
+            onDragStart={onDragStart}
+          />
         ))}
       </>
     )
@@ -65,7 +85,9 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDra
     isHovered,
     onSelect: () => onSelect(node.id),
     onHover: (h: boolean) => onHover(h ? node.id : null),
-    onDragStart: onDragStart ? (x: number, y: number) => onDragStart({ renderableId: node.id, x, y }) : undefined,
+    onDragStart: onDragStart
+      ? (x: number, y: number) => onDragStart({ renderableId: node.id, x, y })
+      : undefined,
     children,
   })
 }

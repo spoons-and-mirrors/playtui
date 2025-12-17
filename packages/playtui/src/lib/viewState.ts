@@ -1,6 +1,6 @@
-import { Bind } from "./shortcuts"
+import { Bind } from './shortcuts'
 
-export type ViewMode = "editor" | "play" | "library" | "docs"
+export type ViewMode = 'editor' | 'play' | 'library' | 'docs'
 
 export interface ViewLayoutState {
   mode: ViewMode
@@ -13,7 +13,7 @@ export interface ViewModeConfig {
   mode: ViewMode
   bind: Bind
   label: string
-  kind: "builder" | "browser"
+  kind: 'builder' | 'browser'
   supportsCodePanel: boolean
   hasFilmStrip: boolean
   hasTimeline: boolean
@@ -21,37 +21,37 @@ export interface ViewModeConfig {
 
 export const VIEW_MODES: ViewModeConfig[] = [
   {
-    mode: "editor",
+    mode: 'editor',
     bind: Bind.VIEW_EDITOR,
-    label: "Edit",
-    kind: "builder",
+    label: 'Edit',
+    kind: 'builder',
     supportsCodePanel: true,
     hasFilmStrip: false,
     hasTimeline: false,
   },
   {
-    mode: "play",
+    mode: 'play',
     bind: Bind.VIEW_PLAY,
-    label: "Play",
-    kind: "builder",
+    label: 'Play',
+    kind: 'builder',
     supportsCodePanel: true,
     hasFilmStrip: true,
     hasTimeline: true,
   },
   {
-    mode: "library",
+    mode: 'library',
     bind: Bind.VIEW_LIBRARY,
-    label: "Library",
-    kind: "browser",
+    label: 'Library',
+    kind: 'browser',
     supportsCodePanel: false,
     hasFilmStrip: false,
     hasTimeline: false,
   },
   {
-    mode: "docs",
+    mode: 'docs',
     bind: Bind.VIEW_DOCS,
-    label: "Docs",
-    kind: "browser",
+    label: 'Docs',
+    kind: 'browser',
     supportsCodePanel: false,
     hasFilmStrip: false,
     hasTimeline: false,
@@ -64,17 +64,16 @@ for (const cfg of VIEW_MODES) {
   VIEW_MODE_BY_BIND[cfg.bind] = cfg
 }
 
-export const VIEW_MODE_BY_MODE: Record<ViewMode, ViewModeConfig> = VIEW_MODES.reduce(
-  (acc, cfg) => {
-    acc[cfg.mode] = cfg
-    return acc
-  },
-  {} as Record<ViewMode, ViewModeConfig>,
-)
+export const VIEW_MODE_BY_MODE: Record<ViewMode, ViewModeConfig> =
+  VIEW_MODES.reduce(
+    (acc, cfg) => {
+      acc[cfg.mode] = cfg
+      return acc
+    },
+    {} as Record<ViewMode, ViewModeConfig>,
+  )
 
-export type ViewAction =
-  | (typeof VIEW_MODES)[number]["bind"]
-  | Bind.TOGGLE_CODE
+export type ViewAction = (typeof VIEW_MODES)[number]['bind'] | Bind.TOGGLE_CODE
 
 export function reduceViewState(
   state: ViewLayoutState,
@@ -86,10 +85,10 @@ export function reduceViewState(
       return state
     }
 
-    if (state.mode !== "play") {
+    if (state.mode !== 'play') {
       return {
         ...state,
-        mode: "play",
+        mode: 'play',
         showTimeline: playCfg.hasTimeline,
       }
     }

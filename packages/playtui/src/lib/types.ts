@@ -10,9 +10,18 @@ import type {
   WrapString,
   BorderStyle as OpenTUIBorderStyle,
   BorderSides,
-} from "@opentui/core"
+} from '@opentui/core'
 
-export type RenderableType = "box" | "text" | "scrollbox" | "input" | "textarea" | "select" | "slider" | "ascii-font" | "tab-select"
+export type RenderableType =
+  | 'box'
+  | 'text'
+  | 'scrollbox'
+  | 'input'
+  | 'textarea'
+  | 'select'
+  | 'slider'
+  | 'ascii-font'
+  | 'tab-select'
 
 // =============================================================================
 // LAYOUT TYPES - Derived from OpenTUI (single source of truth)
@@ -36,7 +45,7 @@ export type JustifyContent = JustifyString
 export type AlignItems = AlignString
 export type AlignContent = AlignString
 export type AlignSelf = AlignString
-export type Position = Extract<PositionTypeString, "relative" | "absolute">
+export type Position = Extract<PositionTypeString, 'relative' | 'absolute'>
 export type Overflow = OverflowString
 
 // =============================================================================
@@ -45,13 +54,13 @@ export type Overflow = OverflowString
 
 export type BorderStyle = OpenTUIBorderStyle
 export type BorderSide = BorderSides
-export type TitleAlignment = "left" | "center" | "right"  // Not exported by OpenTUI
+export type TitleAlignment = 'left' | 'center' | 'right' // Not exported by OpenTUI
 
 // Text types
-export type WrapMode = "word" | "none" | "char"
+export type WrapMode = 'word' | 'none' | 'char'
 
 // Size value can be number, "auto", or percentage string
-export type SizeValue = number | "auto" | `${number}%`
+export type SizeValue = number | 'auto' | `${number}%`
 
 // =============================================================================
 // BASE RENDERABLE - Common properties shared by ALL renderables
@@ -74,7 +83,7 @@ export interface BaseRenderable {
   // === FLEX ITEM ===
   flexGrow?: number
   flexShrink?: number
-  flexBasis?: number | "auto"
+  flexBasis?: number | 'auto'
   alignSelf?: AlignSelf
 
   // === SPACING - MARGIN ===
@@ -139,13 +148,13 @@ export interface ContainerProps {
 // =============================================================================
 
 export interface BoxRenderable extends BaseRenderable, ContainerProps {
-  type: "box"
+  type: 'box'
 }
 
 export interface ScrollboxRenderable extends BaseRenderable, ContainerProps {
-  type: "scrollbox"
+  type: 'scrollbox'
   stickyScroll?: boolean
-  stickyStart?: "top" | "bottom" | "left" | "right"
+  stickyStart?: 'top' | 'bottom' | 'left' | 'right'
   scrollX?: boolean
   scrollY?: boolean
   viewportCulling?: boolean
@@ -155,7 +164,7 @@ export interface ScrollboxRenderable extends BaseRenderable, ContainerProps {
 }
 
 export interface TextRenderable extends BaseRenderable {
-  type: "text"
+  type: 'text'
   content?: string
   fg?: string
   bg?: string
@@ -166,7 +175,7 @@ export interface TextRenderable extends BaseRenderable {
   strikethrough?: boolean
   selectable?: boolean
   wrapMode?: WrapMode
-  
+
   // === SPACING - PADDING ===
   padding?: number
   paddingTop?: number
@@ -176,11 +185,11 @@ export interface TextRenderable extends BaseRenderable {
 }
 
 export interface InputRenderable extends BaseRenderable {
-  type: "input"
+  type: 'input'
   placeholder?: string
   placeholderColor?: string
   cursorColor?: string
-  cursorStyle?: "block" | "line" | "underline"
+  cursorStyle?: 'block' | 'line' | 'underline'
   maxLength?: number
   backgroundColor?: string
   textColor?: string
@@ -190,11 +199,11 @@ export interface InputRenderable extends BaseRenderable {
 }
 
 export interface TextareaRenderable extends BaseRenderable {
-  type: "textarea"
+  type: 'textarea'
   placeholder?: string
   placeholderColor?: string
   cursorColor?: string
-  cursorStyle?: "block" | "line" | "underline"
+  cursorStyle?: 'block' | 'line' | 'underline'
   blinking?: boolean
   tabIndicatorColor?: string
   scrollMargin?: number
@@ -207,7 +216,7 @@ export interface TextareaRenderable extends BaseRenderable {
 }
 
 export interface SelectRenderable extends BaseRenderable {
-  type: "select"
+  type: 'select'
   options?: string[]
   backgroundColor?: string
   selectedBackgroundColor?: string
@@ -223,8 +232,8 @@ export interface SelectRenderable extends BaseRenderable {
 }
 
 export interface SliderRenderable extends BaseRenderable {
-  type: "slider"
-  orientation?: "horizontal" | "vertical"
+  type: 'slider'
+  orientation?: 'horizontal' | 'vertical'
   value?: number
   min?: number
   max?: number
@@ -234,14 +243,14 @@ export interface SliderRenderable extends BaseRenderable {
 }
 
 export interface AsciiFontRenderable extends BaseRenderable {
-  type: "ascii-font"
+  type: 'ascii-font'
   text?: string
-  font?: "tiny" | "block" | "slick" | "shade" | "huge" | "grid" | "pallet"
+  font?: 'tiny' | 'block' | 'slick' | 'shade' | 'huge' | 'grid' | 'pallet'
   color?: string
 }
 
 export interface TabSelectRenderable extends BaseRenderable {
-  type: "tab-select"
+  type: 'tab-select'
   options?: string[]
   tabWidth?: number
   showUnderline?: boolean
@@ -271,40 +280,58 @@ export type Renderable =
 // TYPE GUARDS - For proper type narrowing
 // =============================================================================
 
-export function isBoxRenderable(renderable: Renderable): renderable is BoxRenderable {
-  return renderable.type === "box"
+export function isBoxRenderable(
+  renderable: Renderable,
+): renderable is BoxRenderable {
+  return renderable.type === 'box'
 }
 
-export function isScrollboxRenderable(renderable: Renderable): renderable is ScrollboxRenderable {
-  return renderable.type === "scrollbox"
+export function isScrollboxRenderable(
+  renderable: Renderable,
+): renderable is ScrollboxRenderable {
+  return renderable.type === 'scrollbox'
 }
 
-export function isTextRenderable(renderable: Renderable): renderable is TextRenderable {
-  return renderable.type === "text"
+export function isTextRenderable(
+  renderable: Renderable,
+): renderable is TextRenderable {
+  return renderable.type === 'text'
 }
 
-export function isInputRenderable(renderable: Renderable): renderable is InputRenderable {
-  return renderable.type === "input"
+export function isInputRenderable(
+  renderable: Renderable,
+): renderable is InputRenderable {
+  return renderable.type === 'input'
 }
 
-export function isTextareaRenderable(renderable: Renderable): renderable is TextareaRenderable {
-  return renderable.type === "textarea"
+export function isTextareaRenderable(
+  renderable: Renderable,
+): renderable is TextareaRenderable {
+  return renderable.type === 'textarea'
 }
 
-export function isSelectRenderable(renderable: Renderable): renderable is SelectRenderable {
-  return renderable.type === "select"
+export function isSelectRenderable(
+  renderable: Renderable,
+): renderable is SelectRenderable {
+  return renderable.type === 'select'
 }
 
-export function isSliderRenderable(renderable: Renderable): renderable is SliderRenderable {
-  return renderable.type === "slider"
+export function isSliderRenderable(
+  renderable: Renderable,
+): renderable is SliderRenderable {
+  return renderable.type === 'slider'
 }
 
-export function isAsciiFontRenderable(renderable: Renderable): renderable is AsciiFontRenderable {
-  return renderable.type === "ascii-font"
+export function isAsciiFontRenderable(
+  renderable: Renderable,
+): renderable is AsciiFontRenderable {
+  return renderable.type === 'ascii-font'
 }
 
-export function isTabSelectRenderable(renderable: Renderable): renderable is TabSelectRenderable {
-  return renderable.type === "tab-select"
+export function isTabSelectRenderable(
+  renderable: Renderable,
+): renderable is TabSelectRenderable {
+  return renderable.type === 'tab-select'
 }
 
 // NOTE: isContainerNode has been moved to components/renderables/index.ts
@@ -316,12 +343,22 @@ export function isTabSelectRenderable(renderable: Renderable): renderable is Tab
 // Re-export for backwards compatibility
 // =============================================================================
 
-export type { PropertySection, SerializableProp as PropertyDef } from "../components/renderables"
+export type {
+  PropertySection,
+  SerializableProp as PropertyDef,
+} from '../components/renderables'
 
 // Legacy PropertyType - kept for any remaining references
-export type PropertyType = "number" | "string" | "select" | "color" | "toggle" | "size" | "borderSides"
+export type PropertyType =
+  | 'number'
+  | 'string'
+  | 'select'
+  | 'color'
+  | 'toggle'
+  | 'size'
+  | 'borderSides'
 
-import type { KeyframingState } from "./keyframing"
+import type { KeyframingState } from './keyframing'
 
 export type HistoryEntry = {
   frameIndex: number

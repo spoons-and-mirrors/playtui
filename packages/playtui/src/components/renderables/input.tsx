@@ -1,11 +1,15 @@
-import type { MouseEvent } from "@opentui/core"
-import type { Renderable, InputRenderable } from "../../lib/types"
-import { COLORS } from "../../theme"
+import type { MouseEvent } from '@opentui/core'
+import type { Renderable, InputRenderable } from '../../lib/types'
+import { COLORS } from '../../theme'
 import {
-  StringProp, NumberProp, SelectProp, SectionHeader, ManagedColorControl
-} from "../controls"
-import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
-import { buildPositioningStyle } from "./styleHelpers"
+  StringProp,
+  NumberProp,
+  SelectProp,
+  SectionHeader,
+  ManagedColorControl,
+} from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle } from './styleHelpers'
 
 // =============================================================================
 // INPUT DEFAULTS
@@ -14,7 +18,7 @@ import { buildPositioningStyle } from "./styleHelpers"
 export const INPUT_DEFAULTS: Partial<InputRenderable> = {
   width: 20,
   height: 1,
-  placeholder: "Enter text...",
+  placeholder: 'Enter text...',
 }
 
 // =============================================================================
@@ -30,10 +34,18 @@ interface InputRendererProps {
   onDragStart?: (x: number, y: number) => void
 }
 
-export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
+export function InputRenderer({
+  node: genericNode,
+  isSelected,
+  isHovered,
+  onSelect,
+  onHover,
+  onDragStart,
+}: InputRendererProps) {
   const node = genericNode as InputRenderable
-  
-  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
+
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
@@ -45,7 +57,7 @@ export function InputRenderer({ node: genericNode, isSelected, isHovered, onSele
       style={buildPositioningStyle(node)}
     >
       <text fg={node.placeholderColor || COLORS.muted}>
-        {node.placeholder || "Input..."}
+        {node.placeholder || 'Input...'}
       </text>
     </box>
   )
@@ -66,19 +78,32 @@ interface InputPropertiesProps {
   setPickingForField?: (f: string | null) => void
 }
 
-export function InputProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: InputPropertiesProps) {
+export function InputProperties({
+  node: genericNode,
+  onUpdate,
+  focusedField,
+  setFocusedField,
+  collapsed,
+  onToggle,
+  pickingForField,
+  setPickingForField,
+}: InputPropertiesProps) {
   const node = genericNode as InputRenderable
   return (
-    <box id="section-input" style={{ flexDirection: "column" }}>
-      <SectionHeader title="▭ Input" collapsed={collapsed} onToggle={onToggle} />
+    <box id="section-input" style={{ flexDirection: 'column' }}>
+      <SectionHeader
+        title="▭ Input"
+        collapsed={collapsed}
+        onToggle={onToggle}
+      />
       {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
+        <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
           {/* Placeholder */}
           <StringProp
             label="Placeholder"
-            value={node.placeholder || ""}
-            focused={focusedField === "placeholder"}
-            onFocus={() => setFocusedField("placeholder")}
+            value={node.placeholder || ''}
+            focused={focusedField === 'placeholder'}
+            onFocus={() => setFocusedField('placeholder')}
             onChange={(v) => onUpdate({ placeholder: v })}
           />
 
@@ -87,7 +112,6 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
             id="input-max-len"
             label="Max Len"
             value={node.maxLength ?? 0}
-
             min={1}
             max={1000}
             onChange={(v) => onUpdate({ maxLength: v || undefined })}
@@ -99,7 +123,7 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           </box>
 
           {/* Text colors row */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="Text"
@@ -127,7 +151,7 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           </box>
 
           {/* Background colors row */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <ManagedColorControl
                 label="BG"
@@ -172,12 +196,12 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           </box>
 
           {/* Cursor style and color */}
-          <box style={{ flexDirection: "row", gap: 1 }}>
+          <box style={{ flexDirection: 'row', gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
               <SelectProp
                 label="Style"
-                value={node.cursorStyle || "block"}
-                options={["block", "line", "underline"]}
+                value={node.cursorStyle || 'block'}
+                options={['block', 'line', 'underline']}
                 onChange={(v) => onUpdate({ cursorStyle: v as any })}
               />
             </box>

@@ -1,9 +1,9 @@
-import type { SliderRenderable, SliderOptions, ColorInput } from "@opentui/core"
-import type React from "react"
+import type { SliderRenderable, SliderOptions, ColorInput } from '@opentui/core'
+import type React from 'react'
 
 // Slider props for JSX usage
 export interface SliderProps {
-  orientation?: "vertical" | "horizontal"
+  orientation?: 'vertical' | 'horizontal'
   value?: number
   min?: number
   max?: number
@@ -21,7 +21,7 @@ export interface SliderProps {
 }
 
 // Augment OpenTUI's component catalogue
-declare module "@opentui/react" {
+declare module '@opentui/react' {
   interface OpenTUIComponents {
     slider: typeof SliderRenderable
   }

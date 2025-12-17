@@ -1,9 +1,13 @@
-import { useRef, useState } from "react"
-import { COLORS } from "../../theme"
-import type { ColorSwatch, ColorPalette } from "../../lib/projectTypes"
+import { useRef, useState } from 'react'
+import { COLORS } from '../../theme'
+import type { ColorSwatch, ColorPalette } from '../../lib/projectTypes'
 
 // Single swatch component - no inline editing
-function Swatch({ swatch, onSelect, pickMode }: {
+function Swatch({
+  swatch,
+  onSelect,
+  pickMode,
+}: {
   swatch: ColorSwatch
   onSelect: () => void
   pickMode?: boolean
@@ -17,7 +21,9 @@ function Swatch({ swatch, onSelect, pickMode }: {
         onSelect()
       }}
       selectable={false}
-    >██</text>
+    >
+      ██
+    </text>
   )
 }
 
@@ -50,24 +56,26 @@ export function PaletteControl({
   const activePalette = palettes[activePaletteIndex] || palettes[0]
   const swatches = activePalette?.swatches || []
   const visibleSwatches = swatches.slice(0, 8)
-  const paletteName = activePalette?.name || "Palette"
+  const paletteName = activePalette?.name || 'Palette'
 
   if (!palettes || palettes.length === 0) {
     return (
-      <box style={{ flexDirection: "row", justifyContent: "center" }}>
+      <box style={{ flexDirection: 'row', justifyContent: 'center' }}>
         <text fg={COLORS.muted}>No palettes</text>
       </box>
     )
   }
 
   const handlePrevPalette = () => {
-    const newIndex = activePaletteIndex <= 0 ? palettes.length - 1 : activePaletteIndex - 1
+    const newIndex =
+      activePaletteIndex <= 0 ? palettes.length - 1 : activePaletteIndex - 1
     onChangePalette?.(newIndex)
     setEditingSwatch(null)
   }
 
   const handleNextPalette = () => {
-    const newIndex = activePaletteIndex >= palettes.length - 1 ? 0 : activePaletteIndex + 1
+    const newIndex =
+      activePaletteIndex >= palettes.length - 1 ? 0 : activePaletteIndex + 1
     onChangePalette?.(newIndex)
     setEditingSwatch(null)
   }
@@ -78,14 +86,14 @@ export function PaletteControl({
     } else {
       // Show hex input for this swatch
       setEditingSwatch(swatch)
-      setFocusedField?.("palette-hex")
+      setFocusedField?.('palette-hex')
       onShowHex?.(swatch.color)
     }
   }
 
   const handleHexInput = (v: string) => {
     if (!editingSwatch) return
-    const hex = v.replace("#", "").slice(0, 8)
+    const hex = v.replace('#', '').slice(0, 8)
     if (/^[0-9a-fA-F]*$/.test(hex) && (hex.length === 6 || hex.length === 8)) {
       onUpdateSwatch?.(editingSwatch.id, `#${hex}`)
       setEditingSwatch({ ...editingSwatch, color: `#${hex}` })
@@ -98,13 +106,27 @@ export function PaletteControl({
   }
 
   return (
-    <box style={{ flexDirection: "column", gap: 1 }}>
+    <box style={{ flexDirection: 'column', gap: 1 }}>
       {/* Row 1: chevrons + swatches, centered */}
-      <box style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 0 }}>
-        <box backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1} onMouseDown={handlePrevPalette}>
-          <text fg={COLORS.accent} selectable={false}>‹</text>
+      <box
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 0,
+        }}
+      >
+        <box
+          backgroundColor={COLORS.bg}
+          paddingLeft={1}
+          paddingRight={1}
+          onMouseDown={handlePrevPalette}
+        >
+          <text fg={COLORS.accent} selectable={false}>
+            ‹
+          </text>
         </box>
-        
+
         {visibleSwatches.map((swatch) => (
           <Swatch
             key={swatch.id}
@@ -113,25 +135,39 @@ export function PaletteControl({
             pickMode={pickMode}
           />
         ))}
-        
-        <box backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1} onMouseDown={handleNextPalette}>
-          <text fg={COLORS.accent} selectable={false}>›</text>
+
+        <box
+          backgroundColor={COLORS.bg}
+          paddingLeft={1}
+          paddingRight={1}
+          onMouseDown={handleNextPalette}
+        >
+          <text fg={COLORS.accent} selectable={false}>
+            ›
+          </text>
         </box>
       </box>
-      
+
       {/* Row 2: palette name OR hex input when editing */}
-      <box style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 1 }}>
-        {editingSwatch && focusedField === "palette-hex" ? (
+      <box
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        {editingSwatch && focusedField === 'palette-hex' ? (
           <>
             <text fg={editingSwatch.color}>██</text>
             <box
               id="palette-hex-input"
               onMouseDown={(e) => e.stopPropagation()}
-              style={{ flexDirection: "row", backgroundColor: COLORS.bgAlt }}
+              style={{ flexDirection: 'row', backgroundColor: COLORS.bgAlt }}
             >
               <text fg={COLORS.muted}>#</text>
               <input
-                value={editingSwatch.color.replace("#", "")}
+                value={editingSwatch.color.replace('#', '')}
                 focused
                 width={8}
                 onInput={handleHexInput}

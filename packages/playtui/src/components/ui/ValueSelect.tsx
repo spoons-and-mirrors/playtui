@@ -1,6 +1,6 @@
-import { useState } from "react"
-import type { MouseEvent } from "@opentui/core"
-import { COLORS } from "../../theme"
+import { useState } from 'react'
+import type { MouseEvent } from '@opentui/core'
+import { COLORS } from '../../theme'
 
 interface ValueSelectProps {
   id: string
@@ -12,8 +12,14 @@ interface ValueSelectProps {
 
 // Card-style value selector: | ◂ | label:value | ▸ |
 // Click arrows or drag on value to cycle through options
-export function ValueSelect({ id, label, value, options, onChange }: ValueSelectProps) {
-  const [pressing, setPressing] = useState<"prev" | "next" | null>(null)
+export function ValueSelect({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: ValueSelectProps) {
+  const [pressing, setPressing] = useState<'prev' | 'next' | null>(null)
   const [hovering, setHovering] = useState(false)
 
   const idx = options.indexOf(value)
@@ -38,17 +44,22 @@ export function ValueSelect({ id, label, value, options, onChange }: ValueSelect
     <box id={id} flexDirection="row" alignItems="center">
       <box
         id={`${id}-prev`}
-        backgroundColor={pressing === "prev" ? COLORS.accent : COLORS.bg}
+        backgroundColor={pressing === 'prev' ? COLORS.accent : COLORS.bg}
         paddingLeft={1}
         paddingRight={1}
         onMouseDown={() => {
-          setPressing("prev")
+          setPressing('prev')
           handlePrev()
         }}
         onMouseUp={() => setPressing(null)}
         onMouseOut={() => setPressing(null)}
       >
-        <text fg={pressing === "prev" ? COLORS.bg : COLORS.accent} selectable={false}>◂</text>
+        <text
+          fg={pressing === 'prev' ? COLORS.bg : COLORS.accent}
+          selectable={false}
+        >
+          ◂
+        </text>
       </box>
       <box
         id={`${id}-value`}
@@ -61,22 +72,29 @@ export function ValueSelect({ id, label, value, options, onChange }: ValueSelect
         onMouseOut={() => setHovering(false)}
       >
         <text fg={hovering ? COLORS.bg : COLORS.bg} selectable={false}>
-          <strong>{label.toLowerCase()}:{value}</strong>
+          <strong>
+            {label.toLowerCase()}:{value}
+          </strong>
         </text>
       </box>
       <box
         id={`${id}-next`}
-        backgroundColor={pressing === "next" ? COLORS.accent : COLORS.bg}
+        backgroundColor={pressing === 'next' ? COLORS.accent : COLORS.bg}
         paddingLeft={1}
         paddingRight={1}
         onMouseDown={() => {
-          setPressing("next")
+          setPressing('next')
           handleNext()
         }}
         onMouseUp={() => setPressing(null)}
         onMouseOut={() => setPressing(null)}
       >
-        <text fg={pressing === "next" ? COLORS.bg : COLORS.accent} selectable={false}>▸</text>
+        <text
+          fg={pressing === 'next' ? COLORS.bg : COLORS.accent}
+          selectable={false}
+        >
+          ▸
+        </text>
       </box>
     </box>
   )

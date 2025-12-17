@@ -1,233 +1,233 @@
 // Renderable-specific components (defaults are internal to registry)
-export {BoxRenderer, BoxBorderProperties} from "./box";
-export {TextRenderer, TextProperties} from "./text";
-export {InputRenderer, InputProperties} from "./input";
-export {TextareaRenderer, TextareaProperties} from "./textarea";
-export {SelectRenderer, SelectProperties} from "./select";
-export {ScrollboxRenderer, ScrollboxProperties} from "./scrollbox";
-export {SliderRenderer, SliderProperties} from "./slider";
-export {AsciiFontRenderer} from "./asciifont";
-export {TabSelectRenderer, TabSelectProperties} from "./tabselect";
+export { BoxRenderer, BoxBorderProperties } from './box'
+export { TextRenderer, TextProperties } from './text'
+export { InputRenderer, InputProperties } from './input'
+export { TextareaRenderer, TextareaProperties } from './textarea'
+export { SelectRenderer, SelectProperties } from './select'
+export { ScrollboxRenderer, ScrollboxProperties } from './scrollbox'
+export { SliderRenderer, SliderProperties } from './slider'
+export { AsciiFontRenderer } from './asciifont'
+export { TabSelectRenderer, TabSelectProperties } from './tabselect'
 
-import {BoxRenderer, BoxBorderProperties, BOX_DEFAULTS} from "./box";
-import {TextRenderer, TextProperties, TEXT_DEFAULTS} from "./text";
-import {InputRenderer, InputProperties, INPUT_DEFAULTS} from "./input";
+import { BoxRenderer, BoxBorderProperties, BOX_DEFAULTS } from './box'
+import { TextRenderer, TextProperties, TEXT_DEFAULTS } from './text'
+import { InputRenderer, InputProperties, INPUT_DEFAULTS } from './input'
 import {
   TextareaRenderer,
   TextareaProperties,
   TEXTAREA_DEFAULTS,
-} from "./textarea";
-import {SelectRenderer, SelectProperties, SELECT_DEFAULTS} from "./select";
+} from './textarea'
+import { SelectRenderer, SelectProperties, SELECT_DEFAULTS } from './select'
 import {
   ScrollboxRenderer,
   ScrollboxProperties,
   SCROLLBOX_DEFAULTS,
-} from "./scrollbox";
-import {SliderRenderer, SliderProperties, SLIDER_DEFAULTS} from "./slider";
-import {AsciiFontRenderer, ASCIIFONT_DEFAULTS} from "./asciifont";
+} from './scrollbox'
+import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from './slider'
+import { AsciiFontRenderer, ASCIIFONT_DEFAULTS } from './asciifont'
 import {
   TabSelectRenderer,
   TabSelectProperties,
   TABSELECT_DEFAULTS,
-} from "./tabselect";
+} from './tabselect'
 import type {
   RenderableType,
   Renderable,
   BoxRenderable,
   ScrollboxRenderable,
-} from "../../lib/types";
-import type {ColorPalette} from "../../lib/projectTypes";
+} from '../../lib/types'
+import type { ColorPalette } from '../../lib/projectTypes'
 
 // Renderer props shared by all renderable renderers
 export interface RendererProps {
-  node: Renderable;
-  isSelected: boolean;
-  isHovered: boolean;
-  onSelect: () => void;
-  onHover: (hovering: boolean) => void;
-  onDragStart?: (x: number, y: number) => void;
-  onDragMove?: (x: number, y: number) => void;
-  onDragEnd?: () => void;
-  children?: React.ReactNode;
+  node: Renderable
+  isSelected: boolean
+  isHovered: boolean
+  onSelect: () => void
+  onHover: (hovering: boolean) => void
+  onDragStart?: (x: number, y: number) => void
+  onDragMove?: (x: number, y: number) => void
+  onDragEnd?: () => void
+  children?: React.ReactNode
 }
 
 // Properties panel props shared by all renderable property panels
 export interface RenderablePropertiesProps {
-  node: Renderable;
-  onUpdate: (updates: Partial<Renderable>) => void;
-  focusedField: string | null;
-  setFocusedField: (f: string | null) => void;
-  collapsed: boolean;
-  onToggle: () => void;
+  node: Renderable
+  onUpdate: (updates: Partial<Renderable>) => void
+  focusedField: string | null
+  setFocusedField: (f: string | null) => void
+  collapsed: boolean
+  onToggle: () => void
   // Palette support (optional - not all renderables need it)
-  palettes?: ColorPalette[];
-  activePaletteIndex?: number;
-  onUpdateSwatch?: (id: string, color: string) => void;
-  onChangePalette?: (index: number) => void;
+  palettes?: ColorPalette[]
+  activePaletteIndex?: number
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
   // Color picking support
-  pickingForField?: string | null;
-  setPickingForField?: (f: string | null) => void;
+  pickingForField?: string | null
+  setPickingForField?: (f: string | null) => void
 }
 
 // Property schema - SINGLE SOURCE OF TRUTH for both UI and serialization
 // Consolidates property metadata that was previously split between PROPERTIES and RENDERABLE_REGISTRY
 export type SerializablePropType =
-  | "string"
-  | "boolean"
-  | "number"
-  | "color"
-  | "options"
-  | "size"
-  | "select"
-  | "toggle"
-  | "borderSides"
-  | "object";
+  | 'string'
+  | 'boolean'
+  | 'number'
+  | 'color'
+  | 'options'
+  | 'size'
+  | 'select'
+  | 'toggle'
+  | 'borderSides'
+  | 'object'
 
 export type PropertySection =
-  | "dimensions"
-  | "flexContainer"
-  | "flexItem"
-  | "padding"
-  | "margin"
-  | "position"
-  | "overflow"
-  | "visibility"
-  | "background"
-  | "border"
-  | "text"
-  | "input"
-  | "textarea"
-  | "select"
-  | "slider"
-  | "asciiFont"
-  | "tabSelect"
-  | "scrollbox";
+  | 'dimensions'
+  | 'flexContainer'
+  | 'flexItem'
+  | 'padding'
+  | 'margin'
+  | 'position'
+  | 'overflow'
+  | 'visibility'
+  | 'background'
+  | 'border'
+  | 'text'
+  | 'input'
+  | 'textarea'
+  | 'select'
+  | 'slider'
+  | 'asciiFont'
+  | 'tabSelect'
+  | 'scrollbox'
 
 interface PropertySectionMeta {
-  id: PropertySection;
-  label: string;
-  defaultExpanded: boolean;
-  ownerTypes?: RenderableType[];
+  id: PropertySection
+  label: string
+  defaultExpanded: boolean
+  ownerTypes?: RenderableType[]
 }
 
 export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
   {
-    id: "dimensions",
-    label: "◫ Dimensions",
+    id: 'dimensions',
+    label: '◫ Dimensions',
     defaultExpanded: true,
   },
   {
-    id: "position",
-    label: "◎ Position",
+    id: 'position',
+    label: '◎ Position',
     defaultExpanded: false,
   },
   {
-    id: "margin",
-    label: "⊟ Margin",
+    id: 'margin',
+    label: '⊟ Margin',
     defaultExpanded: false,
   },
   {
-    id: "padding",
-    label: "⊞ Padding",
+    id: 'padding',
+    label: '⊞ Padding',
     defaultExpanded: false,
   },
   {
-    id: "flexContainer",
-    label: "⬓ Layout",
+    id: 'flexContainer',
+    label: '⬓ Layout',
     defaultExpanded: true,
   },
   {
-    id: "flexItem",
-    label: "▧ Flex Item",
+    id: 'flexItem',
+    label: '▧ Flex Item',
     defaultExpanded: false,
   },
   {
-    id: "background",
-    label: "▦ Fill",
+    id: 'background',
+    label: '▦ Fill',
     defaultExpanded: true,
   },
   {
-    id: "border",
-    label: "▢ Border",
+    id: 'border',
+    label: '▢ Border',
     defaultExpanded: true,
-    ownerTypes: ["box", "scrollbox"],
+    ownerTypes: ['box', 'scrollbox'],
   },
   {
-    id: "overflow",
-    label: "⋯ Overflow",
+    id: 'overflow',
+    label: '⋯ Overflow',
     defaultExpanded: false,
   },
   {
-    id: "visibility",
-    label: "◉ Display",
+    id: 'visibility',
+    label: '◉ Display',
     defaultExpanded: false,
   },
   {
-    id: "text",
-    label: "T Text",
+    id: 'text',
+    label: 'T Text',
     defaultExpanded: true,
-    ownerTypes: ["text"],
+    ownerTypes: ['text'],
   },
   {
-    id: "input",
-    label: "▭ Input",
+    id: 'input',
+    label: '▭ Input',
     defaultExpanded: true,
-    ownerTypes: ["input"],
+    ownerTypes: ['input'],
   },
   {
-    id: "textarea",
-    label: "▯ Textarea",
+    id: 'textarea',
+    label: '▯ Textarea',
     defaultExpanded: false,
-    ownerTypes: ["textarea"],
+    ownerTypes: ['textarea'],
   },
   {
-    id: "select",
-    label: "≡ Select",
+    id: 'select',
+    label: '≡ Select',
     defaultExpanded: false,
-    ownerTypes: ["select"],
+    ownerTypes: ['select'],
   },
   {
-    id: "slider",
-    label: "─ Slider",
+    id: 'slider',
+    label: '─ Slider',
     defaultExpanded: false,
-    ownerTypes: ["slider"],
+    ownerTypes: ['slider'],
   },
   {
-    id: "asciiFont",
-    label: "A ASCII Font",
+    id: 'asciiFont',
+    label: 'A ASCII Font',
     defaultExpanded: false,
-    ownerTypes: ["ascii-font"],
+    ownerTypes: ['ascii-font'],
   },
   {
-    id: "tabSelect",
-    label: "◰ Tabs",
+    id: 'tabSelect',
+    label: '◰ Tabs',
     defaultExpanded: false,
-    ownerTypes: ["tab-select"],
+    ownerTypes: ['tab-select'],
   },
   {
-    id: "scrollbox",
-    label: "↕ Scrollbox",
+    id: 'scrollbox',
+    label: '↕ Scrollbox',
     defaultExpanded: false,
-    ownerTypes: ["scrollbox"],
+    ownerTypes: ['scrollbox'],
   },
-];
+]
 
 export interface SerializableProp {
-  key: string;
-  type: SerializablePropType;
+  key: string
+  type: SerializablePropType
   // UI fields (for property panel rendering)
-  label?: string; // Display label in property panel
-  section?: PropertySection; // Which section to group under
-  options?: string[]; // For select type
-  min?: number; // For number type
-  max?: number; // For number type
+  label?: string // Display label in property panel
+  section?: PropertySection // Which section to group under
+  options?: string[] // For select type
+  min?: number // For number type
+  max?: number // For number type
   // Serialization fields (for codegen/parseCode)
-  default?: unknown; // Skip serialization if value equals default
-  escape?: boolean; // Escape string for JSX (quotes, special chars)
-  jsxBoolean?: boolean; // Serialize as standalone prop when true, {false} when false
-  jsxBooleanDefault?: boolean; // The default value for jsxBoolean props (used to determine when to omit)
-  styleProp?: string; // If set, this prop belongs in the style object with this key (e.g. "width", "left")
-  animatable?: boolean; // Can this property be animated?
+  default?: unknown // Skip serialization if value equals default
+  escape?: boolean // Escape string for JSX (quotes, special chars)
+  jsxBoolean?: boolean // Serialize as standalone prop when true, {false} when false
+  jsxBooleanDefault?: boolean // The default value for jsxBoolean props (used to determine when to omit)
+  styleProp?: string // If set, this prop belongs in the style object with this key (e.g. "width", "left")
+  animatable?: boolean // Can this property be animated?
 }
 
 // =============================================================================
@@ -237,409 +237,409 @@ export interface SerializableProp {
 // Dimensions - common to most elements
 const DIMENSION_PROPS: SerializableProp[] = [
   {
-    key: "width",
-    label: "Width",
-    type: "size",
-    section: "dimensions",
-    styleProp: "width",
+    key: 'width',
+    label: 'Width',
+    type: 'size',
+    section: 'dimensions',
+    styleProp: 'width',
     animatable: true,
   },
   {
-    key: "height",
-    label: "Height",
-    type: "size",
-    section: "dimensions",
-    styleProp: "height",
+    key: 'height',
+    label: 'Height',
+    type: 'size',
+    section: 'dimensions',
+    styleProp: 'height',
     animatable: true,
   },
-];
+]
 
 // Extended dimensions - for containers and inputs
 const EXTENDED_DIMENSION_PROPS: SerializableProp[] = [
   ...DIMENSION_PROPS,
   {
-    key: "minWidth",
-    label: "Min W",
-    type: "number",
+    key: 'minWidth',
+    label: 'Min W',
+    type: 'number',
     min: 0,
     max: 200,
-    section: "dimensions",
-    styleProp: "minWidth",
+    section: 'dimensions',
+    styleProp: 'minWidth',
     animatable: true,
   },
   {
-    key: "maxWidth",
-    label: "Max W",
-    type: "number",
+    key: 'maxWidth',
+    label: 'Max W',
+    type: 'number',
     min: 0,
     max: 200,
-    section: "dimensions",
-    styleProp: "maxWidth",
+    section: 'dimensions',
+    styleProp: 'maxWidth',
     animatable: true,
   },
   {
-    key: "minHeight",
-    label: "Min H",
-    type: "number",
+    key: 'minHeight',
+    label: 'Min H',
+    type: 'number',
     min: 0,
     max: 100,
-    section: "dimensions",
-    styleProp: "minHeight",
+    section: 'dimensions',
+    styleProp: 'minHeight',
     animatable: true,
   },
   {
-    key: "maxHeight",
-    label: "Max H",
-    type: "number",
+    key: 'maxHeight',
+    label: 'Max H',
+    type: 'number',
     min: 0,
     max: 100,
-    section: "dimensions",
-    styleProp: "maxHeight",
+    section: 'dimensions',
+    styleProp: 'maxHeight',
     animatable: true,
   },
   {
-    key: "aspectRatio",
-    label: "Ratio",
-    type: "number",
+    key: 'aspectRatio',
+    label: 'Ratio',
+    type: 'number',
     min: 0,
     max: 10,
-    section: "dimensions",
-    styleProp: "aspectRatio",
+    section: 'dimensions',
+    styleProp: 'aspectRatio',
     animatable: true,
   },
-];
+]
 
 // Flex container props
 const FLEX_CONTAINER_PROPS: SerializableProp[] = [
   {
-    key: "flexDirection",
-    label: "Direction",
-    type: "select",
-    options: ["row", "column", "row-reverse", "column-reverse"],
-    section: "flexContainer",
-    styleProp: "flexDirection",
+    key: 'flexDirection',
+    label: 'Direction',
+    type: 'select',
+    options: ['row', 'column', 'row-reverse', 'column-reverse'],
+    section: 'flexContainer',
+    styleProp: 'flexDirection',
   },
   {
-    key: "flexWrap",
-    label: "Wrap",
-    type: "select",
-    options: ["nowrap", "wrap", "wrap-reverse"],
-    section: "flexContainer",
-    styleProp: "flexWrap",
+    key: 'flexWrap',
+    label: 'Wrap',
+    type: 'select',
+    options: ['nowrap', 'wrap', 'wrap-reverse'],
+    section: 'flexContainer',
+    styleProp: 'flexWrap',
   },
   {
-    key: "justifyContent",
-    label: "Justify",
-    type: "select",
+    key: 'justifyContent',
+    label: 'Justify',
+    type: 'select',
     options: [
-      "flex-start",
-      "center",
-      "flex-end",
-      "space-between",
-      "space-around",
-      "space-evenly",
+      'flex-start',
+      'center',
+      'flex-end',
+      'space-between',
+      'space-around',
+      'space-evenly',
     ],
-    section: "flexContainer",
-    styleProp: "justifyContent",
+    section: 'flexContainer',
+    styleProp: 'justifyContent',
   },
   {
-    key: "alignItems",
-    label: "Align",
-    type: "select",
-    options: ["flex-start", "center", "flex-end", "stretch", "baseline"],
-    section: "flexContainer",
-    styleProp: "alignItems",
+    key: 'alignItems',
+    label: 'Align',
+    type: 'select',
+    options: ['flex-start', 'center', 'flex-end', 'stretch', 'baseline'],
+    section: 'flexContainer',
+    styleProp: 'alignItems',
   },
   {
-    key: "alignContent",
-    label: "Content",
-    type: "select",
+    key: 'alignContent',
+    label: 'Content',
+    type: 'select',
     options: [
-      "flex-start",
-      "center",
-      "flex-end",
-      "stretch",
-      "space-between",
-      "space-around",
+      'flex-start',
+      'center',
+      'flex-end',
+      'stretch',
+      'space-between',
+      'space-around',
     ],
-    section: "flexContainer",
-    styleProp: "alignContent",
+    section: 'flexContainer',
+    styleProp: 'alignContent',
   },
   {
-    key: "gap",
-    label: "Gap",
-    type: "number",
+    key: 'gap',
+    label: 'Gap',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "flexContainer",
-    styleProp: "gap",
+    section: 'flexContainer',
+    styleProp: 'gap',
     animatable: true,
   },
   {
-    key: "rowGap",
-    label: "Row Gap",
-    type: "number",
+    key: 'rowGap',
+    label: 'Row Gap',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "flexContainer",
-    styleProp: "rowGap",
+    section: 'flexContainer',
+    styleProp: 'rowGap',
     animatable: true,
   },
   {
-    key: "columnGap",
-    label: "Col Gap",
-    type: "number",
+    key: 'columnGap',
+    label: 'Col Gap',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "flexContainer",
-    styleProp: "columnGap",
+    section: 'flexContainer',
+    styleProp: 'columnGap',
     animatable: true,
   },
-];
+]
 
 // Flex item props
 const FLEX_ITEM_PROPS: SerializableProp[] = [
   {
-    key: "flexGrow",
-    label: "Grow",
-    type: "number",
+    key: 'flexGrow',
+    label: 'Grow',
+    type: 'number',
     min: 0,
     max: 10,
-    section: "flexItem",
-    styleProp: "flexGrow",
+    section: 'flexItem',
+    styleProp: 'flexGrow',
     animatable: true,
   },
   {
-    key: "flexShrink",
-    label: "Shrink",
-    type: "number",
+    key: 'flexShrink',
+    label: 'Shrink',
+    type: 'number',
     min: 0,
     max: 10,
-    section: "flexItem",
-    styleProp: "flexShrink",
+    section: 'flexItem',
+    styleProp: 'flexShrink',
     animatable: true,
   },
   {
-    key: "flexBasis",
-    label: "Basis",
-    type: "size",
-    section: "flexItem",
-    styleProp: "flexBasis",
+    key: 'flexBasis',
+    label: 'Basis',
+    type: 'size',
+    section: 'flexItem',
+    styleProp: 'flexBasis',
   },
   {
-    key: "alignSelf",
-    label: "Align Self",
-    type: "select",
-    options: ["auto", "flex-start", "center", "flex-end", "stretch"],
-    section: "flexItem",
-    styleProp: "alignSelf",
+    key: 'alignSelf',
+    label: 'Align Self',
+    type: 'select',
+    options: ['auto', 'flex-start', 'center', 'flex-end', 'stretch'],
+    section: 'flexItem',
+    styleProp: 'alignSelf',
   },
-];
+]
 
 // Padding props
 const PADDING_PROPS: SerializableProp[] = [
   {
-    key: "padding",
-    label: "All",
-    type: "number",
+    key: 'padding',
+    label: 'All',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "padding",
-    styleProp: "padding",
+    section: 'padding',
+    styleProp: 'padding',
   },
   {
-    key: "paddingTop",
-    label: "Top",
-    type: "number",
+    key: 'paddingTop',
+    label: 'Top',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "padding",
-    styleProp: "paddingTop",
+    section: 'padding',
+    styleProp: 'paddingTop',
     animatable: true,
   },
   {
-    key: "paddingRight",
-    label: "Right",
-    type: "number",
+    key: 'paddingRight',
+    label: 'Right',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "padding",
-    styleProp: "paddingRight",
+    section: 'padding',
+    styleProp: 'paddingRight',
     animatable: true,
   },
   {
-    key: "paddingBottom",
-    label: "Bottom",
-    type: "number",
+    key: 'paddingBottom',
+    label: 'Bottom',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "padding",
-    styleProp: "paddingBottom",
+    section: 'padding',
+    styleProp: 'paddingBottom',
     animatable: true,
   },
   {
-    key: "paddingLeft",
-    label: "Left",
-    type: "number",
+    key: 'paddingLeft',
+    label: 'Left',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "padding",
-    styleProp: "paddingLeft",
+    section: 'padding',
+    styleProp: 'paddingLeft',
     animatable: true,
   },
-];
+]
 
 // Margin props
 const MARGIN_PROPS: SerializableProp[] = [
   {
-    key: "margin",
-    label: "All",
-    type: "number",
+    key: 'margin',
+    label: 'All',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "margin",
-    styleProp: "margin",
+    section: 'margin',
+    styleProp: 'margin',
   },
   {
-    key: "marginTop",
-    label: "Top",
-    type: "number",
+    key: 'marginTop',
+    label: 'Top',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "margin",
-    styleProp: "marginTop",
+    section: 'margin',
+    styleProp: 'marginTop',
     animatable: true,
   },
   {
-    key: "marginRight",
-    label: "Right",
-    type: "number",
+    key: 'marginRight',
+    label: 'Right',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "margin",
-    styleProp: "marginRight",
+    section: 'margin',
+    styleProp: 'marginRight',
     animatable: true,
   },
   {
-    key: "marginBottom",
-    label: "Bottom",
-    type: "number",
+    key: 'marginBottom',
+    label: 'Bottom',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "margin",
-    styleProp: "marginBottom",
+    section: 'margin',
+    styleProp: 'marginBottom',
     animatable: true,
   },
   {
-    key: "marginLeft",
-    label: "Left",
-    type: "number",
+    key: 'marginLeft',
+    label: 'Left',
+    type: 'number',
     min: 0,
     max: 20,
-    section: "margin",
-    styleProp: "marginLeft",
+    section: 'margin',
+    styleProp: 'marginLeft',
     animatable: true,
   },
-];
+]
 
 // Position props - universal
 const POSITION_PROPS: SerializableProp[] = [
   {
-    key: "position",
-    label: "Position",
-    type: "select",
-    options: ["relative", "absolute"],
-    section: "position",
-    styleProp: "position",
+    key: 'position',
+    label: 'Position',
+    type: 'select',
+    options: ['relative', 'absolute'],
+    section: 'position',
+    styleProp: 'position',
   },
   {
-    key: "x",
-    label: "X",
-    type: "number",
+    key: 'x',
+    label: 'X',
+    type: 'number',
     min: -100,
     max: 200,
-    section: "position",
-    styleProp: "left",
+    section: 'position',
+    styleProp: 'left',
     animatable: true,
   },
   {
-    key: "y",
-    label: "Y",
-    type: "number",
+    key: 'y',
+    label: 'Y',
+    type: 'number',
     min: -100,
     max: 200,
-    section: "position",
-    styleProp: "top",
+    section: 'position',
+    styleProp: 'top',
     animatable: true,
   },
   {
-    key: "zIndex",
-    label: "Z",
-    type: "number",
+    key: 'zIndex',
+    label: 'Z',
+    type: 'number',
     min: -100,
     max: 100,
-    section: "position",
-    styleProp: "zIndex",
+    section: 'position',
+    styleProp: 'zIndex',
     animatable: true,
   },
-];
+]
 
 // Overflow prop
 const OVERFLOW_PROPS: SerializableProp[] = [
   {
-    key: "overflow",
-    label: "Overflow",
-    type: "select",
-    options: ["visible", "hidden", "scroll"],
-    section: "overflow",
-    styleProp: "overflow",
+    key: 'overflow',
+    label: 'Overflow',
+    type: 'select',
+    options: ['visible', 'hidden', 'scroll'],
+    section: 'overflow',
+    styleProp: 'overflow',
   },
-];
+]
 
 // Background color prop
 const BACKGROUND_PROPS: SerializableProp[] = [
   {
-    key: "backgroundColor",
-    label: "BG Color",
-    type: "color",
-    section: "background",
-    styleProp: "backgroundColor",
+    key: 'backgroundColor',
+    label: 'BG Color',
+    type: 'color',
+    section: 'background',
+    styleProp: 'backgroundColor',
   },
   {
-    key: "focusedBackgroundColor",
-    label: "Foc BG",
-    type: "color",
-    section: "background",
+    key: 'focusedBackgroundColor',
+    label: 'Foc BG',
+    type: 'color',
+    section: 'background',
   },
-];
+]
 
 // Renderable capability metadata
 export interface RenderableCapabilities {
   // Layout capabilities
-  supportsChildren: boolean;
-  supportsBorder: boolean;
-  supportsPadding: boolean;
-  supportsMargin: boolean;
-  supportsPositioning: boolean;
-  supportsFlexContainer: boolean;
-  supportsFlexItem: boolean;
+  supportsChildren: boolean
+  supportsBorder: boolean
+  supportsPadding: boolean
+  supportsMargin: boolean
+  supportsPositioning: boolean
+  supportsFlexContainer: boolean
+  supportsFlexItem: boolean
 
   // Visual capabilities
-  supportsBackgroundColor: boolean;
-  supportsTextStyling: boolean;
+  supportsBackgroundColor: boolean
+  supportsTextStyling: boolean
 }
 
 // Registry entry type
 export interface RenderableRegistryEntry {
-  type: RenderableType;
-  label: string;
-  icon?: string;
-  addModeKey?: string; // Single character key for adding this renderable in add mode (e.g., "b" for box)
-  Renderer: (props: RendererProps) => React.ReactNode;
-  Properties: ((props: RenderablePropertiesProps) => React.ReactNode) | null;
-  defaults: Partial<Renderable>;
-  capabilities: RenderableCapabilities;
-  properties: SerializableProp[]; // Renderable-specific props for codegen/parseCode
+  type: RenderableType
+  label: string
+  icon?: string
+  addModeKey?: string // Single character key for adding this renderable in add mode (e.g., "b" for box)
+  Renderer: (props: RendererProps) => React.ReactNode
+  Properties: ((props: RenderablePropertiesProps) => React.ReactNode) | null
+  defaults: Partial<Renderable>
+  capabilities: RenderableCapabilities
+  properties: SerializableProp[] // Renderable-specific props for codegen/parseCode
 }
 
 // Central registry - single source of truth for all renderable types
@@ -648,10 +648,10 @@ export const RENDERABLE_REGISTRY: Record<
   RenderableRegistryEntry
 > = {
   box: {
-    type: "box",
-    label: "Box",
-    icon: "▢",
-    addModeKey: "b",
+    type: 'box',
+    label: 'Box',
+    icon: '▢',
+    addModeKey: 'b',
     Renderer: BoxRenderer,
     Properties: BoxBorderProperties,
     defaults: BOX_DEFAULTS,
@@ -677,77 +677,77 @@ export const RENDERABLE_REGISTRY: Record<
       ...BACKGROUND_PROPS,
       // Box-specific border props
       {
-        key: "border",
-        label: "Border",
-        type: "boolean",
-        section: "border",
+        key: 'border',
+        label: 'Border',
+        type: 'boolean',
+        section: 'border',
         jsxBoolean: true,
       },
       {
-        key: "borderSides",
-        label: "Sides",
-        type: "borderSides",
-        section: "border",
+        key: 'borderSides',
+        label: 'Sides',
+        type: 'borderSides',
+        section: 'border',
       },
       {
-        key: "borderStyle",
-        label: "Style",
-        type: "select",
-        options: ["single", "rounded", "double", "heavy"],
-        section: "border",
-        default: "single",
+        key: 'borderStyle',
+        label: 'Style',
+        type: 'select',
+        options: ['single', 'rounded', 'double', 'heavy'],
+        section: 'border',
+        default: 'single',
       },
-      {key: "borderColor", label: "Color", type: "color", section: "border"},
+      { key: 'borderColor', label: 'Color', type: 'color', section: 'border' },
       {
-        key: "focusedBorderColor",
-        label: "Focus Clr",
-        type: "color",
-        section: "border",
+        key: 'focusedBorderColor',
+        label: 'Focus Clr',
+        type: 'color',
+        section: 'border',
       },
       {
-        key: "title",
-        label: "Title",
-        type: "string",
-        section: "border",
+        key: 'title',
+        label: 'Title',
+        type: 'string',
+        section: 'border',
         escape: true,
       },
       {
-        key: "titleAlignment",
-        label: "Title Pos",
-        type: "select",
-        options: ["left", "center", "right"],
-        section: "border",
-        default: "left",
+        key: 'titleAlignment',
+        label: 'Title Pos',
+        type: 'select',
+        options: ['left', 'center', 'right'],
+        section: 'border',
+        default: 'left',
       },
       {
-        key: "shouldFill",
-        label: "Fill BG",
-        type: "boolean",
-        section: "border",
+        key: 'shouldFill',
+        label: 'Fill BG',
+        type: 'boolean',
+        section: 'border',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
       {
-        key: "customBorderChars",
-        label: "Custom Border",
-        type: "object",
-        section: "border",
+        key: 'customBorderChars',
+        label: 'Custom Border',
+        type: 'object',
+        section: 'border',
       },
       {
-        key: "visible",
-        label: "Visible",
-        type: "boolean",
-        section: "visibility",
+        key: 'visible',
+        label: 'Visible',
+        type: 'boolean',
+        section: 'visibility',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
   text: {
-    type: "text",
-    label: "Text",
-    icon: "T",
-    addModeKey: "t",
+    type: 'text',
+    label: 'Text',
+    icon: 'T',
+    addModeKey: 't',
     Renderer: TextRenderer,
     Properties: TextProperties,
     defaults: TEXT_DEFAULTS,
@@ -768,23 +768,23 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // Text-specific props
-      {key: "fg", type: "color", label: "Color", section: "text"},
-      {key: "bg", type: "color", label: "BG", section: "text"},
-      {key: "wrapMode", type: "string", default: "none"},
-      {key: "selectable", type: "boolean", jsxBoolean: true},
+      { key: 'fg', type: 'color', label: 'Color', section: 'text' },
+      { key: 'bg', type: 'color', label: 'BG', section: 'text' },
+      { key: 'wrapMode', type: 'string', default: 'none' },
+      { key: 'selectable', type: 'boolean', jsxBoolean: true },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
   input: {
-    type: "input",
-    label: "Input",
-    icon: "⌨",
-    addModeKey: "i",
+    type: 'input',
+    label: 'Input',
+    icon: '⌨',
+    addModeKey: 'i',
     Renderer: InputRenderer,
     Properties: InputProperties,
     defaults: INPUT_DEFAULTS,
@@ -800,33 +800,33 @@ export const RENDERABLE_REGISTRY: Record<
       supportsTextStyling: false,
     },
     properties: [
-      ...EXTENDED_DIMENSION_PROPS.filter((p) => p.key !== "aspectRatio"),
+      ...EXTENDED_DIMENSION_PROPS.filter((p) => p.key !== 'aspectRatio'),
       ...FLEX_ITEM_PROPS,
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       ...BACKGROUND_PROPS,
       // Input-specific props
-      {key: "placeholder", type: "string", escape: true},
-      {key: "placeholderColor", type: "color"},
-      {key: "maxLength", type: "number"},
-      {key: "textColor", type: "color"},
-      {key: "focusedTextColor", type: "color"},
-      {key: "focusedBackgroundColor", type: "color"},
-      {key: "cursorColor", type: "color"},
-      {key: "cursorStyle", type: "string", default: "block"},
+      { key: 'placeholder', type: 'string', escape: true },
+      { key: 'placeholderColor', type: 'color' },
+      { key: 'maxLength', type: 'number' },
+      { key: 'textColor', type: 'color' },
+      { key: 'focusedTextColor', type: 'color' },
+      { key: 'focusedBackgroundColor', type: 'color' },
+      { key: 'cursorColor', type: 'color' },
+      { key: 'cursorStyle', type: 'string', default: 'block' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
   textarea: {
-    type: "textarea",
-    label: "Textarea",
-    icon: "≡",
-    addModeKey: "x",
+    type: 'textarea',
+    label: 'Textarea',
+    icon: '≡',
+    addModeKey: 'x',
     Renderer: TextareaRenderer,
     Properties: TextareaProperties,
     defaults: TEXTAREA_DEFAULTS,
@@ -846,42 +846,42 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // Textarea-specific props
-      {key: "placeholder", type: "string", escape: true},
-      {key: "placeholderColor", type: "color"},
-      {key: "initialValue", type: "string", escape: true},
-      {key: "textColor", type: "color"},
-      {key: "focusedTextColor", type: "color"},
-      {key: "backgroundColor", type: "color"},
-      {key: "focusedBackgroundColor", type: "color"},
-      {key: "cursorColor", type: "color"},
-      {key: "cursorStyle", type: "string", default: "block"},
+      { key: 'placeholder', type: 'string', escape: true },
+      { key: 'placeholderColor', type: 'color' },
+      { key: 'initialValue', type: 'string', escape: true },
+      { key: 'textColor', type: 'color' },
+      { key: 'focusedTextColor', type: 'color' },
+      { key: 'backgroundColor', type: 'color' },
+      { key: 'focusedBackgroundColor', type: 'color' },
+      { key: 'cursorColor', type: 'color' },
+      { key: 'cursorStyle', type: 'string', default: 'block' },
       {
-        key: "blinking",
-        type: "boolean",
+        key: 'blinking',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
       {
-        key: "showCursor",
-        type: "boolean",
+        key: 'showCursor',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
-      {key: "scrollMargin", type: "number"},
-      {key: "tabIndicatorColor", type: "color"},
+      { key: 'scrollMargin', type: 'number' },
+      { key: 'tabIndicatorColor', type: 'color' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
   select: {
-    type: "select",
-    label: "Select",
-    icon: "▼",
-    addModeKey: "e",
+    type: 'select',
+    label: 'Select',
+    icon: '▼',
+    addModeKey: 'e',
     Renderer: SelectRenderer,
     Properties: SelectProperties,
     defaults: SELECT_DEFAULTS,
@@ -901,31 +901,31 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // Select-specific props
-      {key: "options", type: "options"},
-      {key: "showScrollIndicator", type: "boolean", jsxBoolean: true},
-      {key: "showDescription", type: "boolean", jsxBoolean: true},
-      {key: "wrapSelection", type: "boolean", jsxBoolean: true},
-      {key: "itemSpacing", type: "number"},
-      {key: "fastScrollStep", type: "number", default: 5},
-      {key: "backgroundColor", type: "color"},
-      {key: "textColor", type: "color"},
-      {key: "selectedBackgroundColor", type: "color"},
-      {key: "selectedTextColor", type: "color"},
-      {key: "descriptionColor", type: "color"},
-      {key: "selectedDescriptionColor", type: "color"},
+      { key: 'options', type: 'options' },
+      { key: 'showScrollIndicator', type: 'boolean', jsxBoolean: true },
+      { key: 'showDescription', type: 'boolean', jsxBoolean: true },
+      { key: 'wrapSelection', type: 'boolean', jsxBoolean: true },
+      { key: 'itemSpacing', type: 'number' },
+      { key: 'fastScrollStep', type: 'number', default: 5 },
+      { key: 'backgroundColor', type: 'color' },
+      { key: 'textColor', type: 'color' },
+      { key: 'selectedBackgroundColor', type: 'color' },
+      { key: 'selectedTextColor', type: 'color' },
+      { key: 'descriptionColor', type: 'color' },
+      { key: 'selectedDescriptionColor', type: 'color' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
   scrollbox: {
-    type: "scrollbox",
-    label: "Scrollbox",
-    icon: "⇟",
-    addModeKey: "s",
+    type: 'scrollbox',
+    label: 'Scrollbox',
+    icon: '⇟',
+    addModeKey: 's',
     Renderer: ScrollboxRenderer,
     Properties: null,
     defaults: SCROLLBOX_DEFAULTS,
@@ -950,23 +950,23 @@ export const RENDERABLE_REGISTRY: Record<
       ...OVERFLOW_PROPS,
       ...BACKGROUND_PROPS,
       // Scrollbox-specific props
-      {key: "stickyScroll", type: "boolean", jsxBoolean: true},
-      {key: "stickyStart", type: "string", default: "bottom"},
-      {key: "scrollX", type: "boolean", jsxBoolean: true},
+      { key: 'stickyScroll', type: 'boolean', jsxBoolean: true },
+      { key: 'stickyStart', type: 'string', default: 'bottom' },
+      { key: 'scrollX', type: 'boolean', jsxBoolean: true },
       {
-        key: "scrollY",
-        type: "boolean",
+        key: 'scrollY',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
-      {key: "viewportCulling", type: "boolean", jsxBoolean: true},
+      { key: 'viewportCulling', type: 'boolean', jsxBoolean: true },
     ],
   },
   slider: {
-    type: "slider",
-    label: "Slider",
-    icon: "▪",
-    addModeKey: "l",
+    type: 'slider',
+    label: 'Slider',
+    icon: '▪',
+    addModeKey: 'l',
     Renderer: SliderRenderer,
     Properties: SliderProperties,
     defaults: SLIDER_DEFAULTS,
@@ -986,26 +986,26 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // Slider-specific props
-      {key: "orientation", type: "string"},
-      {key: "value", type: "number"},
-      {key: "min", type: "number"},
-      {key: "max", type: "number"},
-      {key: "viewPortSize", type: "number"},
-      {key: "backgroundColor", type: "color"},
-      {key: "foregroundColor", type: "color"},
+      { key: 'orientation', type: 'string' },
+      { key: 'value', type: 'number' },
+      { key: 'min', type: 'number' },
+      { key: 'max', type: 'number' },
+      { key: 'viewPortSize', type: 'number' },
+      { key: 'backgroundColor', type: 'color' },
+      { key: 'foregroundColor', type: 'color' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
-  "ascii-font": {
-    type: "ascii-font",
-    label: "ASCII Font",
-    icon: "Ⓐ",
-    addModeKey: "f",
+  'ascii-font': {
+    type: 'ascii-font',
+    label: 'ASCII Font',
+    icon: 'Ⓐ',
+    addModeKey: 'f',
     Renderer: AsciiFontRenderer,
     Properties: null,
     defaults: ASCIIFONT_DEFAULTS,
@@ -1025,26 +1025,26 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // AsciiFont-specific props
-      {key: "text", type: "string", escape: true},
+      { key: 'text', type: 'string', escape: true },
       {
-        key: "font",
-        type: "select",
-        options: ["tiny", "block", "slick", "shade"],
+        key: 'font',
+        type: 'select',
+        options: ['tiny', 'block', 'slick', 'shade'],
       },
-      {key: "color", type: "color"},
+      { key: 'color', type: 'color' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
-  "tab-select": {
-    type: "tab-select",
-    label: "Tab Select",
-    icon: "⊞",
-    addModeKey: "w",
+  'tab-select': {
+    type: 'tab-select',
+    label: 'Tab Select',
+    icon: '⊞',
+    addModeKey: 'w',
     Renderer: TabSelectRenderer,
     Properties: TabSelectProperties,
     defaults: TABSELECT_DEFAULTS,
@@ -1064,33 +1064,33 @@ export const RENDERABLE_REGISTRY: Record<
       ...MARGIN_PROPS,
       ...POSITION_PROPS,
       // TabSelect-specific props
-      {key: "options", type: "options"},
-      {key: "tabWidth", type: "number"},
+      { key: 'options', type: 'options' },
+      { key: 'tabWidth', type: 'number' },
       {
-        key: "showUnderline",
-        type: "boolean",
+        key: 'showUnderline',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
-      {key: "wrapSelection", type: "boolean", jsxBoolean: true},
-      {key: "backgroundColor", type: "color"},
-      {key: "textColor", type: "color"},
-      {key: "selectedBackgroundColor", type: "color"},
-      {key: "selectedTextColor", type: "color"},
+      { key: 'wrapSelection', type: 'boolean', jsxBoolean: true },
+      { key: 'backgroundColor', type: 'color' },
+      { key: 'textColor', type: 'color' },
+      { key: 'selectedBackgroundColor', type: 'color' },
+      { key: 'selectedTextColor', type: 'color' },
       {
-        key: "visible",
-        type: "boolean",
+        key: 'visible',
+        type: 'boolean',
         jsxBoolean: true,
         jsxBooleanDefault: true,
       },
     ],
   },
-};
+}
 
 // All renderable types
 export const RENDERABLE_TYPES = Object.keys(
-  RENDERABLE_REGISTRY
-) as RenderableType[];
+  RENDERABLE_REGISTRY,
+) as RenderableType[]
 
 // =============================================================================
 // TYPE GUARDS - Derived from registry (single source of truth)
@@ -1101,11 +1101,11 @@ export const RENDERABLE_TYPES = Object.keys(
  * This replaces the hardcoded check that was previously in types.ts.
  */
 export function isContainerRenderable(
-  renderable: Renderable
+  renderable: Renderable,
 ): renderable is BoxRenderable | ScrollboxRenderable {
   return (
     RENDERABLE_REGISTRY[renderable.type]?.capabilities.supportsChildren === true
-  );
+  )
 }
 
 /**
@@ -1116,5 +1116,5 @@ export function isContainerRenderable(
 export function getAddModeBindings(): Array<[RenderableType, string]> {
   return Object.entries(RENDERABLE_REGISTRY)
     .filter(([, entry]) => entry.addModeKey)
-    .map(([, entry]) => [entry.type, entry.addModeKey!]);
+    .map(([, entry]) => [entry.type, entry.addModeKey!])
 }

@@ -1,6 +1,6 @@
-import { RGBA } from "@opentui/core"
-import { COLORS } from "../../theme"
-import type { ProjectMeta } from "../../lib/projectTypes"
+import { RGBA } from '@opentui/core'
+import { COLORS } from '../../theme'
+import type { ProjectMeta } from '../../lib/projectTypes'
 
 interface LoadConfirmationProps {
   project: ProjectMeta
@@ -10,7 +10,13 @@ interface LoadConfirmationProps {
   height: number
 }
 
-export function LoadConfirmation({ project, onConfirm, onCancel, width, height }: LoadConfirmationProps) {
+export function LoadConfirmation({
+  project,
+  onConfirm,
+  onCancel,
+  width,
+  height,
+}: LoadConfirmationProps) {
   const modalWidth = Math.min(50, width - 10)
   const modalHeight = Math.min(12, height - 6)
 
@@ -42,20 +48,32 @@ export function LoadConfirmation({ project, onConfirm, onCancel, width, height }
       >
         <box alignItems="center" flexGrow={1} justifyContent="center">
           <text>Open project</text>
-          <text fg={COLORS.accent}><strong>"{project.name}"</strong></text>
-          <text fg={COLORS.muted} marginTop={1}>Unsaved changes will be lost.</text>
+          <text fg={COLORS.accent}>
+            <strong>"{project.name}"</strong>
+          </text>
+          <text fg={COLORS.muted} marginTop={1}>
+            Unsaved changes will be lost.
+          </text>
         </box>
 
         <box flexDirection="row" gap={2} justifyContent="flex-end">
           <box
             onMouseDown={onCancel}
-            style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+            style={{
+              backgroundColor: COLORS.muted,
+              paddingLeft: 2,
+              paddingRight: 2,
+            }}
           >
             <text fg={COLORS.bg}>Cancel</text>
           </box>
           <box
             onMouseDown={onConfirm}
-            style={{ backgroundColor: COLORS.success, paddingLeft: 2, paddingRight: 2 }}
+            style={{
+              backgroundColor: COLORS.success,
+              paddingLeft: 2,
+              paddingRight: 2,
+            }}
           >
             <text fg={COLORS.bg}>Open</text>
           </box>

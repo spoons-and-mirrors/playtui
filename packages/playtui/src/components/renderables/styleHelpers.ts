@@ -1,4 +1,4 @@
-import type { Renderable, SizeValue } from "../../lib/types"
+import type { Renderable, SizeValue } from '../../lib/types'
 
 /**
  * Consolidates positioning, margin, and size styles used by all renderable components.
@@ -25,6 +25,6 @@ export function buildPositioningStyle(node: Renderable) {
  * Parses a size value (number, "auto", or percentage) for OpenTUI style properties.
  */
 export function parseSize(val: SizeValue | undefined) {
-  if (val === undefined || val === "auto") return undefined
+  if (val === undefined || val === 'auto') return undefined
   return val
 }

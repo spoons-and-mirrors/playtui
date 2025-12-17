@@ -1,27 +1,54 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react"
-import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
-import type { Renderable } from "./lib/types"
-import { TREE_PANEL_WIDTH, SIDEBAR_PANEL_WIDTH, NAVBAR_HEIGHT, FILMSTRIP_BASE_HEIGHT, TIMELINE_HEIGHT } from "./lib/constants"
-import { clearLog } from "./lib/logger"
-import { resetIdCounter, findRenderable, countRenderables, updateRenderable, getRenderablePosition } from "./lib/tree"
-import { generateChildrenCode } from "./lib/codegen"
-import { TreeView } from "./components/pages/Tree"
-import { PaletteControl } from "./components/controls/PaletteControl"
-import { PropertyPane } from "./components/pages/Properties"
-import { LibraryPage } from "./components/pages/Library"
-import { PlayPage } from "./components/pages/Play"
-import { Title } from "./components/ui/Title"
-import { Footer, CodePanel, type MenuAction, ProjectModal, DocsPanel, EditorPanel, Header, NavBar } from "./components/ui"
-import { FilmStrip } from "./components/play/FilmStrip"
-import { TimelinePanel } from "./components/timeline/TimelinePanel"
-import { KeyframingContext } from "./components/contexts/KeyframingContext"
-import { useProject } from "./hooks/useProject"
-import { useBuilderKeyboard } from "./hooks/useBuilderKeyboard"
-import { useBuilderActions } from "./hooks/useBuilderActions"
-import type { DragEvent } from "./components/Renderer"
-import type { CanvasOffset } from "./components/pages/Editor"
-import { reduceViewState, VIEW_MODE_BY_MODE, type ViewAction, type ViewMode, type ViewLayoutState } from "./lib/viewState"
-import { Bind } from "./lib/shortcuts"
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from './theme'
+import type { Renderable } from './lib/types'
+import {
+  TREE_PANEL_WIDTH,
+  SIDEBAR_PANEL_WIDTH,
+  NAVBAR_HEIGHT,
+  FILMSTRIP_BASE_HEIGHT,
+  TIMELINE_HEIGHT,
+} from './lib/constants'
+import { clearLog } from './lib/logger'
+import {
+  resetIdCounter,
+  findRenderable,
+  countRenderables,
+  updateRenderable,
+  getRenderablePosition,
+} from './lib/tree'
+import { generateChildrenCode } from './lib/codegen'
+import { TreeView } from './components/pages/Tree'
+import { PaletteControl } from './components/controls/PaletteControl'
+import { PropertyPane } from './components/pages/Properties'
+import { LibraryPage } from './components/pages/Library'
+import { PlayPage } from './components/pages/Play'
+import { Title } from './components/ui/Title'
+import {
+  Footer,
+  CodePanel,
+  type MenuAction,
+  ProjectModal,
+  DocsPanel,
+  EditorPanel,
+  Header,
+  NavBar,
+} from './components/ui'
+import { FilmStrip } from './components/play/FilmStrip'
+import { TimelinePanel } from './components/timeline/TimelinePanel'
+import { KeyframingContext } from './components/contexts/KeyframingContext'
+import { useProject } from './hooks/useProject'
+import { useBuilderKeyboard } from './hooks/useBuilderKeyboard'
+import { useBuilderActions } from './hooks/useBuilderActions'
+import type { DragEvent } from './components/Renderer'
+import type { CanvasOffset } from './components/pages/Editor'
+import {
+  reduceViewState,
+  VIEW_MODE_BY_MODE,
+  type ViewAction,
+  type ViewMode,
+  type ViewLayoutState,
+} from './lib/viewState'
+import { Bind } from './lib/shortcuts'
 
 interface BuilderProps {
   width: number
@@ -63,12 +90,14 @@ export function Builder({ width, height }: BuilderProps) {
   } = projectHook
 
   // Clear debug log on startup
-  useEffect(() => { clearLog() }, [])
+  useEffect(() => {
+    clearLog()
+  }, [])
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [viewLayout, setViewLayout] = useState<ViewLayoutState>({
-    mode: "editor",
+    mode: 'editor',
     showCodePanel: false,
     codePanelHeight: 12,
     showTimeline: true,
@@ -78,7 +107,9 @@ export function Builder({ width, height }: BuilderProps) {
   const showCodePanel = viewLayout.showCodePanel
   const codePanelHeight = viewLayout.codePanelHeight
   const showTimeline = viewLayout.showTimeline
-  const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
+  const [modalMode, setModalMode] = useState<
+    'new' | 'load' | 'delete' | 'saveAs' | null
+  >(null)
   const [addMode, setAddMode] = useState(false)
   const [clipboard, setClipboard] = useState<Renderable | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -86,38 +117,36 @@ export function Builder({ width, height }: BuilderProps) {
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
   const [pickingForField, setPickingForField] = useState<string | null>(null) // Color picker mode
 
-
-  const applyViewAction = useCallback(
-    (action: ViewAction) => {
-      setViewLayout(prev => reduceViewState(prev, action))
-    },
-    [],
-  )
+  const applyViewAction = useCallback((action: ViewAction) => {
+    setViewLayout((prev) => reduceViewState(prev, action))
+  }, [])
 
   const setMode = useCallback((next: ViewMode) => {
-    setViewLayout(prev => ({
+    setViewLayout((prev) => ({
       ...prev,
       mode: next,
     }))
   }, [])
-  
+
   // Panel visibility state per mode: 0 = both, 1 = none, 2 = tree only, 3 = props only
 
-  const [panelStatePerMode, setPanelStatePerMode] = useState<Record<string, number>>({
+  const [panelStatePerMode, setPanelStatePerMode] = useState<
+    Record<string, number>
+  >({
     editor: 0,
     play: 0,
   })
 
   // Derive panel visibility from current mode's state
   const panelState = panelStatePerMode[mode] ?? 0
-  const showTree = panelState === 0 || panelState === 2      // both or tree-only
+  const showTree = panelState === 0 || panelState === 2 // both or tree-only
   const showProperties = panelState === 0 || panelState === 3 // both or props-only
 
   // Cycle through 4 states for current mode
   const togglePanels = useCallback(() => {
-    setPanelStatePerMode(prev => ({
+    setPanelStatePerMode((prev) => ({
       ...prev,
-      [mode]: ((prev[mode] ?? 0) + 1) % 4
+      [mode]: ((prev[mode] ?? 0) + 1) % 4,
     }))
   }, [mode])
 
@@ -132,18 +161,23 @@ export function Builder({ width, height }: BuilderProps) {
 
   const keyframingContextValue = useMemo(() => {
     if (!project || !project.animation.keyframing) return null
-    
+
     return {
       autoKeyEnabled: project.animation.keyframing.autoKeyEnabled,
       currentFrame: project.animation.currentFrameIndex,
       animatedProperties: project.animation.keyframing.animatedProperties,
       hasKeyframe: (renderableId: string, property: string, frame: number) => {
-        const { hasKeyframeAt } = require("./lib/keyframing")
-        return hasKeyframeAt(project.animation.keyframing.animatedProperties, renderableId, property, frame)
+        const { hasKeyframeAt } = require('./lib/keyframing')
+        return hasKeyframeAt(
+          project.animation.keyframing.animatedProperties,
+          renderableId,
+          property,
+          frame,
+        )
       },
       addKeyframe,
       removeKeyframe,
-      selectedId: project.selectedId
+      selectedId: project.selectedId,
     }
   }, [project, addKeyframe, removeKeyframe])
 
@@ -152,8 +186,9 @@ export function Builder({ width, height }: BuilderProps) {
   const collapsed = project?.collapsed ?? []
   const animation = project?.animation
   const treeKey = project?.history?.length ?? 0
-  const selectedNode = tree && selectedId ? findRenderable(tree, selectedId) : null
-  const code = useMemo(() => tree ? generateChildrenCode(tree) : "", [tree])
+  const selectedNode =
+    tree && selectedId ? findRenderable(tree, selectedId) : null
+  const code = useMemo(() => (tree ? generateChildrenCode(tree) : ''), [tree])
 
   const {
     handleAddRenderable,
@@ -196,238 +231,309 @@ export function Builder({ width, height }: BuilderProps) {
     onNavigateTree: navigateTree,
     onAddRenderable: handleAddRenderable,
     // Animation Actions
-    onAnimNextFrame: () => project?.animation && setCurrentFrame(Math.min(project.animation.frames.length - 1, project.animation.currentFrameIndex + 1)),
-    onAnimPrevFrame: () => project?.animation && setCurrentFrame(Math.max(0, project.animation.currentFrameIndex - 1)),
-    onAnimPlayToggle: () => setIsPlaying(p => !p),
+    onAnimNextFrame: () =>
+      project?.animation &&
+      setCurrentFrame(
+        Math.min(
+          project.animation.frames.length - 1,
+          project.animation.currentFrameIndex + 1,
+        ),
+      ),
+    onAnimPrevFrame: () =>
+      project?.animation &&
+      setCurrentFrame(Math.max(0, project.animation.currentFrameIndex - 1)),
+    onAnimPlayToggle: () => setIsPlaying((p) => !p),
     onAnimDuplicateFrame: duplicateFrame,
-    onAnimDeleteFrame: () => project?.animation && deleteFrame(project.animation.currentFrameIndex),
+    onAnimDeleteFrame: () =>
+      project?.animation && deleteFrame(project.animation.currentFrameIndex),
     onTogglePanels: togglePanels,
     onViewAction: applyViewAction,
   })
 
-  const handleToggleCollapse = useCallback((id: string) => {
-    const current = project?.collapsed ?? []
-    const currentSet = new Set(current)
-    if (currentSet.has(id)) currentSet.delete(id)
-    else currentSet.add(id)
-    setProjectCollapsed(Array.from(currentSet))
-  }, [project?.collapsed, setProjectCollapsed])
+  const handleToggleCollapse = useCallback(
+    (id: string) => {
+      const current = project?.collapsed ?? []
+      const currentSet = new Set(current)
+      if (currentSet.has(id)) currentSet.delete(id)
+      else currentSet.add(id)
+      setProjectCollapsed(Array.from(currentSet))
+    },
+    [project?.collapsed, setProjectCollapsed],
+  )
 
-  const handleFileAction = useCallback(async (action: MenuAction) => {
-    await refreshProjects()
-    setModalMode(action)
-  }, [refreshProjects])
+  const handleFileAction = useCallback(
+    async (action: MenuAction) => {
+      await refreshProjects()
+      setModalMode(action)
+    },
+    [refreshProjects],
+  )
 
-  const handleCreateProject = useCallback(async (name: string) => {
-    resetIdCounter()
-    const success = await createProject(name)
-    if (success) setModalMode(null)
-  }, [createProject])
+  const handleCreateProject = useCallback(
+    async (name: string) => {
+      resetIdCounter()
+      const success = await createProject(name)
+      if (success) setModalMode(null)
+    },
+    [createProject],
+  )
 
-  const handleLoadProject = useCallback(async (fileName: string) => {
-    const success = await loadProject(fileName)
-    if (success) setModalMode(null)
-  }, [loadProject])
+  const handleLoadProject = useCallback(
+    async (fileName: string) => {
+      const success = await loadProject(fileName)
+      if (success) setModalMode(null)
+    },
+    [loadProject],
+  )
 
-  const handleDeleteProject = useCallback(async (fileName: string) => {
-    await deleteProject(fileName)
-    await refreshProjects()
-  }, [deleteProject, refreshProjects])
+  const handleDeleteProject = useCallback(
+    async (fileName: string) => {
+      await deleteProject(fileName)
+      await refreshProjects()
+    },
+    [deleteProject, refreshProjects],
+  )
 
-  const handleSaveAsProject = useCallback(async (name: string) => {
-    const success = await duplicateProject(name)
-    if (success) setModalMode(null)
-  }, [duplicateProject])
+  const handleSaveAsProject = useCallback(
+    async (name: string) => {
+      const success = await duplicateProject(name)
+      if (success) setModalMode(null)
+    },
+    [duplicateProject],
+  )
 
   // Handle drag for positioned elements (both absolute and relative)
-  const handleDragStart = useCallback((event: DragEvent) => {
-    if (!tree) return
-    const node = findRenderable(tree, event.renderableId)
-    if (!node) return
-    
-    // Store initial mouse position and node position
-    dragStartRef.current = {
-      renderableId: event.renderableId,
-      mouseX: event.x,
-      mouseY: event.y,
-      nodeX: (node as any).x ?? 0,
-      nodeY: (node as any).y ?? 0,
-    }
-  }, [tree])
+  const handleDragStart = useCallback(
+    (event: DragEvent) => {
+      if (!tree) return
+      const node = findRenderable(tree, event.renderableId)
+      if (!node) return
 
-  const handleDragMove = useCallback((event: DragEvent) => {
-    if (!tree || !dragStartRef.current) return
-    if (dragStartRef.current.renderableId !== event.renderableId) return
-    
-    // Calculate delta from initial mouse position
-    const deltaX = event.x - dragStartRef.current.mouseX
-    const deltaY = event.y - dragStartRef.current.mouseY
-    
-    const node = findRenderable(tree, event.renderableId)
-    if (!node) return
+      // Store initial mouse position and node position
+      dragStartRef.current = {
+        renderableId: event.renderableId,
+        mouseX: event.x,
+        mouseY: event.y,
+        nodeX: (node as any).x ?? 0,
+        nodeY: (node as any).y ?? 0,
+      }
+    },
+    [tree],
+  )
 
-    const newX = dragStartRef.current.nodeX + deltaX
-    const newY = dragStartRef.current.nodeY + deltaY
-    
-    // Update node position (without adding to history during drag)
-    const updated = { ...node, x: newX, y: newY } as Renderable
-    const newTree = updateRenderable(tree, event.renderableId, updated)
-    updateTree(newTree, false) // false = don't add to history
-    
-    // If in play mode and properties are keyframed, update keyframes during drag
-    // This ensures the baked display tree shows the dragged position
-    if (mode === "play" && project?.animation.keyframing.animatedProperties) {
-      const animProps = project.animation.keyframing.animatedProperties
-      const hasXKeyframe = animProps.some(p => p.renderableId === event.renderableId && p.property === "x")
-      const hasYKeyframe = animProps.some(p => p.renderableId === event.renderableId && p.property === "y")
-      
-      if (hasXKeyframe) addKeyframe(event.renderableId, "x", newX)
-      if (hasYKeyframe) addKeyframe(event.renderableId, "y", newY)
-    }
-  }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
+  const handleDragMove = useCallback(
+    (event: DragEvent) => {
+      if (!tree || !dragStartRef.current) return
+      if (dragStartRef.current.renderableId !== event.renderableId) return
 
-  const handleDragEnd = useCallback((renderableId: string) => {
-    if (!dragStartRef.current) return
-    
-    const node = tree ? findRenderable(tree, renderableId) : null
-    const finalX = node ? (node as any).x ?? 0 : dragStartRef.current.nodeX
-    const finalY = node ? (node as any).y ?? 0 : dragStartRef.current.nodeY
-    
-    // If in play mode and properties are keyframed, ensure final keyframe is set
-    if (mode === "play" && project?.animation.keyframing.animatedProperties) {
-      const animProps = project.animation.keyframing.animatedProperties
-      const hasXKeyframe = animProps.some(p => p.renderableId === renderableId && p.property === "x")
-      const hasYKeyframe = animProps.some(p => p.renderableId === renderableId && p.property === "y")
-      
-      if (hasXKeyframe) addKeyframe(renderableId, "x", finalX)
-      if (hasYKeyframe) addKeyframe(renderableId, "y", finalY)
-    }
-    
-    // Reset drag start position
-    dragStartRef.current = null
-    
-    // Add final state to history
-    if (tree) {
-      updateTree(tree, true) // true = add to history
-    }
-  }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
+      // Calculate delta from initial mouse position
+      const deltaX = event.x - dragStartRef.current.mouseX
+      const deltaY = event.y - dragStartRef.current.mouseY
+
+      const node = findRenderable(tree, event.renderableId)
+      if (!node) return
+
+      const newX = dragStartRef.current.nodeX + deltaX
+      const newY = dragStartRef.current.nodeY + deltaY
+
+      // Update node position (without adding to history during drag)
+      const updated = { ...node, x: newX, y: newY } as Renderable
+      const newTree = updateRenderable(tree, event.renderableId, updated)
+      updateTree(newTree, false) // false = don't add to history
+
+      // If in play mode and properties are keyframed, update keyframes during drag
+      // This ensures the baked display tree shows the dragged position
+      if (mode === 'play' && project?.animation.keyframing.animatedProperties) {
+        const animProps = project.animation.keyframing.animatedProperties
+        const hasXKeyframe = animProps.some(
+          (p) => p.renderableId === event.renderableId && p.property === 'x',
+        )
+        const hasYKeyframe = animProps.some(
+          (p) => p.renderableId === event.renderableId && p.property === 'y',
+        )
+
+        if (hasXKeyframe) addKeyframe(event.renderableId, 'x', newX)
+        if (hasYKeyframe) addKeyframe(event.renderableId, 'y', newY)
+      }
+    },
+    [
+      tree,
+      updateTree,
+      mode,
+      project?.animation.keyframing.animatedProperties,
+      addKeyframe,
+    ],
+  )
+
+  const handleDragEnd = useCallback(
+    (renderableId: string) => {
+      if (!dragStartRef.current) return
+
+      const node = tree ? findRenderable(tree, renderableId) : null
+      const finalX = node ? ((node as any).x ?? 0) : dragStartRef.current.nodeX
+      const finalY = node ? ((node as any).y ?? 0) : dragStartRef.current.nodeY
+
+      // If in play mode and properties are keyframed, ensure final keyframe is set
+      if (mode === 'play' && project?.animation.keyframing.animatedProperties) {
+        const animProps = project.animation.keyframing.animatedProperties
+        const hasXKeyframe = animProps.some(
+          (p) => p.renderableId === renderableId && p.property === 'x',
+        )
+        const hasYKeyframe = animProps.some(
+          (p) => p.renderableId === renderableId && p.property === 'y',
+        )
+
+        if (hasXKeyframe) addKeyframe(renderableId, 'x', finalX)
+        if (hasYKeyframe) addKeyframe(renderableId, 'y', finalY)
+      }
+
+      // Reset drag start position
+      dragStartRef.current = null
+
+      // Add final state to history
+      if (tree) {
+        updateTree(tree, true) // true = add to history
+      }
+    },
+    [
+      tree,
+      updateTree,
+      mode,
+      project?.animation.keyframing.animatedProperties,
+      addKeyframe,
+    ],
+  )
 
   // Layout constants
-  const mainContentHeight = height - NAVBAR_HEIGHT
-    - (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0)
-    - (showCodePanel ? codePanelHeight : 0)
-    - (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
+  const mainContentHeight =
+    height -
+    NAVBAR_HEIGHT -
+    (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) -
+    (showCodePanel ? codePanelHeight : 0) -
+    (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
-  const handleFocusRenderable = useCallback((renderableId: string) => {
-    if (!tree) return
-    
-    const node = findRenderable(tree, renderableId)
-    if (!node) return
-    
-    // Get the node's accumulated position from tree root
-    const pos = getRenderablePosition(tree, renderableId)
-    if (!pos) return
-    
-    // Get element dimensions (use defaults if not set)
-    const nodeWidth = typeof node.width === "number" ? node.width : 10
-    const nodeHeight = typeof node.height === "number" ? node.height : 3
-    
-    // The root is centered by flexbox. To center a specific element,
-    // offset by the negative of its position (plus half its size to center it)
-    // We also need to account for the bottom panel which shifts the viewport center
-    
-    // Calculate total bottom panel height
-    const bottomPanelHeight =
-      (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
-      (showCodePanel ? codePanelHeight : 0) +
-      (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
+  const handleFocusRenderable = useCallback(
+    (renderableId: string) => {
+      if (!tree) return
 
-    // The canvas is vertically centered in the remaining space *above* the bottom panels.
-    // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
-    // visual center down to account for this.
-    // 
-    // Let's look at EditorPanel:
-    // top={canvasOffset.y + canvasOffsetAdjustY / 2}
-    //
-    // So if we have a bottom panel of height H, the canvas visual center is shifted down by H/2.
-    // This means the coordinate (0,0) which was at the physical center is now at physical center + H/2.
-    //
-    // Wait, if the canvas size *shrinks* because of bottom panels (flex layout), 
-    // the flexbox centering moves the physical center UP by H/2.
-    // To keep the visual content stable, we add H/2 to the top offset.
-    //
-    // So, effectively, (0,0) remains visually in the center of the *original* full height area
-    // (minus footer/header/etc).
-    //
-    // If we want to center an element, we want its center to be at the new physical center 
-    // of the VISIBLE canvas area.
-    //
-    // The visible canvas area has height: TotalHeight - TopBar - BottomPanels.
-    // The physical center is at (TotalHeight - TopBar - BottomPanels) / 2.
-    //
-    // Relative to the "stable" (0,0) point (which is centered in the full area?), where is the new center?
-    // 
-    // Let's assume the previous logic was trying to maintain a stable world coordinate system.
-    // 
-    // If we want to center the element in the *visible* area:
-    // We simply need the element's position relative to the world origin (0,0) to be offset such that
-    // it aligns with the center of the visible area.
-    //
-    // The `canvasOffset` shifts the world origin.
-    // If offset is (0,0), the world origin is at the *visual* center (which is shifted by `canvasOffsetAdjustY`).
-    //
-    // `canvasOffsetAdjustY` is typically passed as `bottomPanelHeight`.
-    // So origin is at `PhysicalCenter + BottomPanelHeight / 2`.
-    //
-    // We want the element center `(pos.y + h/2)` to be at the `PhysicalCenter`.
-    //
-    // Current Y = `PhysicalCenter + BottomPanelHeight/2 + offset.y + pos.y + h/2`  (Wait, strictly, it's `top` relative to container)
-    //
-    // Let's trace EditorPanel render:
-    // Container is flex-centered.
-    // Inner box `canvas-viewport` has `top={canvasOffset.y + canvasOffsetAdjustY / 2}`
-    //
-    // So `canvas-viewport` origin (0,0) is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2`.
-    // The element is at `(pos.x, pos.y)` inside `canvas-viewport`.
-    // So element top-left is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y`.
-    // Element center is at `... + pos.y + h/2`.
-    //
-    // We want Element Center to be at `PhysicalCenter`.
-    // So: `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = PhysicalCenter`
-    // => `canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = 0`
-    // => `canvasOffset.y = -(pos.y + h/2) - canvasOffsetAdjustY / 2`
-    
-    const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
-    const newOffsetY = Math.round(-pos.y - nodeHeight / 2 - bottomPanelHeight / 2)
-    
-    setCanvasOffset({ x: newOffsetX, y: newOffsetY })
-  }, [tree, mode, showCodePanel, showTimeline])
+      const node = findRenderable(tree, renderableId)
+      if (!node) return
+
+      // Get the node's accumulated position from tree root
+      const pos = getRenderablePosition(tree, renderableId)
+      if (!pos) return
+
+      // Get element dimensions (use defaults if not set)
+      const nodeWidth = typeof node.width === 'number' ? node.width : 10
+      const nodeHeight = typeof node.height === 'number' ? node.height : 3
+
+      // The root is centered by flexbox. To center a specific element,
+      // offset by the negative of its position (plus half its size to center it)
+      // We also need to account for the bottom panel which shifts the viewport center
+
+      // Calculate total bottom panel height
+      const bottomPanelHeight =
+        (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
+        (showCodePanel ? codePanelHeight : 0) +
+        (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
+
+      // The canvas is vertically centered in the remaining space *above* the bottom panels.
+      // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the
+      // visual center down to account for this.
+      //
+      // Let's look at EditorPanel:
+      // top={canvasOffset.y + canvasOffsetAdjustY / 2}
+      //
+      // So if we have a bottom panel of height H, the canvas visual center is shifted down by H/2.
+      // This means the coordinate (0,0) which was at the physical center is now at physical center + H/2.
+      //
+      // Wait, if the canvas size *shrinks* because of bottom panels (flex layout),
+      // the flexbox centering moves the physical center UP by H/2.
+      // To keep the visual content stable, we add H/2 to the top offset.
+      //
+      // So, effectively, (0,0) remains visually in the center of the *original* full height area
+      // (minus footer/header/etc).
+      //
+      // If we want to center an element, we want its center to be at the new physical center
+      // of the VISIBLE canvas area.
+      //
+      // The visible canvas area has height: TotalHeight - TopBar - BottomPanels.
+      // The physical center is at (TotalHeight - TopBar - BottomPanels) / 2.
+      //
+      // Relative to the "stable" (0,0) point (which is centered in the full area?), where is the new center?
+      //
+      // Let's assume the previous logic was trying to maintain a stable world coordinate system.
+      //
+      // If we want to center the element in the *visible* area:
+      // We simply need the element's position relative to the world origin (0,0) to be offset such that
+      // it aligns with the center of the visible area.
+      //
+      // The `canvasOffset` shifts the world origin.
+      // If offset is (0,0), the world origin is at the *visual* center (which is shifted by `canvasOffsetAdjustY`).
+      //
+      // `canvasOffsetAdjustY` is typically passed as `bottomPanelHeight`.
+      // So origin is at `PhysicalCenter + BottomPanelHeight / 2`.
+      //
+      // We want the element center `(pos.y + h/2)` to be at the `PhysicalCenter`.
+      //
+      // Current Y = `PhysicalCenter + BottomPanelHeight/2 + offset.y + pos.y + h/2`  (Wait, strictly, it's `top` relative to container)
+      //
+      // Let's trace EditorPanel render:
+      // Container is flex-centered.
+      // Inner box `canvas-viewport` has `top={canvasOffset.y + canvasOffsetAdjustY / 2}`
+      //
+      // So `canvas-viewport` origin (0,0) is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2`.
+      // The element is at `(pos.x, pos.y)` inside `canvas-viewport`.
+      // So element top-left is at `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y`.
+      // Element center is at `... + pos.y + h/2`.
+      //
+      // We want Element Center to be at `PhysicalCenter`.
+      // So: `PhysicalCenter + canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = PhysicalCenter`
+      // => `canvasOffset.y + canvasOffsetAdjustY / 2 + pos.y + h/2 = 0`
+      // => `canvasOffset.y = -(pos.y + h/2) - canvasOffsetAdjustY / 2`
+
+      const newOffsetX = Math.round(-pos.x - nodeWidth / 2)
+      const newOffsetY = Math.round(
+        -pos.y - nodeHeight / 2 - bottomPanelHeight / 2,
+      )
+
+      setCanvasOffset({ x: newOffsetX, y: newOffsetY })
+    },
+    [tree, mode, showCodePanel, showTimeline],
+  )
 
   // Loading state
-  if (isLoading) { // Allow project to be null if we are in library mode?
-                   // But useProject loads the last project by default.
+  if (isLoading) {
+    // Allow project to be null if we are in library mode?
+    // But useProject loads the last project by default.
     return (
-      <box style={{ width, height, alignItems: "center", justifyContent: "center" }}>
+      <box
+        style={{
+          width,
+          height,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <text fg={COLORS.muted}>Loading...</text>
       </box>
     )
   }
-  
+
   // Library/Docs Mode - Full Screen (hides tree and sidebar)
-  if (viewModeConfig.kind === "browser") {
+  if (viewModeConfig.kind === 'browser') {
     return (
-      <box id="builder" style={{ width, height, flexDirection: "column" }}>
-        <box style={{ flexGrow: 1, flexDirection: "column" }}>
-          {mode === "library" ? (
-             <LibraryPage 
-              projectHook={projectHook} 
-              onLoadProject={() => setMode("editor")} 
+      <box id="builder" style={{ width, height, flexDirection: 'column' }}>
+        <box style={{ flexGrow: 1, flexDirection: 'column' }}>
+          {mode === 'library' ? (
+            <LibraryPage
+              projectHook={projectHook}
+              onLoadProject={() => setMode('editor')}
               width={width}
               height={height - NAVBAR_HEIGHT}
             />
-
           ) : (
             <DocsPanel />
           )}
@@ -449,8 +555,22 @@ export function Builder({ width, height }: BuilderProps) {
   if (!project || !tree) {
     // Should generally not happen if isLoading handled, but safe guard
     return (
-       <box style={{ width, height, flexDirection: "column", alignItems: "stretch", justifyContent: "space-between" }}>
-        <box style={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
+      <box
+        style={{
+          width,
+          height,
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          justifyContent: 'space-between',
+        }}
+      >
+        <box
+          style={{
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <text fg={COLORS.muted}>No project loaded.</text>
         </box>
         <NavBar
@@ -467,127 +587,199 @@ export function Builder({ width, height }: BuilderProps) {
   }
 
   return (
-    <box id="builder" style={{ width, height, flexDirection: "column" }}>
+    <box id="builder" style={{ width, height, flexDirection: 'column' }}>
       {/* Main content area - horizontal panels */}
-      <box id="builder-main" style={{ width, height: mainContentHeight, flexDirection: "row" }}>
+      <box
+        id="builder-main"
+        style={{ width, height: mainContentHeight, flexDirection: 'row' }}
+      >
         {/* Left Panel - Tree */}
         {showTree && (
-<box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
-             style={{ width: TREE_PANEL_WIDTH, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
-            <Title onLogoClick={() => setMode("docs")} />
-            <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
-              <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
-                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} onFocusRenderable={handleFocusRenderable} />
+          <box
+            id="builder-tree"
+            border={['right']}
+            borderColor={COLORS.border}
+            customBorderChars={ThinBorderRight}
+            style={{
+              width: TREE_PANEL_WIDTH,
+              backgroundColor: COLORS.bgAlt,
+              padding: 1,
+              flexDirection: 'column',
+              flexShrink: 0,
+            }}
+          >
+            <Title onLogoClick={() => setMode('docs')} />
+            <scrollbox
+              id="tree-scroll"
+              style={{
+                flexGrow: 1,
+                contentOptions: { flexDirection: 'column' },
+              }}
+            >
+              <TreeView
+                key={treeKey}
+                root={tree}
+                selectedId={selectedId}
+                collapsed={new Set(collapsed)}
+                onSelect={setProjectSelectedId}
+                onToggle={handleToggleCollapse}
+                onRename={handleRename}
+                onFocusRenderable={handleFocusRenderable}
+              />
             </scrollbox>
           </box>
         )}
 
         {/* Center Area - header, canvas */}
         <KeyframingContext.Provider value={keyframingContextValue}>
-        <box id="builder-center" style={{ width: width - (showTree ? TREE_PANEL_WIDTH : 0) - (showProperties ? SIDEBAR_PANEL_WIDTH : 0), flexDirection: "column", paddingTop: 1 }}
-        onMouseDown={() => {
-            // Clicking anywhere in the main area (outside specific panels that handle stopPropagation)
-            // should blur focused fields
-            if (focusedField === "code-panel") {
-                // We need to notify CodePanel to blur? 
+          <box
+            id="builder-center"
+            style={{
+              width:
+                width -
+                (showTree ? TREE_PANEL_WIDTH : 0) -
+                (showProperties ? SIDEBAR_PANEL_WIDTH : 0),
+              flexDirection: 'column',
+              paddingTop: 1,
+            }}
+            onMouseDown={() => {
+              // Clicking anywhere in the main area (outside specific panels that handle stopPropagation)
+              // should blur focused fields
+              if (focusedField === 'code-panel') {
+                // We need to notify CodePanel to blur?
                 // CodePanel's focus state is internal.
                 // But we can just clear the global focus lock.
                 // Actually, if we click canvas, CodePanel should lose focus.
                 setFocusedField(null)
-            }
-        }}
-      >
-          <Header
-          addMode={addMode}
-          onFileAction={handleFileAction}
-          onToggleAddMode={() => setAddMode(!addMode)}
-          onAddRenderable={handleAddRenderable}
-          selectedNode={selectedNode}
-          onUpdateNode={handleUpdate}
-          focusedField={focusedField}
-          setFocusedField={setFocusedField}
-        />
+              }
+            }}
+          >
+            <Header
+              addMode={addMode}
+              onFileAction={handleFileAction}
+              onToggleAddMode={() => setAddMode(!addMode)}
+              onAddRenderable={handleAddRenderable}
+              selectedNode={selectedNode}
+              onUpdateNode={handleUpdate}
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+            />
 
-        {/* Canvas - grows to fill middle */}
-        {mode === "play" ? (
-             <PlayPage 
-               projectHook={projectHook} 
-               isPlaying={isPlaying}
-               canvasOffset={canvasOffset}
-               canvasOffsetAdjustY={
-                 (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
-                 (showCodePanel ? codePanelHeight : 0) +
-                 (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
-               }
-
-             onCanvasOffsetChange={setCanvasOffset}
-             onTogglePlay={() => setIsPlaying(p => !p)}
-             onDragStart={handleDragStart}
-             onDragMove={handleDragMove}
-             onDragEnd={handleDragEnd}
-           />
-         ) : (
-          <EditorPanel
-            tree={tree}
-            treeKey={treeKey}
-            selectedId={selectedId}
-            hoveredId={hoveredId}
-            canvasOffset={canvasOffset}
-            canvasOffsetAdjustY={showCodePanel ? codePanelHeight : 0}
-            onCanvasOffsetChange={setCanvasOffset}
-            onSelect={(id) => { setProjectSelectedId(id); setFocusedField(null) }}
-            onHover={setHoveredId}
-            onBackgroundClick={() => setFocusedField(null)}
-            onDragStart={handleDragStart}
-            onDragMove={handleDragMove}
-            onDragEnd={handleDragEnd}
-          />
-          )}
-        </box>
-
-        {/* Right Panel - Properties */}
-        {showProperties && (
-<box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
-             style={{ width: SIDEBAR_PANEL_WIDTH, flexDirection: "column", backgroundColor: COLORS.bgAlt, padding: 1, flexShrink: 0 }}>
-            {/* Palette - always visible */}
-            <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center", flexShrink: 0, height: 4 }}>
-              <PaletteControl
-                palettes={palettes}
-                activePaletteIndex={activePaletteIndex}
-                onShowHex={(color) => console.log("Palette color:", color)}
-                onUpdateSwatch={updateSwatch}
-                onChangePalette={setActivePalette}
-                focusedField={focusedField}
-                setFocusedField={setFocusedField}
-                pickMode={pickingForField !== null}
-                onPickComplete={(color) => {
-                  if (pickingForField && selectedNode) {
-                    handleUpdate({ [pickingForField]: color } as Partial<Renderable>)
-                  }
-                  setPickingForField(null)
-                }}
+            {/* Canvas - grows to fill middle */}
+            {mode === 'play' ? (
+              <PlayPage
+                projectHook={projectHook}
+                isPlaying={isPlaying}
+                canvasOffset={canvasOffset}
+                canvasOffsetAdjustY={
+                  (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
+                  (showCodePanel ? codePanelHeight : 0) +
+                  (viewModeConfig.hasTimeline && showTimeline
+                    ? TIMELINE_HEIGHT
+                    : 0)
+                }
+                onCanvasOffsetChange={setCanvasOffset}
+                onTogglePlay={() => setIsPlaying((p) => !p)}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
               />
-            </box>
-            {selectedNode ? (
-              <PropertyPane key={selectedId} node={selectedNode} onUpdate={handleUpdate}
-                focusedField={focusedField} setFocusedField={setFocusedField}
-                palettes={palettes} activePaletteIndex={activePaletteIndex}
-                onShowHex={(color) => {
-                  // Show hex in console or similar - just for reference, not applying
-                  console.log("Palette color:", color)
-                }}
-                onUpdateSwatch={updateSwatch} onChangePalette={setActivePalette}
-                pickingForField={pickingForField} setPickingForField={setPickingForField} />
             ) : (
-              <text fg={COLORS.muted}>Select an element</text>
+              <EditorPanel
+                tree={tree}
+                treeKey={treeKey}
+                selectedId={selectedId}
+                hoveredId={hoveredId}
+                canvasOffset={canvasOffset}
+                canvasOffsetAdjustY={showCodePanel ? codePanelHeight : 0}
+                onCanvasOffsetChange={setCanvasOffset}
+                onSelect={(id) => {
+                  setProjectSelectedId(id)
+                  setFocusedField(null)
+                }}
+                onHover={setHoveredId}
+                onBackgroundClick={() => setFocusedField(null)}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+              />
             )}
           </box>
-        )}
+
+          {/* Right Panel - Properties */}
+          {showProperties && (
+            <box
+              id="builder-sidebar"
+              border={['left']}
+              borderColor={COLORS.border}
+              customBorderChars={ThinBorderLeft}
+              style={{
+                width: SIDEBAR_PANEL_WIDTH,
+                flexDirection: 'column',
+                backgroundColor: COLORS.bgAlt,
+                padding: 1,
+                flexShrink: 0,
+              }}
+            >
+              {/* Palette - always visible */}
+              <box
+                id="palette-header"
+                border={['bottom']}
+                borderColor={COLORS.border}
+                style={{
+                  marginBottom: 1,
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  height: 4,
+                }}
+              >
+                <PaletteControl
+                  palettes={palettes}
+                  activePaletteIndex={activePaletteIndex}
+                  onShowHex={(color) => console.log('Palette color:', color)}
+                  onUpdateSwatch={updateSwatch}
+                  onChangePalette={setActivePalette}
+                  focusedField={focusedField}
+                  setFocusedField={setFocusedField}
+                  pickMode={pickingForField !== null}
+                  onPickComplete={(color) => {
+                    if (pickingForField && selectedNode) {
+                      handleUpdate({
+                        [pickingForField]: color,
+                      } as Partial<Renderable>)
+                    }
+                    setPickingForField(null)
+                  }}
+                />
+              </box>
+              {selectedNode ? (
+                <PropertyPane
+                  key={selectedId}
+                  node={selectedNode}
+                  onUpdate={handleUpdate}
+                  focusedField={focusedField}
+                  setFocusedField={setFocusedField}
+                  palettes={palettes}
+                  activePaletteIndex={activePaletteIndex}
+                  onShowHex={(color) => {
+                    // Show hex in console or similar - just for reference, not applying
+                    console.log('Palette color:', color)
+                  }}
+                  onUpdateSwatch={updateSwatch}
+                  onChangePalette={setActivePalette}
+                  pickingForField={pickingForField}
+                  setPickingForField={setPickingForField}
+                />
+              ) : (
+                <text fg={COLORS.muted}>Select an element</text>
+              )}
+            </box>
+          )}
         </KeyframingContext.Provider>
       </box>
 
       {/* Bottom Bar - Mode tabs spanning full width */}
-      {mode === "play" && (
+      {mode === 'play' && (
         <FilmStrip
           frames={animation?.frames ?? []}
           animatedProperties={animation?.keyframing.animatedProperties ?? []}
@@ -602,49 +794,71 @@ export function Builder({ width, height }: BuilderProps) {
           onFpsChange={setFps}
           onFrameCountChange={setFrameCount}
           isPlaying={isPlaying}
-          onTogglePlay={() => setIsPlaying(p => !p)}
+          onTogglePlay={() => setIsPlaying((p) => !p)}
           onImport={projectHook.importAnimation}
           onEditingChange={setFilmStripEditing}
         />
       )}
-      
-      {/* Timeline Panel - visible in play mode, toggleable with F2 */}
-       {mode === "play" && showTimeline && (
-         <box height={TIMELINE_HEIGHT} width={width} flexShrink={0} overflow="hidden">
-           <TimelinePanel projectHook={projectHook} width={width} />
-         </box>
-       )}
 
+      {/* Timeline Panel - visible in play mode, toggleable with F2 */}
+      {mode === 'play' && showTimeline && (
+        <box
+          height={TIMELINE_HEIGHT}
+          width={width}
+          flexShrink={0}
+          overflow="hidden"
+        >
+          <TimelinePanel projectHook={projectHook} width={width} />
+        </box>
+      )}
 
       {/* Code Panel - bottom panel toggled with F2 */}
       {showCodePanel && (
-        <box height={codePanelHeight} flexShrink={0} onMouseDown={(e) => {
+        <box
+          height={codePanelHeight}
+          flexShrink={0}
+          onMouseDown={(e) => {
             e.stopPropagation()
-        }}>
-          <CodePanel 
-             code={code} 
-             tree={tree} 
-             updateTree={updateTree} 
-             onClose={() => {
-               setViewLayout(prev => ({
-                 ...prev,
-                 showCodePanel: false,
-               }))
-             }}
-             onFocusChange={(focused) => {
-                 if (focused) setFocusedField("code-panel")
-                 else if (focusedField === "code-panel") setFocusedField(null)
-             }}
-             height={codePanelHeight}
-             onHeightChange={(h) => setViewLayout(prev => ({ ...prev, codePanelHeight: Math.max(5, h) }))}
-             width={width}
-             screenHeight={height}
-           />
-
+          }}
+        >
+          <CodePanel
+            code={code}
+            tree={tree}
+            updateTree={updateTree}
+            onClose={() => {
+              setViewLayout((prev) => ({
+                ...prev,
+                showCodePanel: false,
+              }))
+            }}
+            onFocusChange={(focused) => {
+              if (focused) setFocusedField('code-panel')
+              else if (focusedField === 'code-panel') setFocusedField(null)
+            }}
+            height={codePanelHeight}
+            onHeightChange={(h) =>
+              setViewLayout((prev) => ({
+                ...prev,
+                codePanelHeight: Math.max(5, h),
+              }))
+            }
+            width={width}
+            screenHeight={height}
+          />
         </box>
       )}
-      
-      <NavBar mode={mode} width={width} projectName={project.name} saveStatus={saveStatus} showCodePanel={showCodePanel} showTimeline={showTimeline} onModeChange={setMode} onToggleCode={() => applyViewAction(Bind.TOGGLE_CODE)} onPlayPress={() => applyViewAction(Bind.VIEW_PLAY)} />
+
+      <NavBar
+        mode={mode}
+        width={width}
+        projectName={project.name}
+        saveStatus={saveStatus}
+        showCodePanel={showCodePanel}
+        showTimeline={showTimeline}
+        onModeChange={setMode}
+        onToggleCode={() => applyViewAction(Bind.TOGGLE_CODE)}
+        onPlayPress={() => applyViewAction(Bind.VIEW_PLAY)}
+      />
 
       {/* Project Modal (for new/load/delete) */}
       {modalMode && (

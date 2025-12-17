@@ -1,18 +1,18 @@
-import { COLORS } from "../theme"
+import { COLORS } from '../theme'
 
 export const COLOR_PALETTE = [
-  { name: "bg", value: COLORS.bg },
-  { name: "bgAlt", value: COLORS.bgAlt },
-  { name: "card", value: COLORS.card },
-  { name: "border", value: COLORS.border },
-  { name: "text", value: COLORS.text },
-  { name: "muted", value: COLORS.muted },
-  { name: "accent", value: COLORS.accent },
-  { name: "accentBright", value: COLORS.accentBright },
-  { name: "success", value: COLORS.success },
-  { name: "warning", value: COLORS.warning },
-  { name: "danger", value: COLORS.danger },
-  { name: "transparent", value: "transparent" },
+  { name: 'bg', value: COLORS.bg },
+  { name: 'bgAlt', value: COLORS.bgAlt },
+  { name: 'card', value: COLORS.card },
+  { name: 'border', value: COLORS.border },
+  { name: 'text', value: COLORS.text },
+  { name: 'muted', value: COLORS.muted },
+  { name: 'accent', value: COLORS.accent },
+  { name: 'accentBright', value: COLORS.accentBright },
+  { name: 'success', value: COLORS.success },
+  { name: 'warning', value: COLORS.warning },
+  { name: 'danger', value: COLORS.danger },
+  { name: 'transparent', value: 'transparent' },
 ]
 
 export const TREE_PANEL_WIDTH = 27

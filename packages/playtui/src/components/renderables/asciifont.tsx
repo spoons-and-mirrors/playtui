@@ -1,17 +1,17 @@
-import type { MouseEvent } from "@opentui/core"
-import type { Renderable, AsciiFontRenderable } from "../../lib/types"
-import { COLORS } from "../../theme"
+import type { MouseEvent } from '@opentui/core'
+import type { Renderable, AsciiFontRenderable } from '../../lib/types'
+import { COLORS } from '../../theme'
 
 // Valid font names in OpenTUI
-const VALID_FONTS = ["tiny", "block", "slick", "shade"] as const
+const VALID_FONTS = ['tiny', 'block', 'slick', 'shade'] as const
 
 // =============================================================================
 // ASCIIFONT DEFAULTS
 // =============================================================================
 
 export const ASCIIFONT_DEFAULTS: Partial<AsciiFontRenderable> = {
-  text: "",
-  font: "block",
+  text: '',
+  font: 'block',
   color: COLORS.accent,
 }
 
@@ -28,11 +28,19 @@ interface AsciiFontRendererProps {
   onDragStart?: (x: number, y: number) => void
 }
 
-export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: AsciiFontRendererProps) {
+export function AsciiFontRenderer({
+  node: genericNode,
+  isSelected,
+  isHovered,
+  onSelect,
+  onHover,
+  onDragStart,
+}: AsciiFontRendererProps) {
   const node = genericNode as AsciiFontRenderable
-  
-  const safeFont = node.font && VALID_FONTS.includes(node.font as any) ? node.font : "block"
-  
+
+  const safeFont =
+    node.font && VALID_FONTS.includes(node.font as any) ? node.font : 'block'
+
   // Enable dragging for all positioned elements
   const isDraggable = true
 

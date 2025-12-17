@@ -1,7 +1,9 @@
 {
   "name": "playtui-monorepo",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --cwd packages/playtui dev",

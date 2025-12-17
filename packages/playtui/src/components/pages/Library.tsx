@@ -1,13 +1,13 @@
-import { useKeyboard } from "@opentui/react"
-import { useState, useEffect } from "react"
-import { ProjectList } from "../library/ProjectList"
-import { LoadConfirmation } from "../library/LoadConfirmation"
-import { COLORS } from "../../theme"
-import type { UseProjectReturn } from "../../hooks/useProject"
-import * as storage from "../../lib/storage"
-import type { ProjectMeta } from "../../lib/projectTypes"
-import type { Renderable } from "../../lib/types"
-import { Bind, isKeybind } from "../../lib/shortcuts"
+import { useKeyboard } from '@opentui/react'
+import { useState, useEffect } from 'react'
+import { ProjectList } from '../library/ProjectList'
+import { LoadConfirmation } from '../library/LoadConfirmation'
+import { COLORS } from '../../theme'
+import type { UseProjectReturn } from '../../hooks/useProject'
+import * as storage from '../../lib/storage'
+import type { ProjectMeta } from '../../lib/projectTypes'
+import type { Renderable } from '../../lib/types'
+import { Bind, isKeybind } from '../../lib/shortcuts'
 
 interface LibraryPageProps {
   projectHook: UseProjectReturn
@@ -16,17 +16,23 @@ interface LibraryPageProps {
   height: number
 }
 
-export function LibraryPage({ projectHook, onLoadProject, width, height }: LibraryPageProps) {
+export function LibraryPage({
+  projectHook,
+  onLoadProject,
+  width,
+  height,
+}: LibraryPageProps) {
   const { projects, refreshProjects, loadProject } = projectHook
-  
+
   const [selectedColumn, setSelectedColumn] = useState(0)
   const [selectedRow, setSelectedRow] = useState(0)
-  const [confirmingProject, setConfirmingProject] = useState<ProjectMeta | null>(null)
+  const [confirmingProject, setConfirmingProject] =
+    useState<ProjectMeta | null>(null)
 
   // Split projects into columns for row count calculation
   const columnA = projects.filter((_, i) => i % 2 === 0)
   const columnB = projects.filter((_, i) => i % 2 === 1)
-  const getColumnProjects = (col: number) => col === 0 ? columnA : columnB
+  const getColumnProjects = (col: number) => (col === 0 ? columnA : columnB)
 
   // Refresh list on mount
   useEffect(() => {
@@ -34,7 +40,9 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
   }, [refreshProjects])
 
   // Helper to fetch tree for preview
-  const getProjectTree = async (fileName: string): Promise<Renderable | null> => {
+  const getProjectTree = async (
+    fileName: string,
+  ): Promise<Renderable | null> => {
     const proj = await storage.loadProject(fileName)
     return proj ? proj.tree : null
   }
@@ -47,7 +55,7 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
 
   const handleConfirmLoad = async () => {
     if (!confirmingProject) return
-    
+
     const success = await loadProject(confirmingProject.fileName)
     if (success) {
       setConfirmingProject(null)
@@ -68,15 +76,19 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
     const currentColumn = getColumnProjects(selectedColumn)
     const otherColumn = getColumnProjects(selectedColumn === 0 ? 1 : 0)
 
-    if (key.name === "up") {
+    if (key.name === 'up') {
       setSelectedRow((prev) => Math.max(0, prev - 1))
-    } else if (key.name === "down") {
+    } else if (key.name === 'down') {
       setSelectedRow((prev) => Math.min(currentColumn.length - 1, prev + 1))
-    } else if (key.name === "left" && selectedColumn === 1) {
+    } else if (key.name === 'left' && selectedColumn === 1) {
       setSelectedColumn(0)
       // Clamp row to new column's bounds
       setSelectedRow((prev) => Math.min(prev, columnA.length - 1))
-    } else if (key.name === "right" && selectedColumn === 0 && columnB.length > 0) {
+    } else if (
+      key.name === 'right' &&
+      selectedColumn === 0 &&
+      columnB.length > 0
+    ) {
       setSelectedColumn(1)
       // Clamp row to new column's bounds
       setSelectedRow((prev) => Math.min(prev, columnB.length - 1))
@@ -92,18 +104,28 @@ export function LibraryPage({ projectHook, onLoadProject, width, height }: Libra
   }
 
   return (
-    <box width="100%" flexGrow={1} flexDirection="column" backgroundColor={COLORS.bg}>
-      <box 
-        width="100%" 
-        height={3} 
-        border={["bottom"]} 
+    <box
+      width="100%"
+      flexGrow={1}
+      flexDirection="column"
+      backgroundColor={COLORS.bg}
+    >
+      <box
+        width="100%"
+        height={3}
+        border={['bottom']}
         borderColor={COLORS.border}
         paddingLeft={2}
         justifyContent="center"
         flexShrink={0}
       >
-        <text fg={COLORS.text}><strong>Project Library</strong></text>
-        <text fg={COLORS.muted}>  Select a project to load (←→ switch columns, ↑↓ navigate)</text>
+        <text fg={COLORS.text}>
+          <strong>Project Library</strong>
+        </text>
+        <text fg={COLORS.muted}>
+          {' '}
+          Select a project to load (←→ switch columns, ↑↓ navigate)
+        </text>
       </box>
 
       <box flexGrow={1} overflow="hidden">

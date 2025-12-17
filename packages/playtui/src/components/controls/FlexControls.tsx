@@ -1,7 +1,12 @@
-import { COLORS } from "../../theme"
-import { ValueCounter } from "../ui/ValueCounter"
-import { PropRow } from "./PropRow"
-import type { FlexDirection, JustifyContent, AlignItems, Overflow } from "../../lib/types"
+import { COLORS } from '../../theme'
+import { ValueCounter } from '../ui/ValueCounter'
+import { PropRow } from './PropRow'
+import type {
+  FlexDirection,
+  JustifyContent,
+  AlignItems,
+  Overflow,
+} from '../../lib/types'
 
 export function GapControl({
   label,
@@ -30,17 +35,20 @@ export function GapControl({
   )
 }
 
-export function FlexDirectionPicker({ value, onChange }: {
+export function FlexDirectionPicker({
+  value,
+  onChange,
+}: {
   value: FlexDirection | undefined
   onChange: (v: FlexDirection) => void
 }) {
-  const current = value || "column"
-  const isRow = current === "row" || current === "row-reverse"
-  const isCol = current === "column" || current === "column-reverse"
-  const isReverse = current.endsWith("-reverse")
+  const current = value || 'column'
+  const isRow = current === 'row' || current === 'row-reverse'
+  const isCol = current === 'column' || current === 'column-reverse'
+  const isReverse = current.endsWith('-reverse')
 
   const toggleReverse = () => {
-    const base = isRow ? "row" : "column"
+    const base = isRow ? 'row' : 'column'
     if (isReverse) {
       onChange(base)
     } else {
@@ -50,25 +58,29 @@ export function FlexDirectionPicker({ value, onChange }: {
 
   return (
     <PropRow label="Direction">
-      <box style={{ flexDirection: "row", gap: 1 }}>
+      <box style={{ flexDirection: 'row', gap: 1 }}>
         <box
           id="flex-dir-row"
-          onMouseDown={() => onChange(isReverse ? "row-reverse" : "row")}
+          onMouseDown={() => onChange(isReverse ? 'row-reverse' : 'row')}
           style={{
             backgroundColor: isRow ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1, paddingRight: 1,
-            flexDirection: "row", gap: 0
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexDirection: 'row',
+            gap: 0,
           }}
         >
           <text fg={isRow ? COLORS.bg : COLORS.text}>Row</text>
         </box>
         <box
           id="flex-dir-col"
-          onMouseDown={() => onChange(isReverse ? "column-reverse" : "column")}
+          onMouseDown={() => onChange(isReverse ? 'column-reverse' : 'column')}
           style={{
             backgroundColor: isCol ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1, paddingRight: 1,
-            flexDirection: "row", gap: 0
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexDirection: 'row',
+            gap: 0,
           }}
         >
           <text fg={isCol ? COLORS.bg : COLORS.text}>Col</text>
@@ -78,8 +90,10 @@ export function FlexDirectionPicker({ value, onChange }: {
           onMouseDown={toggleReverse}
           style={{
             backgroundColor: isReverse ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1, paddingRight: 1,
-            flexDirection: "row", gap: 0
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexDirection: 'row',
+            gap: 0,
           }}
         >
           <text fg={isReverse ? COLORS.bg : COLORS.text}>Rev</text>
@@ -89,13 +103,13 @@ export function FlexDirectionPicker({ value, onChange }: {
   )
 }
 
-export function FlexAlignmentGrid({ 
-  justify, 
-  align, 
+export function FlexAlignmentGrid({
+  justify,
+  align,
   direction,
-  onJustifyChange, 
+  onJustifyChange,
   onAlignChange,
-  onBothChange 
+  onBothChange,
 }: {
   justify: JustifyContent | undefined
   align: AlignItems | undefined
@@ -104,25 +118,45 @@ export function FlexAlignmentGrid({
   onAlignChange: (v: AlignItems) => void
   onBothChange: (j: JustifyContent, a: AlignItems) => void
 }) {
-  const opts: JustifyContent[] = ["flex-start", "center", "flex-end", "space-between", "space-around", "space-evenly"]
-  
-  const currentJ = (justify as any) === "auto" ? "flex-start" : (justify ?? "flex-start")
-  const currentA = (align as any) === "auto" ? "flex-start" : (align ?? "flex-start")
-  
-  const isRow = direction === "row"
-  
+  const opts: JustifyContent[] = [
+    'flex-start',
+    'center',
+    'flex-end',
+    'space-between',
+    'space-around',
+    'space-evenly',
+  ]
+
+  const currentJ =
+    (justify as any) === 'auto' ? 'flex-start' : (justify ?? 'flex-start')
+  const currentA =
+    (align as any) === 'auto' ? 'flex-start' : (align ?? 'flex-start')
+
+  const isRow = direction === 'row'
+
   const jIdx = opts.indexOf(currentJ as any)
-  const aIdx = opts.indexOf((currentA === "stretch" ? "flex-start" : currentA) as any)
+  const aIdx = opts.indexOf(
+    (currentA === 'stretch' ? 'flex-start' : currentA) as any,
+  )
 
   // For row: cols = justify (X main), rows = align (Y cross)
   // For column: cols = align (X cross), rows = justify (Y main)
   return (
-    <box id="flex-align-grid" style={{ flexDirection: "column", gap: 0, marginTop: 1 }}>
-      <text fg={COLORS.muted} style={{ marginBottom: 0 }}>Alignment</text>
-      <box id="align-matrix" style={{ flexDirection: "column", gap: 0 }}>
-        {[0, 1, 2].map(rowIdx => (
-          <box key={rowIdx} id={`align-row-${rowIdx}`} style={{ flexDirection: "row", gap: 1 }}>
-            {[0, 1, 2].map(colIdx => {
+    <box
+      id="flex-align-grid"
+      style={{ flexDirection: 'column', gap: 0, marginTop: 1 }}
+    >
+      <text fg={COLORS.muted} style={{ marginBottom: 0 }}>
+        Alignment
+      </text>
+      <box id="align-matrix" style={{ flexDirection: 'column', gap: 0 }}>
+        {[0, 1, 2].map((rowIdx) => (
+          <box
+            key={rowIdx}
+            id={`align-row-${rowIdx}`}
+            style={{ flexDirection: 'row', gap: 1 }}
+          >
+            {[0, 1, 2].map((colIdx) => {
               const cellJIdx = isRow ? colIdx : rowIdx
               const cellAIdx = isRow ? rowIdx : colIdx
               const isSelected = jIdx === cellJIdx && aIdx === cellAIdx
@@ -142,13 +176,17 @@ export function FlexAlignmentGrid({
           </box>
         ))}
       </box>
-      <box style={{ flexDirection: "row", gap: 1, marginTop: 1 }}>
-        <text fg={COLORS.text} style={{ width: 10 }}>Justify:</text>
-        <text fg={COLORS.accent}>{currentJ.replace("flex-", "")}</text>
+      <box style={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
+        <text fg={COLORS.text} style={{ width: 10 }}>
+          Justify:
+        </text>
+        <text fg={COLORS.accent}>{currentJ.replace('flex-', '')}</text>
       </box>
-      <box style={{ flexDirection: "row", gap: 1 }}>
-        <text fg={COLORS.text} style={{ width: 10 }}>Align:</text>
-        <text fg={COLORS.accent}>{currentA.replace("flex-", "")}</text>
+      <box style={{ flexDirection: 'row', gap: 1 }}>
+        <text fg={COLORS.text} style={{ width: 10 }}>
+          Align:
+        </text>
+        <text fg={COLORS.accent}>{currentA.replace('flex-', '')}</text>
       </box>
     </box>
   )
@@ -156,21 +194,24 @@ export function FlexAlignmentGrid({
 
 // Removed duplicate GapControl
 
-export function OverflowPicker({ value, onChange }: {
+export function OverflowPicker({
+  value,
+  onChange,
+}: {
   value: Overflow | undefined
   onChange: (v: Overflow) => void
 }) {
   const options: { val: Overflow; label: string }[] = [
-    { val: "visible", label: "Vis" },
-    { val: "hidden", label: "Hide" },
-    { val: "scroll", label: "Scroll" },
+    { val: 'visible', label: 'Vis' },
+    { val: 'hidden', label: 'Hide' },
+    { val: 'scroll', label: 'Scroll' },
   ]
-  const current = value || "visible"
+  const current = value || 'visible'
 
   return (
     <PropRow label="Overflow">
-      <box style={{ flexDirection: "row", gap: 1 }}>
-        {options.map(opt => {
+      <box style={{ flexDirection: 'row', gap: 1 }}>
+        {options.map((opt) => {
           const isSelected = current === opt.val
           return (
             <box
@@ -179,7 +220,8 @@ export function OverflowPicker({ value, onChange }: {
               onMouseDown={() => onChange(opt.val)}
               style={{
                 backgroundColor: isSelected ? COLORS.accent : COLORS.bgAlt,
-                paddingLeft: 1, paddingRight: 1
+                paddingLeft: 1,
+                paddingRight: 1,
               }}
             >
               <text fg={isSelected ? COLORS.bg : COLORS.text}>{opt.label}</text>

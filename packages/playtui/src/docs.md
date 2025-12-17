@@ -19,13 +19,13 @@ Press `Tab` to cycle panel visibility (both, none, tree-only, properties-only).
 
 Switch between modes using F-keys or clicking the NavBar buttons.
 
-| Key | Mode | Description |
-|-----|------|-------------|
-| F1 | Edit | Switch to editor mode |
-| F2 | Play | Switch to play mode; press again to toggle timeline panel |
-| F3 | Code | Toggle code panel - live JSX editor |
-| F4 | Library | Browse and load saved projects |
-| F5 | Docs | This documentation |
+| Key | Mode    | Description                                               |
+| --- | ------- | --------------------------------------------------------- |
+| F1  | Edit    | Switch to editor mode                                     |
+| F2  | Play    | Switch to play mode; press again to toggle timeline panel |
+| F3  | Code    | Toggle code panel - live JSX editor                       |
+| F4  | Library | Browse and load saved projects                            |
+| F5  | Docs    | This documentation                                        |
 
 ## Editor Mode
 
@@ -35,46 +35,46 @@ The main editing mode for building your UI.
 
 Click renderables on the canvas or in the tree panel. The selected renderable is highlighted and its properties appear in the right panel.
 
-| Key | Action |
-|-----|--------|
-| ↑ / ↓ | Navigate tree selection |
+| Key    | Action                      |
+| ------ | --------------------------- |
+| ↑ / ↓  | Navigate tree selection     |
 | Escape | Deselect current renderable |
 
 ### Adding Renderables
 
 Press `A` to enter Add Mode, then press the renderable key:
 
-| Key | Renderable |
-|-----|---------|
-| B | Box (container) |
-| T | Text |
-| S | Scrollbox |
-| I | Input |
-| X | Textarea |
-| E | Select dropdown |
-| L | Slider |
-| F | ASCII Font |
-| W | Tab Select |
+| Key | Renderable      |
+| --- | --------------- |
+| B   | Box (container) |
+| T   | Text            |
+| S   | Scrollbox       |
+| I   | Input           |
+| X   | Textarea        |
+| E   | Select dropdown |
+| L   | Slider          |
+| F   | ASCII Font      |
+| W   | Tab Select      |
 
 Press `A` or `Escape` to exit Add Mode without adding.
 
 ### Editing Renderables
 
-| Key | Action |
-|-----|--------|
-| Delete | Delete selected renderable |
-| D | Duplicate renderable |
-| Shift+C | Copy renderable |
-| V | Paste renderable |
-| Alt+↑ | Move renderable up in parent |
-| Alt+↓ | Move renderable down in parent |
+| Key     | Action                         |
+| ------- | ------------------------------ |
+| Delete  | Delete selected renderable     |
+| D       | Duplicate renderable           |
+| Shift+C | Copy renderable                |
+| V       | Paste renderable               |
+| Alt+↑   | Move renderable up in parent   |
+| Alt+↓   | Move renderable down in parent |
 
 ### History
 
 | Key | Action |
-|-----|--------|
-| Z | Undo |
-| Y | Redo |
+| --- | ------ |
+| Z   | Undo   |
+| Y   | Redo   |
 
 ### Drag Positioning
 
@@ -84,25 +84,26 @@ Renderables with `position: absolute` or `position: relative` can be dragged dir
 
 Animation timeline for creating frame-by-frame or keyframed animations.
 
-| Key | Action |
-|-----|--------|
-| Space | Play / Pause animation |
-| E | Previous frame |
-| R | Next frame |
-| F | Duplicate current frame |
-| X | Delete current frame |
-| T | Toggle timeline panel |
+| Key   | Action                  |
+| ----- | ----------------------- |
+| Space | Play / Pause animation  |
+| E     | Previous frame          |
+| R     | Next frame              |
+| F     | Duplicate current frame |
+| X     | Delete current frame    |
+| T     | Toggle timeline panel   |
 
 ### Timeline Panel
 
 When the timeline is open (press `T`):
 
-| Key | Action |
-|-----|--------|
-| J | Jump to previous keyframe |
-| K | Jump to next keyframe |
+| Key | Action                    |
+| --- | ------------------------- |
+| J   | Jump to previous keyframe |
+| K   | Jump to next keyframe     |
 
 The timeline shows:
+
 - **Dopesheet**: All animated properties grouped by node
 - **Curve Editor**: Edit bezier handles for interpolation
 
@@ -125,6 +126,7 @@ Animate properties over time with keyframes. Keyframed values interpolate smooth
 ### Interpolation
 
 Each keyframe has bezier handles for custom easing:
+
 - `handleIn` / `handleOut` control curve tension and overshoot
 - Edit curves directly in the Curve Editor
 
@@ -140,11 +142,11 @@ Edit your component tree as JSX code. Changes are parsed in real-time and reflec
 
 Browse saved projects in a two-column layout.
 
-| Key | Action |
-|-----|--------|
+| Key   | Action                 |
+| ----- | ---------------------- |
 | ↑ / ↓ | Navigate within column |
 | ← / → | Switch between columns |
-| Enter | Load selected project |
+| Enter | Load selected project  |
 
 ## Export & Import
 
@@ -155,11 +157,14 @@ Export animations as TSX modules for use with the flipbook player.
 - Import parses animation modules back to editable frames
 
 Export format:
+
 ```tsx
 export const animation = {
-  name: "Animation",
+  name: 'Animation',
   fps: 12,
-  frames: [/* JSX renderables */]
+  frames: [
+    /* JSX renderables */
+  ],
 }
 ```
 
@@ -179,6 +184,7 @@ Click property values to edit. Use scroll wheel on number fields for quick adjus
 ## Color Palettes
 
 Projects contain named color palettes (Ocean, Forest, Sunset by default):
+
 - 8 swatches per palette
 - Click swatches in Properties to apply colors
 - Edit and switch palettes per project
@@ -188,6 +194,7 @@ Projects contain named color palettes (Ocean, Forest, Sunset by default):
 Projects auto-save as you work (1.5s debounce).
 
 Storage locations:
+
 - **Linux**: `~/.local/share/playtui/projects/`
 - **macOS**: `~/Library/Application Support/playtui/projects/`
 - **Windows**: `%APPDATA%\playtui\`

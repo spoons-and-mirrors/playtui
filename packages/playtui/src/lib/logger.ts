@@ -1,7 +1,7 @@
-import { appendFileSync, mkdirSync, writeFileSync } from "fs"
-import { dirname, join } from "path"
+import { appendFileSync, mkdirSync, writeFileSync } from 'fs'
+import { dirname, join } from 'path'
 
-const LOG_FILE = join(import.meta.dirname, "../../logs/debug.log")
+const LOG_FILE = join(import.meta.dirname, '../../logs/debug.log')
 
 function ensureLogFile() {
   try {
@@ -11,7 +11,7 @@ function ensureLogFile() {
 
 export function clearLog() {
   ensureLogFile()
-  writeFileSync(LOG_FILE, "")
+  writeFileSync(LOG_FILE, '')
 }
 
 export function log(label: string, data: any) {

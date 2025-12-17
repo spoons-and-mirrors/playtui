@@ -1,5 +1,5 @@
-import { ValueCounter } from "../ui/ValueCounter"
-import { PropRow } from "./PropRow"
+import { ValueCounter } from '../ui/ValueCounter'
+import { PropRow } from './PropRow'
 
 interface NumberPropProps {
   id: string
@@ -51,4 +51,3 @@ export function NumberProp({
     </PropRow>
   )
 }
-

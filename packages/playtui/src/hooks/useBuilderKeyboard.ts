@@ -1,20 +1,19 @@
-import { useKeyboard } from "@opentui/react"
-import type { RenderableType } from "../lib/types"
-import type { ViewMode, ViewAction } from "../lib/viewState"
-import { VIEW_MODES, VIEW_MODE_BY_MODE } from "../lib/viewState"
-import { Bind, isKeybind, ADD_MODE_BINDINGS } from "../lib/shortcuts"
-
+import { useKeyboard } from '@opentui/react'
+import type { RenderableType } from '../lib/types'
+import type { ViewMode, ViewAction } from '../lib/viewState'
+import { VIEW_MODES, VIEW_MODE_BY_MODE } from '../lib/viewState'
+import { Bind, isKeybind, ADD_MODE_BINDINGS } from '../lib/shortcuts'
 
 interface UseBuilderKeyboardParams {
   // Modal/UI state
-  modalMode: "new" | "load" | "delete" | "saveAs" | null
+  modalMode: 'new' | 'load' | 'delete' | 'saveAs' | null
   mode: ViewMode
   focusedField: string | null
   addMode: boolean
   filmStripEditing?: boolean
 
   // State setters
-  setModalMode: (mode: "new" | "load" | "delete" | "saveAs" | null) => void
+  setModalMode: (mode: 'new' | 'load' | 'delete' | 'saveAs' | null) => void
   setMode: (mode: ViewMode) => void
   setFocusedField: (field: string | null) => void
   setAddMode: (mode: boolean) => void
@@ -27,8 +26,8 @@ interface UseBuilderKeyboardParams {
   onPaste: () => void
   onUndo: () => void
   onRedo: () => void
-  onMoveRenderable: (direction: "up" | "down") => void
-  onNavigateTree: (direction: "up" | "down") => void
+  onMoveRenderable: (direction: 'up' | 'down') => void
+  onNavigateTree: (direction: 'up' | 'down') => void
   onAddRenderable: (type: RenderableType) => void
 
   // Animation actions
@@ -104,32 +103,57 @@ export function useBuilderKeyboard({
     const viewCfg = VIEW_MODE_BY_MODE[mode]
 
     // Non-editor modes (no editor shortcuts)
-    if (viewCfg.kind === "browser") {
-      if (isKeybind(key, Bind.CANCEL_SELECTION)) { setSelectedId(null); return }
+    if (viewCfg.kind === 'browser') {
+      if (isKeybind(key, Bind.CANCEL_SELECTION)) {
+        setSelectedId(null)
+        return
+      }
       return
     }
 
     // Play mode - frame shortcuts, then fall through to editor shortcuts
-    if (mode === "play") {
-      if (isKeybind(key, Bind.ANIM_PLAY_TOGGLE) && onAnimPlayToggle) { onAnimPlayToggle(); return }
+    if (mode === 'play') {
+      if (isKeybind(key, Bind.ANIM_PLAY_TOGGLE) && onAnimPlayToggle) {
+        onAnimPlayToggle()
+        return
+      }
       if (!focusedField && !addMode) {
-        if (isKeybind(key, Bind.ANIM_PREV_FRAME) && onAnimPrevFrame) { onAnimPrevFrame(); return }
-        if (isKeybind(key, Bind.ANIM_NEXT_FRAME) && onAnimNextFrame) { onAnimNextFrame(); return }
-        if (isKeybind(key, Bind.ANIM_DUPLICATE_FRAME) && onAnimDuplicateFrame) { onAnimDuplicateFrame(); return }
-        if (isKeybind(key, Bind.ANIM_DELETE_FRAME) && onAnimDeleteFrame) { onAnimDeleteFrame(); return }
+        if (isKeybind(key, Bind.ANIM_PREV_FRAME) && onAnimPrevFrame) {
+          onAnimPrevFrame()
+          return
+        }
+        if (isKeybind(key, Bind.ANIM_NEXT_FRAME) && onAnimNextFrame) {
+          onAnimNextFrame()
+          return
+        }
+        if (isKeybind(key, Bind.ANIM_DUPLICATE_FRAME) && onAnimDuplicateFrame) {
+          onAnimDuplicateFrame()
+          return
+        }
+        if (isKeybind(key, Bind.ANIM_DELETE_FRAME) && onAnimDeleteFrame) {
+          onAnimDeleteFrame()
+          return
+        }
       }
       // Fall through to editor shortcuts below
     }
 
     if (focusedField) {
-      if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.CONFIRM)) setFocusedField(null)
+      if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.CONFIRM))
+        setFocusedField(null)
       return
     }
 
     // Add mode: A toggles out, other keys add components
     if (addMode) {
-      if (isKeybind(key, Bind.MODAL_CLOSE) || isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)) { setAddMode(false); return }
-      
+      if (
+        isKeybind(key, Bind.MODAL_CLOSE) ||
+        isKeybind(key, Bind.EDITOR_ENTER_ADD_MODE)
+      ) {
+        setAddMode(false)
+        return
+      }
+
       // Check all add shortcuts (direct key matching from registry)
       for (const binding of ADD_MODE_BINDINGS) {
         if (key.name === binding.key) {
@@ -148,10 +172,10 @@ export function useBuilderKeyboard({
     else if (isKeybind(key, Bind.EDITOR_PASTE)) onPaste()
     else if (isKeybind(key, Bind.EDITOR_UNDO)) onUndo()
     else if (isKeybind(key, Bind.EDITOR_REDO)) onRedo()
-    else if (isKeybind(key, Bind.EDITOR_MOVE_UP)) onMoveRenderable("up")
-    else if (isKeybind(key, Bind.EDITOR_MOVE_DOWN)) onMoveRenderable("down")
-    else if (isKeybind(key, Bind.NAV_TREE_UP)) onNavigateTree("up")
-    else if (isKeybind(key, Bind.NAV_TREE_DOWN)) onNavigateTree("down")
+    else if (isKeybind(key, Bind.EDITOR_MOVE_UP)) onMoveRenderable('up')
+    else if (isKeybind(key, Bind.EDITOR_MOVE_DOWN)) onMoveRenderable('down')
+    else if (isKeybind(key, Bind.NAV_TREE_UP)) onNavigateTree('up')
+    else if (isKeybind(key, Bind.NAV_TREE_DOWN)) onNavigateTree('down')
     else if (isKeybind(key, Bind.CANCEL_SELECTION)) setSelectedId(null)
   })
 }

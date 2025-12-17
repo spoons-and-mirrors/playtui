@@ -1,6 +1,18 @@
-import type { Renderable, SizeValue, BoxRenderable, ScrollboxRenderable, TextRenderable, AsciiFontRenderable, BorderSide } from "./types"
-import { log } from "./logger"
-import { RENDERABLE_REGISTRY, isContainerRenderable, type SerializableProp } from "../components/renderables"
+import type {
+  Renderable,
+  SizeValue,
+  BoxRenderable,
+  ScrollboxRenderable,
+  TextRenderable,
+  AsciiFontRenderable,
+  BorderSide,
+} from './types'
+import { log } from './logger'
+import {
+  RENDERABLE_REGISTRY,
+  isContainerRenderable,
+  type SerializableProp,
+} from '../components/renderables'
 
 // Serialize a single prop value based on its schema definition
 function serializeProp(prop: SerializableProp, value: unknown): string | null {
@@ -19,31 +31,36 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
   }
 
   // Options array (select/tab-select)
-  if (type === "options") {
+  if (type === 'options') {
     const opts = value as string[]
     if (!opts || opts.length === 0) return null
-    const optionsStr = opts.map(o => `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, "_")}" }`).join(", ")
+    const optionsStr = opts
+      .map(
+        (o) =>
+          `{ name: "${o}", value: "${o.toLowerCase().replace(/\s+/g, '_')}" }`,
+      )
+      .join(', ')
     return `${key}={[${optionsStr}]}`
   }
 
   // String/color props
-  if (type === "string" || type === "color") {
+  if (type === 'string' || type === 'color') {
     const strVal = escape ? String(value).replace(/"/g, '\\"') : String(value)
     return `${key}="${strVal}"`
   }
 
   // Object props (e.g. customBorderChars)
-  if (type === "object") {
+  if (type === 'object') {
     return `${key}={${JSON.stringify(value)}}`
   }
 
   // Number props
-  if (type === "number") {
+  if (type === 'number') {
     return `${key}={${value}}`
   }
 
   // Boolean props (non-jsxBoolean)
-  if (type === "boolean") {
+  if (type === 'boolean') {
     return value ? `${key}={true}` : `${key}={false}`
   }
 
@@ -70,7 +87,11 @@ function serializeRegistryProps(node: Renderable): string[] {
 
 // Generate exportable animation as a TSX module with single default export
 // Note: We export children of the root frame, not the root itself (which is the editor canvas)
-export function generateAnimationModule(frames: Renderable[], fps: number, name = "Animation"): string {
+export function generateAnimationModule(
+  frames: Renderable[],
+  fps: number,
+  name = 'Animation',
+): string {
   const framesCodes = frames.map((frame, i) => {
     // Export children of root, not root itself (root is the editor canvas with bg/padding)
     const children = frame.children
@@ -82,7 +103,9 @@ export function generateAnimationModule(frames: Renderable[], fps: number, name 
       return `    // Frame ${i}\n  ${frameCode}`
     }
     // Multiple children - wrap in fragment
-    const childrenCode = children.map(c => generateCode(c, 3, { stripInternal: true })).join(",\n")
+    const childrenCode = children
+      .map((c) => generateCode(c, 3, { stripInternal: true }))
+      .join(',\n')
     return `    // Frame ${i}\n    <>\n${childrenCode}\n    </>`
   })
 
@@ -95,7 +118,7 @@ export const animation = {
   name: "${name}",
   fps: ${fps},
   frames: [
-${framesCodes.join(",\n")}
+${framesCodes.join(',\n')}
   ]
 }
 `
@@ -103,45 +126,55 @@ ${framesCodes.join(",\n")}
 
 function formatSize(val: SizeValue | undefined): string | undefined {
   if (val === undefined) return undefined
-  if (typeof val === "number") return String(val)
+  if (typeof val === 'number') return String(val)
   return `"${val}"`
 }
 
-function formatBorderSides(sides: BorderSide[] | undefined): string | undefined {
+function formatBorderSides(
+  sides: BorderSide[] | undefined,
+): string | undefined {
   if (!sides || sides.length === 0) return undefined
-  return `{[${sides.map(s => `"${s}"`).join(", ")}]}`
+  return `{[${sides.map((s) => `"${s}"`).join(', ')}]}`
 }
 
 interface CodegenOptions {
-  stripInternal?: boolean  // Remove internal props like name for clean export
+  stripInternal?: boolean // Remove internal props like name for clean export
 }
 
 // Generate code for children only (used for editor preview, hides root wrapper)
-export function generateChildrenCode(node: Renderable, opts: CodegenOptions = {}): string {
-  if (node.children.length === 0) return ""
-  return node.children.map((c) => generateCode(c, 0, opts)).join("\n")
+export function generateChildrenCode(
+  node: Renderable,
+  opts: CodegenOptions = {},
+): string {
+  if (node.children.length === 0) return ''
+  return node.children.map((c) => generateCode(c, 0, opts)).join('\n')
 }
 
-export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions = {}): string {
-  const pad = "  ".repeat(indent)
+export function generateCode(
+  node: Renderable,
+  indent = 0,
+  opts: CodegenOptions = {},
+): string {
+  const pad = '  '.repeat(indent)
   const props: string[] = []
   const { stripInternal = false } = opts
 
-  log("CODEGEN", { type: node.type, name: node.name, id: node.id })
+  log('CODEGEN', { type: node.type, name: node.name, id: node.id })
 
   // Name attribute (preserve element names for round-trip editing)
   // Skip for clean export (stripInternal mode)
   if (!stripInternal) {
-    const name = node.name || node.type.charAt(0).toUpperCase() + node.type.slice(1)
+    const name =
+      node.name || node.type.charAt(0).toUpperCase() + node.type.slice(1)
     props.push(`name="${name}"`)
   }
 
   // Get registry entry
   const entry = RENDERABLE_REGISTRY[node.type]
-  if (!entry) return "" // Should not happen
+  if (!entry) return '' // Should not happen
 
   // Filter out style props from the registry-driven props
-  const directProps = entry.properties.filter(p => !p.styleProp)
+  const directProps = entry.properties.filter((p) => !p.styleProp)
   for (const prop of directProps) {
     const value = (node as unknown as Record<string, unknown>)[prop.key]
     const serialized = serializeProp(prop, value)
@@ -154,21 +187,25 @@ export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions 
   if (entry.properties) {
     for (const prop of entry.properties) {
       const value = (node as unknown as Record<string, unknown>)[prop.key]
-      
+
       // Skip undefined/null or default values
       if (value === undefined || value === null) continue
       if (value === prop.default) continue
-      
+
       // If it's a style prop, format it for the style object
       if (prop.styleProp) {
         let formattedValue: string
-        
-        if (prop.type === "string" || prop.type === "select" || (prop.type === "color" && typeof value === "string")) {
+
+        if (
+          prop.type === 'string' ||
+          prop.type === 'select' ||
+          (prop.type === 'color' && typeof value === 'string')
+        ) {
           formattedValue = `"${value}"`
-        } else if (prop.type === "size") {
-           const sizeVal = formatSize(value as SizeValue)
-           if (!sizeVal) continue
-           formattedValue = sizeVal
+        } else if (prop.type === 'size') {
+          const sizeVal = formatSize(value as SizeValue)
+          if (!sizeVal) continue
+          formattedValue = sizeVal
         } else {
           formattedValue = String(value)
         }
@@ -179,35 +216,40 @@ export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions 
   }
 
   // Scrollbar options (for scrollbox) - must be added before style prop generation
-  if (node.type === "scrollbox") {
-    const hasScrollbarOpts = node.showScrollArrows || node.scrollbarForeground || node.scrollbarBackground
+  if (node.type === 'scrollbox') {
+    const hasScrollbarOpts =
+      node.showScrollArrows ||
+      node.scrollbarForeground ||
+      node.scrollbarBackground
     if (hasScrollbarOpts) {
       const scrollbarParts: string[] = []
-      if (node.showScrollArrows) scrollbarParts.push("showArrows: true")
+      if (node.showScrollArrows) scrollbarParts.push('showArrows: true')
       if (node.scrollbarForeground || node.scrollbarBackground) {
         const trackParts: string[] = []
-        if (node.scrollbarForeground) trackParts.push(`foregroundColor: "${node.scrollbarForeground}"`)
-        if (node.scrollbarBackground) trackParts.push(`backgroundColor: "${node.scrollbarBackground}"`)
-        scrollbarParts.push(`trackOptions: { ${trackParts.join(", ")} }`)
+        if (node.scrollbarForeground)
+          trackParts.push(`foregroundColor: "${node.scrollbarForeground}"`)
+        if (node.scrollbarBackground)
+          trackParts.push(`backgroundColor: "${node.scrollbarBackground}"`)
+        scrollbarParts.push(`trackOptions: { ${trackParts.join(', ')} }`)
       }
-      styleProps.push(`scrollbarOptions: { ${scrollbarParts.join(", ")} }`)
+      styleProps.push(`scrollbarOptions: { ${scrollbarParts.join(', ')} }`)
     }
   }
 
   if (styleProps.length > 0) {
-    props.push(`style={{ ${styleProps.join(", ")} }}`)
+    props.push(`style={{ ${styleProps.join(', ')} }}`)
   }
 
   // Text element - has special content formatting, keep manual
-  if (node.type === "text") {
+  if (node.type === 'text') {
     const textNode = node as TextRenderable
     const registryProps = serializeRegistryProps(node)
     // Include style props for positioning
     if (styleProps.length > 0) {
-      registryProps.push(`style={{ ${styleProps.join(", ")} }}`)
+      registryProps.push(`style={{ ${styleProps.join(', ')} }}`)
     }
-    const content = textNode.content || ""
-    
+    const content = textNode.content || ''
+
     // Build nested formatting tags
     let formattedContent = content
     if (textNode.bold && textNode.italic) {
@@ -226,8 +268,9 @@ export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions 
     if (textNode.dim) {
       formattedContent = `<span dim>${formattedContent}</span>`
     }
-    
-    const propsStr = registryProps.length > 0 ? ` ${registryProps.join(" ")}` : ""
+
+    const propsStr =
+      registryProps.length > 0 ? ` ${registryProps.join(' ')}` : ''
     return `${pad}<text${propsStr}>${formattedContent}</text>`
   }
 
@@ -236,33 +279,38 @@ export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions 
     const elementProps = serializeRegistryProps(node)
     // Include name for round-trip editing (skip in clean export)
     if (!stripInternal) {
-      const name = node.name || RENDERABLE_REGISTRY[node.type]?.label || node.type
+      const name =
+        node.name || RENDERABLE_REGISTRY[node.type]?.label || node.type
       elementProps.unshift(`name="${name}"`)
     }
     // Include style props for positioning
     if (styleProps.length > 0) {
-      elementProps.push(`style={{ ${styleProps.join(", ")} }}`)
+      elementProps.push(`style={{ ${styleProps.join(', ')} }}`)
     }
-    const propsStr = elementProps.length > 0 ? ` ${elementProps.join(" ")}` : ""
+    const propsStr = elementProps.length > 0 ? ` ${elementProps.join(' ')}` : ''
     return `${pad}<${node.type}${propsStr} />`
   }
 
   // Scrollbox element - container with registry props
-  if (node.type === "scrollbox") {
+  if (node.type === 'scrollbox') {
     const scrollboxProps = serializeRegistryProps(node)
     props.push(...scrollboxProps)
     if (node.children.length === 0) {
-      return `${pad}<scrollbox ${props.join(" ")} />`
+      return `${pad}<scrollbox ${props.join(' ')} />`
     }
-    const childCode = node.children.map((c) => generateCode(c, indent + 1, opts)).join("\n")
-    return `${pad}<scrollbox ${props.join(" ")}>\n${childCode}\n${pad}</scrollbox>`
+    const childCode = node.children
+      .map((c) => generateCode(c, indent + 1, opts))
+      .join('\n')
+    return `${pad}<scrollbox ${props.join(' ')}>\n${childCode}\n${pad}</scrollbox>`
   }
 
   // Box element (default)
   if (node.children.length === 0) {
-    return `${pad}<box ${props.join(" ")} />`
+    return `${pad}<box ${props.join(' ')} />`
   }
 
-  const childCode = node.children.map((c) => generateCode(c, indent + 1, opts)).join("\n")
-  return `${pad}<box ${props.join(" ")}>\n${childCode}\n${pad}</box>`
+  const childCode = node.children
+    .map((c) => generateCode(c, indent + 1, opts))
+    .join('\n')
+  return `${pad}<box ${props.join(' ')}>\n${childCode}\n${pad}</box>`
 }

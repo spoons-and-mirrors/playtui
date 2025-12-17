@@ -1,7 +1,7 @@
-import { RGBA } from "@opentui/core"
-import { COLORS } from "../../theme"
+import { RGBA } from '@opentui/core'
+import { COLORS } from '../../theme'
 // @ts-ignore - Bun supports JSON imports
-import pkg from "../../../package.json"
+import pkg from '../../../package.json'
 
 const VERSION = pkg.version
 
@@ -17,18 +17,25 @@ export function Title({ onLogoClick }: TitleProps) {
   return (
     <box
       id="title"
-      style={{ alignItems: "center", marginBottom: 1, flexDirection: "column" }}
+      style={{ alignItems: 'center', marginBottom: 1, flexDirection: 'column' }}
       onMouseDown={onLogoClick}
     >
-      <ascii-font text="PLAYTUI" font="tiny" color={RGBA.fromHex("#4da8da")} />
-      <box style={{ width: 25, height: 1, flexDirection: "row", justifyContent: "flex-end" }}>
+      <ascii-font text="PLAYTUI" font="tiny" color={RGBA.fromHex('#4da8da')} />
+      <box
+        style={{
+          width: 25,
+          height: 1,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}
+      >
         <text fg="#d8dce5">v{VERSION}</text>
       </box>
       <box
-        border={["bottom"]}
+        border={['bottom']}
         borderStyle="single"
         borderColor="#2a3545"
-        style={{ width: 25, height: 0, flexDirection: "column" }}
+        style={{ width: 25, height: 0, flexDirection: 'column' }}
       />
     </box>
   )

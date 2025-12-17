@@ -1,9 +1,8 @@
-import { useState, useRef } from "react"
-import { COLORS } from "../../theme"
-import type { Renderable } from "../../lib/types"
-import { Bind, isKeybind } from "../../lib/shortcuts"
-import { RENDERABLE_REGISTRY } from "../renderables"
-
+import { useState, useRef } from 'react'
+import { COLORS } from '../../theme'
+import type { Renderable } from '../../lib/types'
+import { Bind, isKeybind } from '../../lib/shortcuts'
+import { RENDERABLE_REGISTRY } from '../renderables'
 
 interface TreeNodeProps {
   node: Renderable
@@ -19,37 +18,54 @@ interface TreeNodeProps {
   depth?: number
 }
 
-function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, onStartEdit, onFocusRenderable, onRename, onBlurEdit, depth = 0 }: TreeNodeProps) {
+function TreeNode({
+  node,
+  selectedId,
+  collapsed,
+  editingId,
+  onSelect,
+  onToggle,
+  onStartEdit,
+  onFocusRenderable,
+  onRename,
+  onBlurEdit,
+  depth = 0,
+}: TreeNodeProps) {
   const isSelected = node.id === selectedId
   const isEditing = node.id === editingId
   const isCollapsed = collapsed.has(node.id)
   const hasChildren = node.children.length > 0
-  const indent = "  ".repeat(depth)
+  const indent = '  '.repeat(depth)
   const lastClickRef = useRef<number>(0)
-  
-  const canCollapse = hasChildren && (node.type === "box" || node.type === "scrollbox")
+
+  const canCollapse =
+    hasChildren && (node.type === 'box' || node.type === 'scrollbox')
   const icon = canCollapse
-    ? (isCollapsed ? "▸" : "▾")
-    : (RENDERABLE_REGISTRY[node.type]?.icon || "?")
+    ? isCollapsed
+      ? '▸'
+      : '▾'
+    : RENDERABLE_REGISTRY[node.type]?.icon || '?'
   const typeLabel = node.type.charAt(0).toUpperCase() + node.type.slice(1)
 
-  const label = node.name || (node.type === "text" ? `"${(node.content || "").slice(0, 8)}"` : typeLabel)
+  const label =
+    node.name ||
+    (node.type === 'text' ? `"${(node.content || '').slice(0, 8)}"` : typeLabel)
 
   const handleMouseDown = (e: any) => {
     // If we're editing another node, blur first
     if (editingId && editingId !== node.id) {
       onBlurEdit()
     }
-    
+
     if (canCollapse && e.x < depth * 2 + 2) {
       onToggle(node.id)
       return
     }
-    
+
     const now = Date.now()
     const timeSinceLastClick = now - lastClickRef.current
     lastClickRef.current = now
-    
+
     // Double-click detection (< 400ms between clicks)
     if (isSelected && timeSinceLastClick < 400) {
       onStartEdit(node.id)
@@ -60,20 +76,25 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
   }
 
   return (
-    <box id={`tree-${node.id}`} style={{ flexDirection: "column" }}>
+    <box id={`tree-${node.id}`} style={{ flexDirection: 'column' }}>
       <box
         id={`tree-item-${node.id}`}
         onMouseDown={handleMouseDown}
         style={{
-          flexDirection: "row",
-          backgroundColor: isSelected ? COLORS.accent : "transparent",
+          flexDirection: 'row',
+          backgroundColor: isSelected ? COLORS.accent : 'transparent',
         }}
       >
         {isEditing ? (
-          <box style={{ flexDirection: "row" }}>
-            <text fg={COLORS.bg}><strong>{indent}{icon} </strong></text>
+          <box style={{ flexDirection: 'row' }}>
+            <text fg={COLORS.bg}>
+              <strong>
+                {indent}
+                {icon}{' '}
+              </strong>
+            </text>
             <input
-              value={node.name || ""}
+              value={node.name || ''}
               focused
               width={12}
               placeholder="name..."
@@ -81,32 +102,42 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
               textColor={COLORS.bg}
               onSubmit={(val) => onRename(node.id, val)}
               onKeyDown={(key) => {
-                if (isKeybind(key, Bind.MODAL_CLOSE)) onRename(node.id, node.name || "")
+                if (isKeybind(key, Bind.MODAL_CLOSE))
+                  onRename(node.id, node.name || '')
               }}
             />
           </box>
         ) : (
           <text fg={isSelected ? COLORS.bg : COLORS.muted}>
-            {indent}{icon} {isSelected ? <strong><span fg={COLORS.bg}>{label}</span></strong> : <span fg={COLORS.text}>{label}</span>}
+            {indent}
+            {icon}{' '}
+            {isSelected ? (
+              <strong>
+                <span fg={COLORS.bg}>{label}</span>
+              </strong>
+            ) : (
+              <span fg={COLORS.text}>{label}</span>
+            )}
           </text>
         )}
       </box>
-      {!isCollapsed && node.children.map((child) => (
-        <TreeNode
-          key={child.id}
-          node={child}
-          selectedId={selectedId}
-          collapsed={collapsed}
-          editingId={editingId}
-          onSelect={onSelect}
-          onToggle={onToggle}
-          onStartEdit={onStartEdit}
-          onFocusRenderable={onFocusRenderable}
-          onRename={onRename}
-          onBlurEdit={onBlurEdit}
-          depth={depth + 1}
-        />
-      ))}
+      {!isCollapsed &&
+        node.children.map((child) => (
+          <TreeNode
+            key={child.id}
+            node={child}
+            selectedId={selectedId}
+            collapsed={collapsed}
+            editingId={editingId}
+            onSelect={onSelect}
+            onToggle={onToggle}
+            onStartEdit={onStartEdit}
+            onFocusRenderable={onFocusRenderable}
+            onRename={onRename}
+            onBlurEdit={onBlurEdit}
+            depth={depth + 1}
+          />
+        ))}
     </box>
   )
 }
@@ -122,7 +153,15 @@ interface TreeViewProps {
 }
 
 // TreeView renders root's children directly, hiding the implicit root container
-export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRename, onFocusRenderable }: TreeViewProps) {
+export function TreeView({
+  root,
+  selectedId,
+  collapsed,
+  onSelect,
+  onToggle,
+  onRename,
+  onFocusRenderable,
+}: TreeViewProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const handleStartEdit = (id: string) => setEditingId(id)
@@ -135,13 +174,21 @@ export function TreeView({ root, selectedId, collapsed, onSelect, onToggle, onRe
     return (
       <box id="tree-empty" style={{ padding: 1 }}>
         <text fg={COLORS.muted}>No components yet</text>
-        <text fg={COLORS.muted}>Press <span fg={COLORS.accent}>A</span> to add</text>
+        <text fg={COLORS.muted}>
+          Press <span fg={COLORS.accent}>A</span> to add
+        </text>
       </box>
     )
   }
 
   return (
-    <box id="tree-root" style={{ flexDirection: "column" }} onMouseDown={() => { if (editingId) setEditingId(null) }}>
+    <box
+      id="tree-root"
+      style={{ flexDirection: 'column' }}
+      onMouseDown={() => {
+        if (editingId) setEditingId(null)
+      }}
+    >
       {root.children.map((child) => (
         <TreeNode
           key={child.id}

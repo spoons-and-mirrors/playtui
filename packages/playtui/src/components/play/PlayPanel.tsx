@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef } from "react"
-import { EditorPanel } from "../pages/Editor"
-import type { UseProjectReturn } from "../../hooks/useProject"
-import type { DragEvent } from "../Renderer"
-import type { CanvasOffset } from "../pages/Editor"
-import { bakeFrame } from "../../lib/keyframing"
+import { useEffect, useMemo, useRef } from 'react'
+import { EditorPanel } from '../pages/Editor'
+import type { UseProjectReturn } from '../../hooks/useProject'
+import type { DragEvent } from '../Renderer'
+import type { CanvasOffset } from '../pages/Editor'
+import { bakeFrame } from '../../lib/keyframing'
 
 interface PlayPanelProps {
   projectHook: UseProjectReturn
@@ -17,16 +17,26 @@ interface PlayPanelProps {
   onDragEnd?: (renderableId: string) => void
 }
 
-export function PlayPanel({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {
-  const { 
-    project, 
-    updateTree, 
-    setCurrentFrame, 
-    duplicateFrame, 
-    deleteFrame, 
+export function PlayPanel({
+  projectHook,
+  isPlaying,
+  canvasOffset,
+  canvasOffsetAdjustY,
+  onCanvasOffsetChange,
+  onTogglePlay,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
+}: PlayPanelProps) {
+  const {
+    project,
+    updateTree,
+    setCurrentFrame,
+    duplicateFrame,
+    deleteFrame,
     setFps,
     setSelectedId,
-    importAnimation
+    importAnimation,
   } = projectHook
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -46,8 +56,18 @@ export function PlayPanel({ projectHook, isPlaying, canvasOffset, canvasOffsetAd
   // Use the snapshot from frames array as the base, then bake driven values
   const displayTree = useMemo(() => {
     const snapshotTree = frames[currentFrameIndex] ?? tree
-    return bakeFrame(snapshotTree, keyframing.animatedProperties, currentFrameIndex)
-  }, [frames, currentFrameIndex, keyframing.animatedProperties, tree, keyframingKey])
+    return bakeFrame(
+      snapshotTree,
+      keyframing.animatedProperties,
+      currentFrameIndex,
+    )
+  }, [
+    frames,
+    currentFrameIndex,
+    keyframing.animatedProperties,
+    tree,
+    keyframingKey,
+  ])
 
   // Keep ref in sync
   frameIndexRef.current = currentFrameIndex
@@ -63,7 +83,7 @@ export function PlayPanel({ projectHook, isPlaying, canvasOffset, canvasOffsetAd
     }
 
     if (timerRef.current) clearInterval(timerRef.current)
-    
+
     timerRef.current = setInterval(() => {
       const nextIndex = (frameIndexRef.current + 1) % frames.length
       setCurrentFrame(nextIndex)

@@ -4,176 +4,442 @@
  */
 
 export const animation = {
-  name: "Animation",
+  name: 'Animation',
   fps: 10,
   frames: [
     // Frame 0
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
           <text fg="#d8dce5">P</text>
         </box>
-        <box style={{ position: "relative", left: 1, top: -1 }}>
+        <box style={{ position: 'relative', left: 1, top: -1 }}>
           <text fg="#d8dce5">l</text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -2 }}>
+        <box style={{ position: 'relative', left: 2, top: -2 }}>
           <text fg="#d8dce5">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -2 }}>
+        <box style={{ position: 'relative', left: 3, top: -2 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 1
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
           <text fg="#151a22">P</text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
           <text fg="#d8dce5">l</text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -2 }}>
+        <box style={{ position: 'relative', left: 2, top: -2 }}>
           <text fg="#d8dce5">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -2 }}>
+        <box style={{ position: 'relative', left: 3, top: -2 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 2
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
           <text fg="#d8dce5">l</text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
           <text fg="#d8dce5">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: 5 }}>
+        <box style={{ position: 'relative', left: 3, top: 5 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 3
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
           <text fg="#151a22">l</text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
           <text fg="#d8dce5">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -1 }}>
+        <box style={{ position: 'relative', left: 3, top: -1 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 4
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
-          <text fg="#151a22"><strong>l</strong></text>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
+          <text fg="#151a22">
+            <strong>l</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
           <text fg="#d8dce5">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -1 }}>
+        <box style={{ position: 'relative', left: 3, top: -1 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 5
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
-          <text fg="#151a22"><strong>l</strong></text>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
+          <text fg="#151a22">
+            <strong>l</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
           <text fg="#151a22">a</text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -1 }}>
+        <box style={{ position: 'relative', left: 3, top: -1 }}>
           <text fg="#d8dce5">y</text>
         </box>
       </box>
     </box>,
     // Frame 6
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
-          <text fg="#151a22"><strong>l</strong></text>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
+          <text fg="#151a22">
+            <strong>l</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
-          <text fg="#151a22"><strong>a</strong></text>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
+          <text fg="#151a22">
+            <strong>a</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -1 }}>
+        <box style={{ position: 'relative', left: 3, top: -1 }}>
           <text fg="#151a22">y</text>
         </box>
       </box>
     </box>,
     // Frame 7
-      <box shouldFill={false} style={{ flexDirection: "row", alignItems: "center" }}>
-      <box backgroundColor="#5bc0de" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1 }}>
-        <text fg="#151a22"><strong>F1</strong></text>
+    <box
+      shouldFill={false}
+      style={{ flexDirection: 'row', alignItems: 'center' }}
+    >
+      <box
+        backgroundColor="#5bc0de"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>F1</strong>
+        </text>
       </box>
-      <box backgroundColor="#4da8da" style={{ width: "auto", height: 1, flexDirection: "column", alignItems: "flex-start", paddingRight: 1, paddingLeft: 1, overflow: "hidden", position: "relative", left: 0 }}>
-        <text fg="#151a22"><strong>Edit</strong></text>
-        <box style={{ position: "relative", left: 0, top: 0 }}>
-          <text fg="#151a22"><strong>P</strong></text>
+      <box
+        backgroundColor="#4da8da"
+        style={{
+          width: 'auto',
+          height: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          paddingRight: 1,
+          paddingLeft: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          left: 0,
+        }}
+      >
+        <text fg="#151a22">
+          <strong>Edit</strong>
+        </text>
+        <box style={{ position: 'relative', left: 0, top: 0 }}>
+          <text fg="#151a22">
+            <strong>P</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 1, top: 0 }}>
-          <text fg="#151a22"><strong>l</strong></text>
+        <box style={{ position: 'relative', left: 1, top: 0 }}>
+          <text fg="#151a22">
+            <strong>l</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 2, top: -1 }}>
-          <text fg="#151a22"><strong>a</strong></text>
+        <box style={{ position: 'relative', left: 2, top: -1 }}>
+          <text fg="#151a22">
+            <strong>a</strong>
+          </text>
         </box>
-        <box style={{ position: "relative", left: 3, top: -1 }}>
-          <text fg="#151a22"><strong>y</strong></text>
+        <box style={{ position: 'relative', left: 3, top: -1 }}>
+          <text fg="#151a22">
+            <strong>y</strong>
+          </text>
         </box>
       </box>
-    </box>
-  ]
+    </box>,
+  ],
 }

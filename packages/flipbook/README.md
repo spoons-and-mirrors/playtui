@@ -38,14 +38,14 @@ flipbook --help
 You can also use the player as a React component in your own OpenTUI applications:
 
 ```tsx
-import { Flipbook, type FlipbookFrames } from "@playtui/flipbook"
+import { Flipbook, type FlipbookFrames } from '@playtui/flipbook'
 
 const myAnimation: FlipbookFrames = {
-  name: "My Animation",
+  name: 'My Animation',
   fps: 10,
   frames: [
     // ... your animation frames
-  ]
+  ],
 }
 
 function App() {
@@ -55,10 +55,10 @@ function App() {
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `data` | `FlipbookFrames` | The animation data object |
-| `fpsOverride` | `number` | Override the animation's FPS |
+| Prop          | Type             | Description                  |
+| ------------- | ---------------- | ---------------------------- |
+| `data`        | `FlipbookFrames` | The animation data object    |
+| `fpsOverride` | `number`         | Override the animation's FPS |
 
 ## Animation Format
 

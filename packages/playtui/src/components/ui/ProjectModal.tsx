@@ -1,9 +1,9 @@
-import { useState } from "react"
-import { RGBA } from "@opentui/core"
-import { COLORS } from "../../theme"
-import type { ProjectMeta } from "../../lib/projectTypes"
+import { useState } from 'react'
+import { RGBA } from '@opentui/core'
+import { COLORS } from '../../theme'
+import type { ProjectMeta } from '../../lib/projectTypes'
 
-type ModalMode = "new" | "load" | "delete" | "saveAs"
+type ModalMode = 'new' | 'load' | 'delete' | 'saveAs'
 
 interface ProjectModalProps {
   mode: ModalMode
@@ -30,16 +30,16 @@ export function ProjectModal({
   width,
   height,
 }: ProjectModalProps) {
-  const [inputValue, setInputValue] = useState("")
+  const [inputValue, setInputValue] = useState('')
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
   const titles: Record<ModalMode, string> = {
-    new: "New Project",
-    load: "Open Project",
-    delete: "Delete Project",
-    saveAs: "Save As",
+    new: 'New Project',
+    load: 'Open Project',
+    delete: 'Delete Project',
+    saveAs: 'Save As',
   }
 
   const modalWidth = Math.min(50, width - 10)
@@ -70,7 +70,11 @@ export function ProjectModal({
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
-    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    return (
+      d.toLocaleDateString() +
+      ' ' +
+      d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    )
   }
 
   return (
@@ -82,8 +86,8 @@ export function ProjectModal({
         width,
         height,
         backgroundColor: RGBA.fromInts(0, 0, 0, 180),
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
         zIndex: 200,
       }}
       onMouseDown={onClose}
@@ -97,14 +101,14 @@ export function ProjectModal({
           width: modalWidth,
           height: modalHeight,
           backgroundColor: COLORS.card,
-          flexDirection: "column",
+          flexDirection: 'column',
           padding: 1,
           gap: 1,
         }}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* New Project Mode */}
-        {mode === "new" && (
+        {mode === 'new' && (
           <>
             <text fg={COLORS.text}>Enter project name:</text>
             <box
@@ -120,16 +124,31 @@ export function ProjectModal({
                 onSubmit={handleCreate}
               />
             </box>
-            <box style={{ flexDirection: "row", gap: 2, justifyContent: "flex-end", marginTop: 1 }}>
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 2,
+                justifyContent: 'flex-end',
+                marginTop: 1,
+              }}
+            >
               <box
                 onMouseDown={onClose}
-                style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.muted,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Cancel</text>
               </box>
               <box
                 onMouseDown={handleCreate}
-                style={{ backgroundColor: COLORS.success, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.success,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Create</text>
               </box>
@@ -138,7 +157,7 @@ export function ProjectModal({
         )}
 
         {/* Open Project Mode */}
-        {mode === "load" && (
+        {mode === 'load' && (
           <>
             {projects.length === 0 ? (
               <text fg={COLORS.muted}>No projects found</text>
@@ -146,7 +165,7 @@ export function ProjectModal({
               <scrollbox
                 style={{
                   flexGrow: 1,
-                  contentOptions: { flexDirection: "column" },
+                  contentOptions: { flexDirection: 'column' },
                 }}
               >
                 {projects.map((proj, idx) => (
@@ -164,26 +183,42 @@ export function ProjectModal({
                           ? COLORS.cardHover
                           : hoveredIdx === idx
                             ? COLORS.bgAlt
-                            : "transparent",
+                            : 'transparent',
                       paddingLeft: 1,
                       paddingRight: 1,
-                      flexDirection: "row",
-                      justifyContent: "space-between",
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
                     }}
                   >
-                    <text fg={proj.name === currentProjectName ? COLORS.accent : COLORS.text}>
+                    <text
+                      fg={
+                        proj.name === currentProjectName
+                          ? COLORS.accent
+                          : COLORS.text
+                      }
+                    >
                       {proj.name}
-                      {proj.name === currentProjectName && " (current)"}
+                      {proj.name === currentProjectName && ' (current)'}
                     </text>
                     <text fg={COLORS.muted}>{formatDate(proj.updatedAt)}</text>
                   </box>
                 ))}
               </scrollbox>
             )}
-            <box style={{ flexDirection: "row", gap: 2, justifyContent: "flex-end" }}>
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 2,
+                justifyContent: 'flex-end',
+              }}
+            >
               <box
                 onMouseDown={onClose}
-                style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.muted,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Cancel</text>
               </box>
@@ -192,7 +227,7 @@ export function ProjectModal({
         )}
 
         {/* Save As Mode */}
-        {mode === "saveAs" && (
+        {mode === 'saveAs' && (
           <>
             <text fg={COLORS.text}>Save current project as:</text>
             <box
@@ -211,16 +246,31 @@ export function ProjectModal({
             <text fg={COLORS.muted} style={{ marginTop: 1 }}>
               Creates a backup copy with a new name
             </text>
-            <box style={{ flexDirection: "row", gap: 2, justifyContent: "flex-end", marginTop: 1 }}>
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 2,
+                justifyContent: 'flex-end',
+                marginTop: 1,
+              }}
+            >
               <box
                 onMouseDown={onClose}
-                style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.muted,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Cancel</text>
               </box>
               <box
                 onMouseDown={handleSaveAs}
-                style={{ backgroundColor: COLORS.success, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.success,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Save</text>
               </box>
@@ -229,7 +279,7 @@ export function ProjectModal({
         )}
 
         {/* Delete Project Mode */}
-        {mode === "delete" && (
+        {mode === 'delete' && (
           <>
             {projects.length === 0 ? (
               <text fg={COLORS.muted}>No projects found</text>
@@ -237,7 +287,7 @@ export function ProjectModal({
               <scrollbox
                 style={{
                   flexGrow: 1,
-                  contentOptions: { flexDirection: "column" },
+                  contentOptions: { flexDirection: 'column' },
                 }}
               >
                 {projects.map((proj) => {
@@ -248,31 +298,41 @@ export function ProjectModal({
                     <box
                       key={proj.fileName}
                       style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                         paddingLeft: 1,
                         paddingRight: 1,
-                        backgroundColor: isConfirming ? COLORS.dangerMuted + "40" : "transparent",
+                        backgroundColor: isConfirming
+                          ? COLORS.dangerMuted + '40'
+                          : 'transparent',
                       }}
                     >
                       <text fg={isCurrent ? COLORS.accent : COLORS.text}>
                         {proj.name}
-                        {isCurrent && " (current)"}
+                        {isCurrent && ' (current)'}
                       </text>
                       {isCurrent ? (
                         <text fg={COLORS.muted}>-</text>
                       ) : isConfirming ? (
-                        <box style={{ flexDirection: "row", gap: 1 }}>
+                        <box style={{ flexDirection: 'row', gap: 1 }}>
                           <box
                             onMouseDown={() => setConfirmDelete(null)}
-                            style={{ backgroundColor: COLORS.muted, paddingLeft: 1, paddingRight: 1 }}
+                            style={{
+                              backgroundColor: COLORS.muted,
+                              paddingLeft: 1,
+                              paddingRight: 1,
+                            }}
                           >
                             <text fg={COLORS.bg}>No</text>
                           </box>
                           <box
                             onMouseDown={() => handleDelete(proj.fileName)}
-                            style={{ backgroundColor: COLORS.danger, paddingLeft: 1, paddingRight: 1 }}
+                            style={{
+                              backgroundColor: COLORS.danger,
+                              paddingLeft: 1,
+                              paddingRight: 1,
+                            }}
                           >
                             <text fg={COLORS.bg}>Yes</text>
                           </box>
@@ -280,7 +340,11 @@ export function ProjectModal({
                       ) : (
                         <box
                           onMouseDown={() => handleDelete(proj.fileName)}
-                          style={{ backgroundColor: COLORS.danger, paddingLeft: 1, paddingRight: 1 }}
+                          style={{
+                            backgroundColor: COLORS.danger,
+                            paddingLeft: 1,
+                            paddingRight: 1,
+                          }}
                         >
                           <text fg={COLORS.bg}>Del</text>
                         </box>
@@ -290,10 +354,20 @@ export function ProjectModal({
                 })}
               </scrollbox>
             )}
-            <box style={{ flexDirection: "row", gap: 2, justifyContent: "flex-end" }}>
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 2,
+                justifyContent: 'flex-end',
+              }}
+            >
               <box
                 onMouseDown={onClose}
-                style={{ backgroundColor: COLORS.muted, paddingLeft: 2, paddingRight: 2 }}
+                style={{
+                  backgroundColor: COLORS.muted,
+                  paddingLeft: 2,
+                  paddingRight: 2,
+                }}
               >
                 <text fg={COLORS.bg}>Close</text>
               </box>

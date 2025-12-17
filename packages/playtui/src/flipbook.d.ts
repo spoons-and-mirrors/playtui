@@ -1,3 +1,3 @@
-declare module "@playtui/flipbook" {
+declare module '@playtui/flipbook' {
   export const Flipbook: any
 }

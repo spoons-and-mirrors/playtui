@@ -1,22 +1,22 @@
-import { useState, useEffect } from "react"
-import { COLORS } from "../../theme"
-import type { SaveStatus } from "../../hooks/useProject"
-import type { ViewMode } from "../../lib/viewState"
-import { VIEW_MODES } from "../../lib/viewState"
-import { Bind, getShortcutLabel } from "../../lib/shortcuts"
-import { NAVBAR_HEIGHT } from "../../lib/constants"
+import { useState, useEffect } from 'react'
+import { COLORS } from '../../theme'
+import type { SaveStatus } from '../../hooks/useProject'
+import type { ViewMode } from '../../lib/viewState'
+import { VIEW_MODES } from '../../lib/viewState'
+import { Bind, getShortcutLabel } from '../../lib/shortcuts'
+import { NAVBAR_HEIGHT } from '../../lib/constants'
 
 // ============================================================================
 // Save Indicator
 // ============================================================================
 
-const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
+const SPINNER_FRAMES = ['◐', '◓', '◑', '◒']
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
   const [frame, setFrame] = useState(0)
 
   useEffect(() => {
-    if (status === "saving") {
+    if (status === 'saving') {
       const timer = setInterval(() => {
         setFrame((f) => (f + 1) % SPINNER_FRAMES.length)
       }, 100)
@@ -24,18 +24,18 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
     }
   }, [status])
 
-  if (status === "idle") return null
+  if (status === 'idle') return null
 
-  let text = ""
-  if (status === "saving") {
+  let text = ''
+  if (status === 'saving') {
     text = `${SPINNER_FRAMES[frame]}`
-  } else if (status === "saved") {
-    text = "●"
+  } else if (status === 'saved') {
+    text = '●'
   } else {
-    text = "!"
+    text = '!'
   }
 
-  const color = status === "error" ? COLORS.danger : COLORS.accent
+  const color = status === 'error' ? COLORS.danger : COLORS.accent
 
   return <text fg={color}>{text}</text>
 }
@@ -52,14 +52,22 @@ function ModeTab({ fKey, label, isActive, onPress }: ModeTabProps) {
     <box
       id={`mode-tab-${fKey.toLowerCase()}`}
       onMouseDown={onPress}
-      style={{ flexDirection: "row" }}
+      style={{ flexDirection: 'row' }}
     >
-      <box backgroundColor={isActive ? COLORS.accentBright : COLORS.bg} paddingLeft={1} paddingRight={1}>
+      <box
+        backgroundColor={isActive ? COLORS.accentBright : COLORS.bg}
+        paddingLeft={1}
+        paddingRight={1}
+      >
         <text fg={isActive ? COLORS.bg : COLORS.muted}>
           {isActive ? <strong>{fKey}</strong> : fKey}
         </text>
       </box>
-      <box backgroundColor={isActive ? COLORS.accent : COLORS.bg} paddingLeft={1} paddingRight={1}>
+      <box
+        backgroundColor={isActive ? COLORS.accent : COLORS.bg}
+        paddingLeft={1}
+        paddingRight={1}
+      >
         <text fg={isActive ? COLORS.bg : COLORS.muted}>
           {isActive ? <strong>{label}</strong> : label}
         </text>
@@ -91,29 +99,31 @@ export function NavBar({
   onToggleCode,
   onPlayPress,
 }: NavBarProps) {
-  const editorViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "editor")!
-  const playViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "play")!
-  const libraryViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "library")!
-  const docsViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === "docs")!
+  const editorViewMode = VIEW_MODES.find(
+    (viewMode) => viewMode.mode === 'editor',
+  )!
+  const playViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === 'play')!
+  const libraryViewMode = VIEW_MODES.find(
+    (viewMode) => viewMode.mode === 'library',
+  )!
+  const docsViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === 'docs')!
   const currentViewMode = VIEW_MODES.find((viewMode) => viewMode.mode === mode)!
- 
-  return (
 
+  return (
     <box
       id="app-header"
       backgroundColor={COLORS.bgAlt}
       style={{
         width,
-         flexDirection: "row",
-         justifyContent: "space-between",
-         alignItems: "center",
-         height: NAVBAR_HEIGHT,
-         flexShrink: 0,
-
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: NAVBAR_HEIGHT,
+        flexShrink: 0,
       }}
     >
       {/* Left: Mode tabs */}
-      <box id="app-header-tabs" style={{ flexDirection: "row", gap: 1 }}>
+      <box id="app-header-tabs" style={{ flexDirection: 'row', gap: 1 }}>
         <ModeTab
           fKey={getShortcutLabel(editorViewMode.bind)}
           label={editorViewMode.label}
@@ -147,10 +157,18 @@ export function NavBar({
       </box>
 
       {/* Right: Save indicator + Project name in card */}
-      <box id="app-header-project-container" style={{ flexDirection: "row", gap: 1, alignItems: "center" }}>
+      <box
+        id="app-header-project-container"
+        style={{ flexDirection: 'row', gap: 1, alignItems: 'center' }}
+      >
         {saveStatus && <SaveIndicator status={saveStatus} />}
         {projectName && (
-          <box id="app-header-project" backgroundColor={COLORS.bg} paddingLeft={1} paddingRight={1}>
+          <box
+            id="app-header-project"
+            backgroundColor={COLORS.bg}
+            paddingLeft={1}
+            paddingRight={1}
+          >
             <text fg={COLORS.muted}>{projectName}</text>
           </box>
         )}

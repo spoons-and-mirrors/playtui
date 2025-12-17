@@ -1,12 +1,12 @@
-import { COLORS } from "../../theme"
-import { PropRow } from "./PropRow"
+import { COLORS } from '../../theme'
+import { PropRow } from './PropRow'
 
 // Reusable color control with hex input and palette picker button
 // [Label] [██ #hexinput [pick]]
-export function ColorControl({ 
+export function ColorControl({
   label,
-  value, 
-  onChange, 
+  value,
+  onChange,
   focused,
   onFocus,
   onBlur,
@@ -24,13 +24,20 @@ export function ColorControl({
 }) {
   const handleInput = (v: string) => {
     // Handle both typed and pasted input - strip # and non-hex chars
-    const hex = v.replace(/#/g, "").replace(/[^0-9a-fA-F]/g, "").slice(0, 8)
-    onChange(hex.length > 0 ? `#${hex}` : "")
+    const hex = v
+      .replace(/#/g, '')
+      .replace(/[^0-9a-fA-F]/g, '')
+      .slice(0, 8)
+    onChange(hex.length > 0 ? `#${hex}` : '')
   }
 
   const handlePaste = (e: { text: string; preventDefault: () => void }) => {
     e.preventDefault()
-    const hex = e.text.trim().replace(/#/g, "").replace(/[^0-9a-fA-F]/g, "").slice(0, 8)
+    const hex = e.text
+      .trim()
+      .replace(/#/g, '')
+      .replace(/[^0-9a-fA-F]/g, '')
+      .slice(0, 8)
     if (hex.length > 0) {
       onChange(`#${hex}`)
     }
@@ -38,9 +45,7 @@ export function ColorControl({
 
   return (
     <PropRow label={label}>
-      <box 
-        style={{ flexDirection: "row", alignItems: "center", gap: 1 }}
-      >
+      <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
         <text fg={value || COLORS.muted}>██</text>
         <box
           id={`color-input-${label}`}
@@ -48,11 +53,14 @@ export function ColorControl({
             e.stopPropagation()
             onFocus?.()
           }}
-          style={{ flexDirection: "row", backgroundColor: focused ? COLORS.bgAlt : "transparent" }}
+          style={{
+            flexDirection: 'row',
+            backgroundColor: focused ? COLORS.bgAlt : 'transparent',
+          }}
         >
           <text fg={COLORS.muted}>#</text>
           <input
-            value={(value || "").replace("#", "").slice(0, 8)}
+            value={(value || '').replace('#', '').slice(0, 8)}
             focused={focused}
             width={8}
             onInput={handleInput}
@@ -66,14 +74,14 @@ export function ColorControl({
             e.stopPropagation()
             onPickStart?.()
           }}
-          style={{ 
+          style={{
             backgroundColor: pickMode ? COLORS.accent : COLORS.cardHover,
             paddingLeft: 1,
             paddingRight: 1,
           }}
         >
           <text fg={pickMode ? COLORS.bg : COLORS.text} selectable={false}>
-            {pickMode ? <strong>pick</strong> : "pick"}
+            {pickMode ? <strong>pick</strong> : 'pick'}
           </text>
         </box>
       </box>
