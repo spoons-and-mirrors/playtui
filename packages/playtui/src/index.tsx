@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
 import type { Renderable } from "./lib/types"
+import { TREE_PANEL_WIDTH, SIDEBAR_PANEL_WIDTH, NAVBAR_HEIGHT, FILMSTRIP_BASE_HEIGHT, TIMELINE_HEIGHT } from "./lib/constants"
 import { clearLog } from "./lib/logger"
 import { resetIdCounter, findRenderable, countRenderables, updateRenderable, getRenderablePosition } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
@@ -312,15 +313,10 @@ export function Builder({ width, height }: BuilderProps) {
   }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
 
   // Layout constants
-  const treeWidth = 27
-  const sidebarWidth = 35
-  const filmStripHeight = 6
-  const timelineHeight = 14
-  const footerHeight = 1
-  const mainContentHeight = height - footerHeight 
-    - (viewModeConfig.hasFilmStrip ? filmStripHeight : 0)
+  const mainContentHeight = height - NAVBAR_HEIGHT
+    - (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0)
     - (showCodePanel ? codePanelHeight : 0)
-    - (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
+    - (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
@@ -343,10 +339,10 @@ export function Builder({ width, height }: BuilderProps) {
     // We also need to account for the bottom panel which shifts the viewport center
     
     // Calculate total bottom panel height
-    const bottomPanelHeight = 
-      (viewModeConfig.hasFilmStrip ? filmStripHeight : 0) +
+    const bottomPanelHeight =
+      (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
       (showCodePanel ? codePanelHeight : 0) +
-      (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
+      (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
 
     // The canvas is vertically centered in the remaining space *above* the bottom panels.
     // However, the `canvasOffsetAdjustY` prop passed to EditorPanel is used to shift the 
@@ -425,12 +421,13 @@ export function Builder({ width, height }: BuilderProps) {
       <box id="builder" style={{ width, height, flexDirection: "column" }}>
         <box style={{ flexGrow: 1, flexDirection: "column" }}>
           {mode === "library" ? (
-            <LibraryPage 
+             <LibraryPage 
               projectHook={projectHook} 
               onLoadProject={() => setMode("editor")} 
               width={width}
-              height={height - 1}
+              height={height - NAVBAR_HEIGHT}
             />
+
           ) : (
             <DocsPanel />
           )}
@@ -476,7 +473,7 @@ export function Builder({ width, height }: BuilderProps) {
         {/* Left Panel - Tree */}
         {showTree && (
 <box id="builder-tree" border={["right"]} borderColor={COLORS.border} customBorderChars={ThinBorderRight}
-             style={{ width: treeWidth, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
+             style={{ width: TREE_PANEL_WIDTH, backgroundColor: COLORS.bgAlt, padding: 1, flexDirection: "column", flexShrink: 0 }}>
             <Title onLogoClick={() => setMode("docs")} />
             <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
               <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
@@ -487,7 +484,7 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Center Area - header, canvas */}
         <KeyframingContext.Provider value={keyframingContextValue}>
-        <box id="builder-center" style={{ width: width - (showTree ? treeWidth : 0) - (showProperties ? sidebarWidth : 0), flexDirection: "column", paddingTop: 1 }}
+        <box id="builder-center" style={{ width: width - (showTree ? TREE_PANEL_WIDTH : 0) - (showProperties ? SIDEBAR_PANEL_WIDTH : 0), flexDirection: "column", paddingTop: 1 }}
         onMouseDown={() => {
             // Clicking anywhere in the main area (outside specific panels that handle stopPropagation)
             // should blur focused fields
@@ -513,15 +510,16 @@ export function Builder({ width, height }: BuilderProps) {
 
         {/* Canvas - grows to fill middle */}
         {mode === "play" ? (
-           <PlayPage 
-             projectHook={projectHook} 
-             isPlaying={isPlaying}
-             canvasOffset={canvasOffset}
-             canvasOffsetAdjustY={
-               (viewModeConfig.hasFilmStrip ? filmStripHeight : 0) +
-               (showCodePanel ? codePanelHeight : 0) +
-               (viewModeConfig.hasTimeline && showTimeline ? timelineHeight : 0)
-             }
+             <PlayPage 
+               projectHook={projectHook} 
+               isPlaying={isPlaying}
+               canvasOffset={canvasOffset}
+               canvasOffsetAdjustY={
+                 (viewModeConfig.hasFilmStrip ? FILMSTRIP_BASE_HEIGHT : 0) +
+                 (showCodePanel ? codePanelHeight : 0) +
+                 (viewModeConfig.hasTimeline && showTimeline ? TIMELINE_HEIGHT : 0)
+               }
+
              onCanvasOffsetChange={setCanvasOffset}
              onTogglePlay={() => setIsPlaying(p => !p)}
              onDragStart={handleDragStart}
@@ -550,7 +548,7 @@ export function Builder({ width, height }: BuilderProps) {
         {/* Right Panel - Properties */}
         {showProperties && (
 <box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
-             style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.bgAlt, padding: 1, flexShrink: 0 }}>
+             style={{ width: SIDEBAR_PANEL_WIDTH, flexDirection: "column", backgroundColor: COLORS.bgAlt, padding: 1, flexShrink: 0 }}>
             {/* Palette - always visible */}
             <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center", flexShrink: 0, height: 4 }}>
               <PaletteControl
@@ -611,11 +609,12 @@ export function Builder({ width, height }: BuilderProps) {
       )}
       
       {/* Timeline Panel - visible in play mode, toggleable with F2 */}
-      {mode === "play" && showTimeline && (
-        <box height={timelineHeight} width={width} flexShrink={0} overflow="hidden">
-          <TimelinePanel projectHook={projectHook} width={width} />
-        </box>
-      )}
+       {mode === "play" && showTimeline && (
+         <box height={TIMELINE_HEIGHT} width={width} flexShrink={0} overflow="hidden">
+           <TimelinePanel projectHook={projectHook} width={width} />
+         </box>
+       )}
+
 
       {/* Code Panel - bottom panel toggled with F2 */}
       {showCodePanel && (

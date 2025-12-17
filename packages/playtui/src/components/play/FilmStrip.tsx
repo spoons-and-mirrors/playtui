@@ -4,6 +4,7 @@ import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
 import type { Renderable } from "../../lib/types"
 import type { AnimatedProperty } from "../../lib/keyframing"
+import { FILMSTRIP_BASE_HEIGHT, FILMSTRIP_ERROR_EXTRA_HEIGHT } from "../../lib/constants"
 import { bakeKeyframedFrames } from "../../lib/keyframing"
 import { generateAnimationModule } from "../../lib/codegen"
 import { parseAnimationModule } from "../../lib/parseCode"
@@ -195,9 +196,10 @@ export function FilmStrip({
   return (
     <box
       id="film-strip"
-      width="100%"
-      height={clipboardError ? 7 : 6}
-      flexDirection="column"
+       width="100%"
+       height={clipboardError ? FILMSTRIP_BASE_HEIGHT + FILMSTRIP_ERROR_EXTRA_HEIGHT : FILMSTRIP_BASE_HEIGHT}
+       flexDirection="column"
+
       backgroundColor={COLORS.bgAlt}
       paddingBottom={0}
       // paddingLeft={1}

@@ -17,9 +17,8 @@ export function TimelinePanel({
   return (
     <box
       id="timeline-panel"
-
-      height={14}
       width={width}
+
       backgroundColor={COLORS.bg}
       flexDirection="column"
       overflow="hidden"

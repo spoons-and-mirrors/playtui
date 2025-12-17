@@ -4,6 +4,7 @@ import type { SaveStatus } from "../../hooks/useProject"
 import type { ViewMode } from "../../lib/viewState"
 import { VIEW_MODES } from "../../lib/viewState"
 import { Bind, getShortcutLabel } from "../../lib/shortcuts"
+import { NAVBAR_HEIGHT } from "../../lib/constants"
 
 // ============================================================================
 // Save Indicator
@@ -103,11 +104,12 @@ export function NavBar({
       backgroundColor={COLORS.bgAlt}
       style={{
         width,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        height: 1,
-        flexShrink: 0,
+         flexDirection: "row",
+         justifyContent: "space-between",
+         alignItems: "center",
+         height: NAVBAR_HEIGHT,
+         flexShrink: 0,
+
       }}
     >
       {/* Left: Mode tabs */}
