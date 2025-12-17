@@ -8,18 +8,16 @@ function Swatch({ swatch, onSelect, pickMode }: {
   onSelect: () => void
   pickMode?: boolean
 }) {
-  const handleClick = () => {
-    onSelect()
-  }
-
   return (
-    <box
+    <text
       id={`swatch-${swatch.id}`}
-      onMouseDown={handleClick}
-      style={{ height: 1 }}
-    >
-      <text fg={swatch.color} onMouseDown={handleClick}>██</text>
-    </box>
+      fg={swatch.color}
+      onMouseDown={(e) => {
+        e.stopPropagation()
+        onSelect()
+      }}
+      selectable={false}
+    >██</text>
   )
 }
 
