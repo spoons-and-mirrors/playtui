@@ -3,3 +3,5 @@ dist/
 *.log
 logs/
 .opencode/command/
+
+*.tsbuildinfo

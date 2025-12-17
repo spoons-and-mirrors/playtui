@@ -8,6 +8,9 @@
         "@opentui/core": "^0.1.60",
         "@opentui/react": "^0.1.60",
       },
+      "devDependencies": {
+        "typescript": "^5.9.3",
+      },
     },
     "packages/flipbook": {
       "name": "@playtui/flipbook",

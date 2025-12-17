@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["@types/bun"]
+    "types": ["@types/bun"],
+    "composite": true
   },
   "include": ["src"]
 }
