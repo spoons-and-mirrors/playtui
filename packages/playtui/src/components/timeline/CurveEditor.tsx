@@ -11,7 +11,7 @@ import { Bind, isKeybind } from "../../lib/shortcuts"
  
 // Get display name for an element (capitalize type)
 function getElementName(tree: any, nodeId: string): string {
-  const node = findNode(tree, nodeId)
+  const node = findRenderable(tree, nodeId)
   if (!node) return nodeId
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)

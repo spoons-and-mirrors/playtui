@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react"
 import type { ScrollBoxRenderable } from "@opentui/core"
 import { MouseButton } from "@opentui/core"
 import { COLORS } from "../../theme"
-import type { RenderableNode } from "../../lib/types"
+import type { Renderable } from "../../lib/types"
 import type { AnimatedProperty } from "../../lib/keyframing"
 import { bakeKeyframedFrames } from "../../lib/keyframing"
 import { generateAnimationModule } from "../../lib/codegen"
@@ -28,7 +28,7 @@ function getFrameWidth(total: number): number {
 }
 
 interface FilmStripProps {
-  frames: RenderableNode[]
+  frames: Renderable[]
   animatedProperties: AnimatedProperty[]
   currentIndex: number
   onSelectFrame: (index: number) => void
@@ -39,7 +39,7 @@ interface FilmStripProps {
   onFrameCountChange: (count: number) => void
   isPlaying: boolean
   onTogglePlay: () => void
-  onImport: (frames: RenderableNode[], fps: number) => void
+  onImport: (frames: Renderable[], fps: number) => void
   onEditingChange?: (editing: boolean) => void
 }
 

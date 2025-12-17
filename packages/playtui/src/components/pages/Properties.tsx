@@ -1,13 +1,13 @@
 import { useState, useRef, createContext, useContext } from "react"
 import { MouseButton, type MouseEvent, type ScrollBoxRenderable } from "@opentui/core"
-import type { RenderableNode, BorderSide, BoxNode, ScrollboxNode, TextNode } from "../../lib/types"
+import type { Renderable, BorderSide, BoxRenderable, ScrollboxRenderable, TextRenderable } from "../../lib/types"
 import { 
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
     OverflowPicker, DimensionsControl
 } from "../controls"
-import { RENDERABLE_REGISTRY, PROPERTY_SECTIONS, isContainerNode, type SerializableProp, type PropertySection } from "../renderables"
+import { RENDERABLE_REGISTRY, PROPERTY_SECTIONS, isContainerRenderable, type SerializableProp, type PropertySection } from "../renderables"
 import { COLORS } from "../../theme"
 
 // Drag capture context - allows value controls to register drags at the panel level
@@ -28,8 +28,8 @@ export const useDragCapture = () => useContext(DragCaptureContext)
 type AnyNodeProps = Record<string, unknown>
 
 interface PropertyPaneProps {
-  node: RenderableNode
-  onUpdate: (updates: Partial<RenderableNode>, pushHistory?: boolean) => void
+  node: Renderable
+  onUpdate: (updates: Partial<Renderable>, pushHistory?: boolean) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   // Palette support
@@ -118,7 +118,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           id={`prop-${prop.key}`} 
           label={label} 
           value={typeof val === "number" ? val : 0}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} 
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} 
           min={prop.min} 
           max={prop.max}
           property={prop.animatable ? prop.key : undefined}
@@ -128,38 +128,38 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     if (prop.type === "size") {
       return (
         <SizeProp key={key} label={label} value={val as number | "auto" | `${number}%` | undefined}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} />
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
       )
     }
     if (prop.type === "select" && prop.options) {
       return (
         <SelectProp key={key} label={label} value={String(val || prop.options[0])} options={prop.options}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} />
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
       )
     }
     if (prop.type === "color") {
       return (
         <ColorControl key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
           onFocus={() => setFocusedField(prop.key)} onBlur={() => setFocusedField(null)}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)}
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
           pickMode={pickingForField === prop.key} onPickStart={() => setPickingForField(prop.key)} />
       )
     }
     if (prop.type === "toggle" || prop.type === "boolean") {
       return (
         <ToggleProp key={key} label={label} value={Boolean(val)}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} />
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
       )
     }
     if (prop.type === "borderSides") {
       return (
         <BorderSidesProp key={key} label={label} value={val as BorderSide[] | undefined}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} />
+          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
       )
     }
     return (
       <StringProp key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
-        onFocus={() => setFocusedField(prop.key)} onChange={(v) => onUpdate({ [prop.key]: v } as Partial<RenderableNode>)} />
+        onFocus={() => setFocusedField(prop.key)} onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
     )
   }
 
@@ -182,11 +182,11 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           paddingRight: val,
           paddingBottom: val,
           paddingLeft: val
-        } as Partial<RenderableNode>, false)
+        } as Partial<Renderable>, false)
         return
       }
       const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
-      onUpdate({ [propKey]: val } as Partial<RenderableNode>, false)
+      onUpdate({ [propKey]: val } as Partial<Renderable>, false)
     }
 
     const handleChangeEnd = (key: "top" | "right" | "bottom" | "left" | "all", val: number) => {
@@ -196,11 +196,11 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           paddingRight: val,
           paddingBottom: val,
           paddingLeft: val
-        } as Partial<RenderableNode>, true)
+        } as Partial<Renderable>, true)
         return
       }
       const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
-      onUpdate({ [propKey]: val } as Partial<RenderableNode>, true)
+      onUpdate({ [propKey]: val } as Partial<Renderable>, true)
     }
 
     // Using SpacingControl which wraps ValueCounter (supporting context menus)
@@ -238,13 +238,13 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           marginRight: val,
           marginBottom: val,
           marginLeft: val
-        } as Partial<RenderableNode>, false)
+        } as Partial<Renderable>, false)
         return
       }
-      if (key === "top") onUpdate({ marginTop: val } as Partial<RenderableNode>, false)
-      if (key === "right") onUpdate({ marginRight: val } as Partial<RenderableNode>, false)
-      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<RenderableNode>, false)
-      if (key === "left") onUpdate({ marginLeft: val } as Partial<RenderableNode>, false)
+      if (key === "top") onUpdate({ marginTop: val } as Partial<Renderable>, false)
+      if (key === "right") onUpdate({ marginRight: val } as Partial<Renderable>, false)
+      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<Renderable>, false)
+      if (key === "left") onUpdate({ marginLeft: val } as Partial<Renderable>, false)
     }
 
     const handleChangeEnd = (key: "top" | "right" | "bottom" | "left" | "all", val: number | undefined) => {
@@ -254,13 +254,13 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           marginRight: val,
           marginBottom: val,
           marginLeft: val
-        } as Partial<RenderableNode>, true)
+        } as Partial<Renderable>, true)
         return
       }
-      if (key === "top") onUpdate({ marginTop: val } as Partial<RenderableNode>, true)
-      if (key === "right") onUpdate({ marginRight: val } as Partial<RenderableNode>, true)
-      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<RenderableNode>, true)
-      if (key === "left") onUpdate({ marginLeft: val } as Partial<RenderableNode>, true)
+      if (key === "top") onUpdate({ marginTop: val } as Partial<Renderable>, true)
+      if (key === "right") onUpdate({ marginRight: val } as Partial<Renderable>, true)
+      if (key === "bottom") onUpdate({ marginBottom: val } as Partial<Renderable>, true)
+      if (key === "left") onUpdate({ marginLeft: val } as Partial<Renderable>, true)
     }
 
     // Using SpacingControl which wraps ValueCounter (supporting context menus)
@@ -297,7 +297,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             maxWidth={node.maxWidth}
             minHeight={node.minHeight}
             maxHeight={node.maxHeight}
-            onChange={(update, isFinal) => onUpdate(update as Partial<RenderableNode>, isFinal)}
+            onChange={(update, isFinal) => onUpdate(update as Partial<Renderable>, isFinal)}
           />
         </box>
       </box>
@@ -321,34 +321,34 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            <FlexDirectionPicker value={container.flexDirection} onChange={(v) => onUpdate({ flexDirection: v } as Partial<RenderableNode>)} />
+            <FlexDirectionPicker value={container.flexDirection} onChange={(v) => onUpdate({ flexDirection: v } as Partial<Renderable>)} />
             {wrapProp && renderProp(wrapProp)}
             <FlexAlignmentGrid justify={container.justifyContent} align={container.alignItems} direction={container.flexDirection}
-              onJustifyChange={(v) => onUpdate({ justifyContent: v } as Partial<RenderableNode>)} 
-              onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<RenderableNode>)} 
-              onBothChange={(j, a) => onUpdate({ justifyContent: j, alignItems: a } as Partial<RenderableNode>)} />
+              onJustifyChange={(v) => onUpdate({ justifyContent: v } as Partial<Renderable>)} 
+              onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<Renderable>)} 
+              onBothChange={(j, a) => onUpdate({ justifyContent: j, alignItems: a } as Partial<Renderable>)} />
             {container.flexWrap === "wrap" && alignContentProp && renderProp(alignContentProp)}
             <box id="flex-gap-sliders" flexDirection="column" gap={1} marginTop={1}>
               <GapControl
                 label="gap"
                 property="gap"
                 value={container.gap}
-                onChange={(v) => onUpdate({ gap: v } as Partial<RenderableNode>)}
-                onChangeEnd={(v) => onUpdate({ gap: v } as Partial<RenderableNode>, true)}
+                onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
+                onChangeEnd={(v) => onUpdate({ gap: v } as Partial<Renderable>, true)}
               />
               <GapControl
                 label="rowGap"
                 property="rowGap"
                 value={container.rowGap}
-                onChange={(v) => onUpdate({ rowGap: v } as Partial<RenderableNode>)}
-                onChangeEnd={(v) => onUpdate({ rowGap: v } as Partial<RenderableNode>, true)}
+                onChange={(v) => onUpdate({ rowGap: v } as Partial<Renderable>)}
+                onChangeEnd={(v) => onUpdate({ rowGap: v } as Partial<Renderable>, true)}
               />
               <GapControl
                 label="colGap"
                 property="columnGap"
                 value={container.columnGap}
-                onChange={(v) => onUpdate({ columnGap: v } as Partial<RenderableNode>)}
-                onChangeEnd={(v) => onUpdate({ columnGap: v } as Partial<RenderableNode>, true)}
+                onChange={(v) => onUpdate({ columnGap: v } as Partial<Renderable>)}
+                onChangeEnd={(v) => onUpdate({ columnGap: v } as Partial<Renderable>, true)}
               />
             </box>
           </box>
@@ -371,7 +371,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             backgroundColor={COLORS.bg}
             paddingLeft={1}
             paddingRight={1}
-            onMouseDown={() => onUpdate({ position: "relative" } as Partial<RenderableNode>)}
+            onMouseDown={() => onUpdate({ position: "relative" } as Partial<Renderable>)}
           >
             <text fg={node.position !== "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
               {node.position !== "absolute" ? <strong>Rel</strong> : "Rel"}
@@ -385,7 +385,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             backgroundColor={COLORS.bg}
             paddingLeft={1}
             paddingRight={1}
-            onMouseDown={() => onUpdate({ position: "absolute" } as Partial<RenderableNode>)}
+            onMouseDown={() => onUpdate({ position: "absolute" } as Partial<Renderable>)}
           >
             <text fg={node.position === "absolute" ? COLORS.accent : COLORS.muted} selectable={false}>
               {node.position === "absolute" ? <strong>Abs</strong> : "Abs"}
@@ -399,8 +399,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
             x={node.x} 
             y={node.y} 
             zIndex={node.zIndex}
-            onChange={(k, v) => onUpdate({ [k]: v } as Partial<RenderableNode>, false)}
-            onChangeEnd={(k, v) => onUpdate({ [k]: v } as Partial<RenderableNode>, true)}
+            onChange={(k, v) => onUpdate({ [k]: v } as Partial<Renderable>, false)}
+            onChangeEnd={(k, v) => onUpdate({ [k]: v } as Partial<Renderable>, true)}
           />
         </box>
       </box>
@@ -424,7 +424,7 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
 
         {!isCollapsed && (
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-            <OverflowPicker value={container.overflow} onChange={(v) => onUpdate({ overflow: v } as Partial<RenderableNode>)} />
+            <OverflowPicker value={container.overflow} onChange={(v) => onUpdate({ overflow: v } as Partial<Renderable>)} />
           </box>
         )}
       </box>

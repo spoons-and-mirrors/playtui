@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { RenderableType, RenderableNode } from "../../lib/types"
+import type { RenderableType, Renderable } from "../../lib/types"
 import { RENDERABLE_REGISTRY } from "../renderables"
 import { ADD_MODE_BINDINGS, getShortcutLabel } from "../../lib/shortcuts"
 
@@ -24,8 +24,8 @@ interface HeaderProps {
   onToggleAddMode: () => void
   onAddElement: (type: RenderableType) => void
   // Selected node for type/name display
-  selectedNode?: RenderableNode | null
-  onUpdateNode?: (updates: Partial<RenderableNode>) => void
+  selectedNode?: Renderable | null
+  onUpdateNode?: (updates: Partial<Renderable>) => void
   focusedField?: string | null
   setFocusedField?: (field: string | null) => void
 }
@@ -219,7 +219,7 @@ export function Header({
             <box 
               id="element-type" 
               style={{ backgroundColor: selectedNode.visible !== false ? COLORS.accent : COLORS.bg, paddingLeft: 1, paddingRight: 1 }}
-              onMouseDown={() => onUpdateNode({ visible: !selectedNode.visible } as Partial<RenderableNode>)}
+              onMouseDown={() => onUpdateNode({ visible: !selectedNode.visible } as Partial<Renderable>)}
             >
               <text fg={selectedNode.visible !== false ? COLORS.bg : COLORS.muted}><strong>{selectedNode.type}</strong></text>
             </box>
@@ -236,7 +236,7 @@ export function Header({
                     height={1}
                     backgroundColor={COLORS.bg}
                     textColor={COLORS.text}
-                    onInput={(v) => onUpdateNode({ name: v } as Partial<RenderableNode>)}
+                    onInput={(v) => onUpdateNode({ name: v } as Partial<Renderable>)}
                     onSubmit={() => setFocusedField(null)}
                   />
                 </box>

@@ -1,7 +1,7 @@
 // JSX Parser - Reverse of codegen.ts
-// Parses JSX code string into RenderableNode tree
+// Parses JSX code string into Renderable tree
 
-import type { RenderableNode, RenderableType, SizeValue, BorderSide } from "./types"
+import type { Renderable, RenderableType, SizeValue, BorderSide } from "./types"
 import { genId } from "./tree"
 import { log } from "./logger"
 import { RENDERABLE_REGISTRY, RENDERABLE_TYPES as REGISTRY_RENDERABLE_TYPES } from "../components/renderables"
@@ -19,8 +19,8 @@ Object.values(RENDERABLE_REGISTRY).forEach((entry) => {
   })
 })
 
-// Apply registry-defined properties from parsed JSX props to node
-function applyRegistryProps(node: Partial<RenderableNode>, type: RenderableType, props: Record<string, unknown>): void {
+// Apply registry-defined properties from parsed JSX props to renderable
+function applyRegistryProps(renderable: Partial<Renderable>, type: RenderableType, props: Record<string, unknown>): void {
   const entry = RENDERABLE_REGISTRY[type]
   if (!entry?.properties) return
 
@@ -31,18 +31,18 @@ function applyRegistryProps(node: Partial<RenderableNode>, type: RenderableType,
     // Special handling for options arrays (select/tab-select)
     if (propDef.type === "options") {
       const opts = value as Array<{ name: string }> | string[]
-      ;(node as Record<string, unknown>)[propDef.key] = opts.map(o => typeof o === "string" ? o : o.name)
+      ;(renderable as Record<string, unknown>)[propDef.key] = opts.map(o => typeof o === "string" ? o : o.name)
       continue
     }
 
     // All other props - direct assignment
-    ;(node as Record<string, unknown>)[propDef.key] = value
+    ;(renderable as Record<string, unknown>)[propDef.key] = value
   }
 }
 
 interface ParseResult {
   success: boolean
-  node?: RenderableNode
+  renderable?: Renderable
   error?: string
 }
 
@@ -313,7 +313,7 @@ function tokenize(jsx: string): Token[] {
 }
 
 // Apply style object to node
-function applyStyle(node: Partial<RenderableNode>, style: Record<string, unknown>): void {
+function applyStyle(node: Partial<Renderable>, style: Record<string, unknown>): void {
   for (const [styleKey, styleValue] of Object.entries(style)) {
     if (styleValue === undefined) continue
     
@@ -348,19 +348,19 @@ function applyStyle(node: Partial<RenderableNode>, style: Record<string, unknown
 }
 
 // Helper to check if key exists in node type (at runtime this is just 'any' check but safe enough for assignment)
-function keyInNode(node: Partial<RenderableNode>, key: string): boolean {
+function keyInNode(node: Partial<Renderable>, key: string): boolean {
   // We allow arbitrary assignment to node from style for flexibility, 
   // but strictly strictly defined registry props are preferred.
   return true 
 }
 
 // Create node from tag and props
-function createNode(tagName: string, props: Record<string, unknown>): RenderableNode {
+function createNode(tagName: string, props: Record<string, unknown>): Renderable {
   const type = tagName as RenderableType
   
   log("PARSE_CREATE_NODE", { tagName, propsName: props.name, propsKeys: Object.keys(props) })
   
-  const node: Partial<RenderableNode> = {
+  const node: Partial<Renderable> = {
     id: genId(),
     type,
     name: props.name as string | undefined,
@@ -402,7 +402,7 @@ function createNode(tagName: string, props: Record<string, unknown>): Renderable
     applyRegistryProps(node, type, props)
   }
   
-  return node as RenderableNode
+  return node as Renderable
 }
 
 // Parse text content for formatting tags
@@ -460,7 +460,7 @@ function parseTextContent(text: string): { content: string; bold?: boolean; ital
 }
 
 // Recursive parser using token stream
-function parseTokens(tokens: Token[], index: number): { node: RenderableNode | null; nextIndex: number; error?: string } {
+function parseTokens(tokens: Token[], index: number): { node: Renderable | null; nextIndex: number; error?: string } {
   if (index >= tokens.length) {
     return { node: null, nextIndex: index, error: "Unexpected end of input" }
   }
@@ -599,7 +599,7 @@ export function parseCode(jsx: string): ParseResult {
 }
 
 // Parse multiple elements (for pasting multiple siblings)
-export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: RenderableNode[] } {
+export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: Renderable[] } {
   try {
     const trimmed = jsx.trim()
     if (!trimmed) {
@@ -607,7 +607,7 @@ export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: Renderab
     }
     
     const tokens = tokenize(trimmed)
-    const nodes: RenderableNode[] = []
+    const nodes: Renderable[] = []
     let i = 0
     
     while (i < tokens.length && tokens[i].type !== "eof") {
@@ -633,7 +633,7 @@ export function parseCodeMultiple(jsx: string): ParseResult & { nodes?: Renderab
 
 // Parse animation module TSX format
 // Extracts frames array and metadata from: export const animation = { name, fps, frames: [...] }
-export function parseAnimationModule(tsx: string): { success: boolean; frames?: RenderableNode[]; fps?: number; name?: string; error?: string } {
+export function parseAnimationModule(tsx: string): { success: boolean; frames?: Renderable[]; fps?: number; name?: string; error?: string } {
   try {
     // Extract name
     const nameMatch = tsx.match(/name:\s*"([^"]*)"/)
@@ -654,7 +654,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
     // Split frames by "// Frame N" comments
     const frameChunks = framesContent.split(/\/\/\s*Frame\s+\d+/).filter(chunk => chunk.trim())
     
-    const frames: RenderableNode[] = []
+    const frames: Renderable[] = []
     
     for (const chunk of frameChunks) {
       // Clean up the chunk - remove trailing comma
@@ -669,7 +669,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
       const result = parseCode(frameJsx)
       if (result.success && result.node) {
         // Wrap in root node structure expected by PlayTUI
-        const rootNode: RenderableNode = {
+        const rootNode: Renderable = {
           id: "root",
           type: "box",
           name: "Root",
@@ -680,7 +680,7 @@ export function parseAnimationModule(tsx: string): { success: boolean; frames?: 
           padding: 2,
           gap: 1,
           children: [result.node],
-        } as RenderableNode
+        } as Renderable
         frames.push(rootNode)
       } else {
         log("PARSE_ANIMATION_FRAME_ERROR", { error: result.error, chunk: frameJsx.slice(0, 100) })

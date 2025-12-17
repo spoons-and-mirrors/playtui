@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { RenderableNode, ScrollboxNode } from "../../lib/types"
+import type { Renderable, ScrollboxNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   ToggleProp, SelectProp, ColorControl, SectionHeader
@@ -24,7 +24,7 @@ export const SCROLLBOX_DEFAULTS: Partial<ScrollboxNode> = {
 // =============================================================================
 
 interface ScrollboxRendererProps {
-  node: RenderableNode
+  node: Renderable
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -135,8 +135,8 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
 // =============================================================================
 
 interface ScrollboxPropertiesProps {
-  node: RenderableNode
-  onUpdate: (updates: Partial<RenderableNode>) => void
+  node: Renderable
+  onUpdate: (updates: Partial<Renderable>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean

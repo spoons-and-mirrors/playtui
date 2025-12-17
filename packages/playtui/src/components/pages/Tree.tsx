@@ -1,12 +1,12 @@
 import { useState, useRef } from "react"
 import { COLORS } from "../../theme"
-import type { RenderableNode } from "../../lib/types"
+import type { Renderable } from "../../lib/types"
 import { Bind, isKeybind } from "../../lib/shortcuts"
 import { RENDERABLE_REGISTRY } from "../renderables"
 
 
 interface TreeNodeProps {
-  node: RenderableNode
+  node: Renderable
   selectedId: string | null
   collapsed: Set<string>
   editingId: string | null
@@ -113,7 +113,7 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
 }
 
 interface TreeViewProps {
-  root: RenderableNode
+  root: Renderable
   selectedId: string | null
   collapsed: Set<string>
   onSelect: (id: string) => void

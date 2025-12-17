@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { COLORS, ThinBorderRight, ThinBorderLeft, BORDER_ACCENT } from "./theme"
-import type { RenderableNode } from "./lib/types"
+import type { Renderable } from "./lib/types"
 import { clearLog } from "./lib/logger"
 import { resetIdCounter, findNode, countNodes, updateNode, getNodePosition } from "./lib/tree"
 import { generateChildrenCode } from "./lib/codegen"
@@ -79,7 +79,7 @@ export function Builder({ width, height }: BuilderProps) {
   const showTimeline = viewLayout.showTimeline
   const [modalMode, setModalMode] = useState<"new" | "load" | "delete" | "saveAs" | null>(null)
   const [addMode, setAddMode] = useState(false)
-  const [clipboard, setClipboard] = useState<RenderableNode | null>(null)
+  const [clipboard, setClipboard] = useState<Renderable | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [canvasOffset, setCanvasOffset] = useState<CanvasOffset>({ x: 0, y: 0 })
   const [filmStripEditing, setFilmStripEditing] = useState(false) // Track when FilmStrip input is active
@@ -150,7 +150,7 @@ export function Builder({ width, height }: BuilderProps) {
   const collapsed = project?.collapsed ?? []
   const animation = project?.animation
   const treeKey = project?.history?.length ?? 0
-  const selectedNode = tree && selectedId ? findNode(tree, selectedId) : null
+  const selectedNode = tree && selectedId ? findRenderable(tree, selectedId) : null
   const code = useMemo(() => tree ? generateChildrenCode(tree) : "", [tree])
 
   const {
@@ -240,7 +240,7 @@ export function Builder({ width, height }: BuilderProps) {
   // Handle drag for positioned elements (both absolute and relative)
   const handleDragStart = useCallback((event: DragEvent) => {
     if (!tree) return
-    const node = findNode(tree, event.nodeId)
+    const node = findRenderable(tree, event.nodeId)
     if (!node) return
     
     // Store initial mouse position and node position
@@ -261,15 +261,15 @@ export function Builder({ width, height }: BuilderProps) {
     const deltaX = event.x - dragStartRef.current.mouseX
     const deltaY = event.y - dragStartRef.current.mouseY
     
-    const node = findNode(tree, event.nodeId)
+    const node = findRenderable(tree, event.nodeId)
     if (!node) return
 
     const newX = dragStartRef.current.nodeX + deltaX
     const newY = dragStartRef.current.nodeY + deltaY
     
     // Update node position (without adding to history during drag)
-    const updated = { ...node, x: newX, y: newY } as RenderableNode
-    const newTree = updateNode(tree, event.nodeId, updated)
+    const updated = { ...node, x: newX, y: newY } as Renderable
+    const newTree = updateRenderable(tree, event.nodeId, updated)
     updateTree(newTree, false) // false = don't add to history
     
     // If in play mode and properties are keyframed, update keyframes during drag
@@ -287,7 +287,7 @@ export function Builder({ width, height }: BuilderProps) {
   const handleDragEnd = useCallback((nodeId: string) => {
     if (!dragStartRef.current) return
     
-    const node = tree ? findNode(tree, nodeId) : null
+    const node = tree ? findRenderable(tree, nodeId) : null
     const finalX = node ? (node as any).x ?? 0 : dragStartRef.current.nodeX
     const finalY = node ? (node as any).y ?? 0 : dragStartRef.current.nodeY
     
@@ -326,11 +326,11 @@ export function Builder({ width, height }: BuilderProps) {
   const handleFocusElement = useCallback((nodeId: string) => {
     if (!tree) return
     
-    const node = findNode(tree, nodeId)
+    const node = findRenderable(tree, nodeId)
     if (!node) return
     
     // Get the node's accumulated position from tree root
-    const pos = getNodePosition(tree, nodeId)
+    const pos = getRenderablePosition(tree, nodeId)
     if (!pos) return
     
     // Get element dimensions (use defaults if not set)

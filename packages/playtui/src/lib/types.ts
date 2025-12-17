@@ -54,13 +54,13 @@ export type WrapMode = "word" | "none" | "char"
 export type SizeValue = number | "auto" | `${number}%`
 
 // =============================================================================
-// BASE NODE - Common properties shared by ALL renderables
+// BASE RENDERABLE - Common properties shared by ALL renderables
 // =============================================================================
 
-export interface BaseNode {
+export interface BaseRenderable {
   id: string
   name?: string
-  children: RenderableNode[]
+  children: Renderable[]
 
   // === SIZING ===
   width?: SizeValue
@@ -137,11 +137,11 @@ export interface ContainerProps {
 // RENDERABLE-SPECIFIC NODE TYPES (Discriminated by `type` field)
 // =============================================================================
 
-export interface BoxNode extends BaseNode, ContainerProps {
+export interface BoxRenderable extends BaseRenderable, ContainerProps {
   type: "box"
 }
 
-export interface ScrollboxNode extends BaseNode, ContainerProps {
+export interface ScrollboxRenderable extends BaseRenderable, ContainerProps {
   type: "scrollbox"
   stickyScroll?: boolean
   stickyStart?: "top" | "bottom" | "left" | "right"
@@ -153,7 +153,7 @@ export interface ScrollboxNode extends BaseNode, ContainerProps {
   scrollbarBackground?: string
 }
 
-export interface TextNode extends BaseNode {
+export interface TextRenderable extends BaseRenderable {
   type: "text"
   content?: string
   fg?: string
@@ -174,7 +174,7 @@ export interface TextNode extends BaseNode {
   paddingLeft?: number
 }
 
-export interface InputNode extends BaseNode {
+export interface InputRenderable extends BaseRenderable {
   type: "input"
   placeholder?: string
   placeholderColor?: string
@@ -188,7 +188,7 @@ export interface InputNode extends BaseNode {
   focusedBorderColor?: string
 }
 
-export interface TextareaNode extends BaseNode {
+export interface TextareaRenderable extends BaseRenderable {
   type: "textarea"
   placeholder?: string
   placeholderColor?: string
@@ -205,7 +205,7 @@ export interface TextareaNode extends BaseNode {
   focusedBackgroundColor?: string
 }
 
-export interface SelectNode extends BaseNode {
+export interface SelectRenderable extends BaseRenderable {
   type: "select"
   options?: string[]
   backgroundColor?: string
@@ -221,7 +221,7 @@ export interface SelectNode extends BaseNode {
   fastScrollStep?: number
 }
 
-export interface SliderNode extends BaseNode {
+export interface SliderRenderable extends BaseRenderable {
   type: "slider"
   orientation?: "horizontal" | "vertical"
   value?: number
@@ -232,14 +232,14 @@ export interface SliderNode extends BaseNode {
   foregroundColor?: string
 }
 
-export interface AsciiFontNode extends BaseNode {
+export interface AsciiFontRenderable extends BaseRenderable {
   type: "ascii-font"
   text?: string
   font?: "tiny" | "block" | "slick" | "shade" | "huge" | "grid" | "pallet"
   color?: string
 }
 
-export interface TabSelectNode extends BaseNode {
+export interface TabSelectRenderable extends BaseRenderable {
   type: "tab-select"
   options?: string[]
   tabWidth?: number
@@ -252,58 +252,58 @@ export interface TabSelectNode extends BaseNode {
 }
 
 // =============================================================================
-// DISCRIMINATED UNION - The main RenderableNode type
+// DISCRIMINATED UNION - The main Renderable type
 // =============================================================================
 
-export type RenderableNode =
-  | BoxNode
-  | ScrollboxNode
-  | TextNode
-  | InputNode
-  | TextareaNode
-  | SelectNode
-  | SliderNode
-  | AsciiFontNode
-  | TabSelectNode
+export type Renderable =
+  | BoxRenderable
+  | ScrollboxRenderable
+  | TextRenderable
+  | InputRenderable
+  | TextareaRenderable
+  | SelectRenderable
+  | SliderRenderable
+  | AsciiFontRenderable
+  | TabSelectRenderable
 
 // =============================================================================
 // TYPE GUARDS - For proper type narrowing
 // =============================================================================
 
-export function isBoxNode(node: RenderableNode): node is BoxNode {
-  return node.type === "box"
+export function isBoxRenderable(renderable: Renderable): renderable is BoxRenderable {
+  return renderable.type === "box"
 }
 
-export function isScrollboxNode(node: RenderableNode): node is ScrollboxNode {
-  return node.type === "scrollbox"
+export function isScrollboxRenderable(renderable: Renderable): renderable is ScrollboxRenderable {
+  return renderable.type === "scrollbox"
 }
 
-export function isTextNode(node: RenderableNode): node is TextNode {
-  return node.type === "text"
+export function isTextRenderable(renderable: Renderable): renderable is TextRenderable {
+  return renderable.type === "text"
 }
 
-export function isInputNode(node: RenderableNode): node is InputNode {
-  return node.type === "input"
+export function isInputRenderable(renderable: Renderable): renderable is InputRenderable {
+  return renderable.type === "input"
 }
 
-export function isTextareaNode(node: RenderableNode): node is TextareaNode {
-  return node.type === "textarea"
+export function isTextareaRenderable(renderable: Renderable): renderable is TextareaRenderable {
+  return renderable.type === "textarea"
 }
 
-export function isSelectNode(node: RenderableNode): node is SelectNode {
-  return node.type === "select"
+export function isSelectRenderable(renderable: Renderable): renderable is SelectRenderable {
+  return renderable.type === "select"
 }
 
-export function isSliderNode(node: RenderableNode): node is SliderNode {
-  return node.type === "slider"
+export function isSliderRenderable(renderable: Renderable): renderable is SliderRenderable {
+  return renderable.type === "slider"
 }
 
-export function isAsciiFontNode(node: RenderableNode): node is AsciiFontNode {
-  return node.type === "ascii-font"
+export function isAsciiFontRenderable(renderable: Renderable): renderable is AsciiFontRenderable {
+  return renderable.type === "ascii-font"
 }
 
-export function isTabSelectNode(node: RenderableNode): node is TabSelectNode {
-  return node.type === "tab-select"
+export function isTabSelectRenderable(renderable: Renderable): renderable is TabSelectRenderable {
+  return renderable.type === "tab-select"
 }
 
 // NOTE: isContainerNode has been moved to components/renderables/index.ts
@@ -324,7 +324,7 @@ import type { KeyframingState } from "./keyframing"
 
 export type HistoryEntry = {
   frameIndex: number
-  tree: RenderableNode
+  tree: Renderable
   selectedId: string | null
   keyframing: KeyframingState
 }

@@ -18,12 +18,12 @@ import { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_DEFAULTS } from "./sc
 import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
 import { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
 import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
-import type { RenderableType, RenderableNode, BoxNode, ScrollboxNode } from "../../lib/types"
+import type { RenderableType, Renderable, BoxRenderable, ScrollboxRenderable } from "../../lib/types"
 import type { ColorPalette } from "../../lib/projectTypes"
 
 // Renderer props shared by all renderable renderers
 export interface RendererProps {
-  node: RenderableNode
+  node: Renderable
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -36,8 +36,8 @@ export interface RendererProps {
 
 // Properties panel props shared by all renderable property panels
 export interface RenderablePropertiesProps {
-  node: RenderableNode
-  onUpdate: (updates: Partial<RenderableNode>) => void
+  node: Renderable
+  onUpdate: (updates: Partial<Renderable>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean
@@ -304,7 +304,7 @@ export interface RenderableRegistryEntry {
   addModeKey?: string  // Single character key for adding this renderable in add mode (e.g., "b" for box)
   Renderer: (props: RendererProps) => React.ReactNode
   Properties: ((props: RenderablePropertiesProps) => React.ReactNode) | null
-  defaults: Partial<RenderableNode>
+  defaults: Partial<Renderable>
   capabilities: RenderableCapabilities
   properties: SerializableProp[]  // Renderable-specific props for codegen/parseCode
 }
@@ -635,11 +635,11 @@ export const RENDERABLE_TYPES = Object.keys(RENDERABLE_REGISTRY) as RenderableTy
 // =============================================================================
 
 /**
- * Check if a node supports children. Derived from RENDERABLE_REGISTRY.capabilities.
+ * Check if a renderable supports children. Derived from RENDERABLE_REGISTRY.capabilities.
  * This replaces the hardcoded check that was previously in types.ts.
  */
-export function isContainerNode(node: RenderableNode): node is BoxNode | ScrollboxNode {
-  return RENDERABLE_REGISTRY[node.type]?.capabilities.supportsChildren === true
+export function isContainerRenderable(renderable: Renderable): renderable is BoxRenderable | ScrollboxRenderable {
+  return RENDERABLE_REGISTRY[renderable.type]?.capabilities.supportsChildren === true
 }
 
 /**

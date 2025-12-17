@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import type { Project, ProjectMeta, ColorPalette } from "../lib/projectTypes"
 import { createNewProject } from "../lib/projectTypes"
-import type { RenderableNode, HistoryEntry } from "../lib/types"
+import type { Renderable, HistoryEntry } from "../lib/types"
 import {
   createDefaultKeyframingState,
   shiftKeyframesOnDelete,
@@ -36,7 +36,7 @@ export interface UseProjectReturn {
   duplicateProject: (newName: string) => Promise<boolean>
 
   // State updates (triggers auto-save)
-  updateTree: (tree: RenderableNode, pushHistory?: boolean, selectedId?: string | null) => void
+  updateTree: (tree: Renderable, pushHistory?: boolean, selectedId?: string | null) => void
   setSelectedId: (id: string | null) => void
   setCollapsed: (collapsed: string[]) => void
 
@@ -52,7 +52,7 @@ export interface UseProjectReturn {
   deleteFrame: (index: number) => void
   setFps: (fps: number) => void
   setFrameCount: (count: number) => void
-  importAnimation: (frames: RenderableNode[], fps: number) => void
+  importAnimation: (frames: Renderable[], fps: number) => void
 
   // Keyframing
   toggleAutoKey: () => void
@@ -335,7 +335,7 @@ export function useProject(): UseProjectReturn {
 
   // Update tree with optional history push and optional selectedId (atomic update)
   const updateTree = useCallback(
-    (tree: RenderableNode, pushHistory = true, selectedId?: string | null) => {
+    (tree: Renderable, pushHistory = true, selectedId?: string | null) => {
       setProject((prev) => {
         if (!prev) return prev
 
@@ -573,7 +573,7 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Animation: Import animation data (frames + fps)
-  const importAnimation = useCallback((frames: RenderableNode[], fps: number) => {
+  const importAnimation = useCallback((frames: Renderable[], fps: number) => {
     setProject((prev) => {
       if (!prev) return prev
       if (frames.length === 0) return prev

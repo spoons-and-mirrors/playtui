@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect, useMemo } from "react"
-import type { RenderableNode, RenderableType } from "../lib/types"
+import type { Renderable, RenderableType } from "../lib/types"
 import { log } from "../lib/logger"
 import {
   genId,
@@ -15,11 +15,11 @@ import {
 import { RENDERABLE_REGISTRY } from "../components/renderables"
 
 interface UseBuilderActionsParams {
-  tree: RenderableNode | null
+  tree: Renderable | null
   selectedId: string | null
-  clipboard: RenderableNode | null
-  setClipboard: (node: RenderableNode | null) => void
-  updateTree: (tree: RenderableNode, addToHistory?: boolean, newSelectedId?: string | null) => void
+  clipboard: Renderable | null
+  setClipboard: (node: Renderable | null) => void
+  updateTree: (tree: Renderable, addToHistory?: boolean, newSelectedId?: string | null) => void
   setSelectedId: (id: string | null) => void
 }
 
@@ -43,10 +43,10 @@ export function useBuilderActions({
   }, [tree])
 
   // Get the parent container for adding new renderables (selected container or root)
-  const getAddParent = useCallback((): RenderableNode | null => {
+  const getAddParent = useCallback((): Renderable | null => {
     if (!tree) return null
     if (!selectedId) return tree
-    const node = findNode(tree, selectedId)
+    const node = findRenderable(tree, selectedId)
     if (!node) return tree
     if (RENDERABLE_REGISTRY[node.type]?.capabilities.supportsChildren) return node
     const parent = findParent(tree, selectedId)
@@ -61,7 +61,7 @@ export function useBuilderActions({
     const entry = RENDERABLE_REGISTRY[type]
     if (!entry) return
 
-    const newNode: RenderableNode = {
+    const newNode: Renderable = {
       id: genId(),
       type,
       name: entry.label,
@@ -70,7 +70,7 @@ export function useBuilderActions({
     }
     log("ADD_ELEMENT", { type, parentId: parent.id, parentChildren: parent.children.length, newNodeId: newNode.id, selectedId })
     const newTree = addChild(tree, parent.id, newNode)
-    const parentAfter = findNode(newTree, parent.id)
+    const parentAfter = findRenderable(newTree, parent.id)
     log("ADD_RESULT", { parentChildrenAfter: parentAfter?.children.length, newTreeRootChildren: newTree.children.length })
     updateTree(newTree, true, newNode.id)
     log("AFTER_UPDATE", { calledUpdateTree: true })
@@ -78,7 +78,7 @@ export function useBuilderActions({
 
   const handleCopy = useCallback(() => {
     if (!selectedId || !tree) return
-    const node = findNode(tree, selectedId)
+    const node = findRenderable(tree, selectedId)
     if (node) setClipboard(node)
   }, [selectedId, tree, setClipboard])
 
@@ -86,7 +86,7 @@ export function useBuilderActions({
     if (!clipboard || !tree) return
     const parent = getAddParent()
     if (!parent) return
-    const cloned = cloneNode(clipboard)
+    const cloned = cloneRenderable(clipboard)
     const newTree = addChild(tree, parent.id, cloned)
     updateTree(newTree, true, cloned.id)
   }, [clipboard, tree, getAddParent, updateTree])
@@ -94,7 +94,7 @@ export function useBuilderActions({
   const handleDelete = useCallback(() => {
     if (!selectedId || !tree || selectedId === tree.id) return
     const parent = findParent(tree, selectedId)
-    const newTree = removeNode(tree, selectedId)
+    const newTree = removeRenderable(tree, selectedId)
     let nextId: string | null = null
     if (parent && parent.id !== tree.id) {
       nextId = parent.id
@@ -107,38 +107,38 @@ export function useBuilderActions({
 
   const handleDuplicate = useCallback(() => {
     if (!selectedId || !tree) return
-    const node = findNode(tree, selectedId)
+    const node = findRenderable(tree, selectedId)
     const parent = findParent(tree, selectedId)
     if (!node || !parent) return
-    const cloned = cloneNode(node)
+    const cloned = cloneRenderable(node)
     const newTree = addChild(tree, parent.id, cloned)
     updateTree(newTree, true, cloned.id)
   }, [selectedId, tree, updateTree])
 
   const handleMoveNode = useCallback((direction: "up" | "down") => {
     if (!selectedId || !tree) return
-    const newTree = moveNode(tree, selectedId, direction)
+    const newTree = moveRenderable(tree, selectedId, direction)
     if (newTree) updateTree(newTree, true)
   }, [selectedId, tree, updateTree])
 
-  const handleUpdate = useCallback((updates: Partial<RenderableNode>, pushHistory = true) => {
+  const handleUpdate = useCallback((updates: Partial<Renderable>, pushHistory = true) => {
     const currentSelectedId = selectedIdRef.current
     log("HANDLE_UPDATE", { updates, selectedId: currentSelectedId, pushHistory })
     if (!tree || !currentSelectedId) return
-    const node = findNode(tree, currentSelectedId)
+    const node = findRenderable(tree, currentSelectedId)
     if (!node) return
-    const updated = { ...node, ...updates } as RenderableNode
-    const newTree = updateNode(tree, currentSelectedId, updated)
+    const updated = { ...node, ...updates } as Renderable
+    const newTree = updateRenderable(tree, currentSelectedId, updated)
     updateTree(newTree, pushHistory)
   }, [tree, updateTree])
 
   const handleRename = useCallback((id: string, name: string) => {
     log("HANDLE_RENAME", { id, name })
     if (!tree) return
-    const node = findNode(tree, id)
+    const node = findRenderable(tree, id)
     if (!node) return
-    const updated = { ...node, name } as RenderableNode
-    const newTree = updateNode(tree, id, updated)
+    const updated = { ...node, name } as Renderable
+    const newTree = updateRenderable(tree, id, updated)
     updateTree(newTree)
   }, [tree, updateTree])
 

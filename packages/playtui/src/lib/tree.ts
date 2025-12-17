@@ -1,37 +1,37 @@
 import { COLORS } from "../theme"
-import type { RenderableNode } from "./types"
+import type { Renderable } from "./types"
 
 let idCounter = 0
 export const genId = (): string => `el-${++idCounter}`
 export const resetIdCounter = () => { idCounter = 0 }
 
 // Sync idCounter to be higher than any existing ID in the tree
-export function syncIdCounter(root: RenderableNode): void {
+export function syncIdCounter(root: Renderable): void {
   const extractNum = (id: string): number => {
     const match = id.match(/^el-(\d+)$/)
     return match ? parseInt(match[1], 10) : 0
   }
   
-  const findMaxId = (node: RenderableNode): number => {
-    const nodeNum = extractNum(node.id)
-    const childMax = node.children.reduce((max, c) => Math.max(max, findMaxId(c)), 0)
-    return Math.max(nodeNum, childMax)
+  const findMaxId = (renderable: Renderable): number => {
+    const renderableNum = extractNum(renderable.id)
+    const childMax = renderable.children.reduce((max, c) => Math.max(max, findMaxId(c)), 0)
+    return Math.max(renderableNum, childMax)
   }
   
   const maxId = findMaxId(root)
   idCounter = maxId
 }
 
-export function findNode(root: RenderableNode, id: string): RenderableNode | null {
+export function findRenderable(root: Renderable, id: string): Renderable | null {
   if (root.id === id) return root
   for (const child of root.children) {
-    const found = findNode(child, id)
+    const found = findRenderable(child, id)
     if (found) return found
   }
   return null
 }
 
-export function findParent(root: RenderableNode, id: string): RenderableNode | null {
+export function findParent(root: Renderable, id: string): Renderable | null {
   for (const child of root.children) {
     if (child.id === id) return root
     const found = findParent(child, id)
@@ -40,67 +40,67 @@ export function findParent(root: RenderableNode, id: string): RenderableNode | n
   return null
 }
 
-export function updateNode(root: RenderableNode, id: string, updates: Partial<RenderableNode>): RenderableNode {
+export function updateRenderable(root: Renderable, id: string, updates: Partial<Renderable>): Renderable {
   if (root.id === id) return { ...root, ...updates }
-  return { ...root, children: root.children.map((c) => updateNode(c, id, updates)) }
+  return { ...root, children: root.children.map((c) => updateRenderable(c, id, updates)) }
 }
 
-export function addChild(root: RenderableNode, parentId: string, newChild: RenderableNode): RenderableNode {
+export function addChild(root: Renderable, parentId: string, newChild: Renderable): Renderable {
   if (root.id === parentId) return { ...root, children: [...root.children, newChild] }
   return { ...root, children: root.children.map((c) => addChild(c, parentId, newChild)) }
 }
 
-export function removeNode(root: RenderableNode, id: string): RenderableNode {
+export function removeRenderable(root: Renderable, id: string): Renderable {
   return {
     ...root,
-    children: root.children.filter((c) => c.id !== id).map((c) => removeNode(c, id)),
+    children: root.children.filter((c) => c.id !== id).map((c) => removeRenderable(c, id)),
   }
 }
 
-export function flattenTree(node: RenderableNode, acc: RenderableNode[] = []): RenderableNode[] {
-  acc.push(node)
-  node.children.forEach((c) => flattenTree(c, acc))
+export function flattenTree(renderable: Renderable, acc: Renderable[] = []): Renderable[] {
+  acc.push(renderable)
+  renderable.children.forEach((c) => flattenTree(c, acc))
   return acc
 }
 
-export function countNodes(node: RenderableNode): number {
-  return 1 + node.children.reduce((sum, c) => sum + countNodes(c), 0)
+export function countRenderables(renderable: Renderable): number {
+  return 1 + renderable.children.reduce((sum, c) => sum + countRenderables(c), 0)
 }
 
-export function cloneNode(n: RenderableNode): RenderableNode {
-  return { ...n, id: genId(), children: n.children.map(cloneNode) }
+export function cloneRenderable(r: Renderable): Renderable {
+  return { ...r, id: genId(), children: r.children.map(cloneRenderable) }
 }
 
-// Move a node up or down within its parent's children array (sibling-only movement)
-// Returns null if move is not possible (at boundary or node not found)
-export function moveNode(root: RenderableNode, nodeId: string, direction: "up" | "down"): RenderableNode | null {
-  const parent = findParent(root, nodeId)
+// Move a renderable up or down within its parent's children array (sibling-only movement)
+// Returns null if move is not possible (at boundary or renderable not found)
+export function moveRenderable(root: Renderable, renderableId: string, direction: "up" | "down"): Renderable | null {
+  const parent = findParent(root, renderableId)
   if (!parent) return null
   
-  const idx = parent.children.findIndex(c => c.id === nodeId)
+  const idx = parent.children.findIndex(c => c.id === renderableId)
   if (idx === -1) return null
   
   const newIdx = direction === "up" ? idx - 1 : idx + 1
   if (newIdx < 0 || newIdx >= parent.children.length) return null // at boundary
   
-  // Swap the nodes
+  // Swap the renderables
   const newChildren = [...parent.children]
   const temp = newChildren[idx]
   newChildren[idx] = newChildren[newIdx]
   newChildren[newIdx] = temp
   
-  return updateNode(root, parent.id, { children: newChildren })
+  return updateRenderable(root, parent.id, { children: newChildren })
 }
 
-// Calculate approximate position of a node by accumulating x/y offsets up the tree
-// Returns { x, y } representing the node's offset from the root
-export function getNodePosition(root: RenderableNode, nodeId: string): { x: number; y: number } | null {
-  const path: RenderableNode[] = []
+// Calculate approximate position of a renderable by accumulating x/y offsets up the tree
+// Returns { x, y } representing the renderable's offset from the root
+export function getRenderablePosition(root: Renderable, renderableId: string): { x: number; y: number } | null {
+  const path: Renderable[] = []
   
-  function findPath(node: RenderableNode): boolean {
-    path.push(node)
-    if (node.id === nodeId) return true
-    for (const child of node.children) {
+  function findPath(renderable: Renderable): boolean {
+    path.push(renderable)
+    if (renderable.id === renderableId) return true
+    for (const child of renderable.children) {
       if (findPath(child)) return true
     }
     path.pop()
@@ -111,9 +111,9 @@ export function getNodePosition(root: RenderableNode, nodeId: string): { x: numb
   
   let x = 0
   let y = 0
-  for (const node of path) {
-    x += node.x ?? 0
-    y += node.y ?? 0
+  for (const renderable of path) {
+    x += renderable.x ?? 0
+    y += renderable.y ?? 0
   }
   
   return { x, y }

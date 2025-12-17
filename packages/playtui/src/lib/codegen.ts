@@ -1,6 +1,6 @@
-import type { RenderableNode, SizeValue, BoxNode, ScrollboxNode, TextNode, AsciiFontNode, BorderSide } from "./types"
+import type { Renderable, SizeValue, BoxRenderable, ScrollboxRenderable, TextRenderable, AsciiFontRenderable, BorderSide } from "./types"
 import { log } from "./logger"
-import { RENDERABLE_REGISTRY, isContainerNode, type SerializableProp } from "../components/renderables"
+import { RENDERABLE_REGISTRY, isContainerRenderable, type SerializableProp } from "../components/renderables"
 
 // Serialize a single prop value based on its schema definition
 function serializeProp(prop: SerializableProp, value: unknown): string | null {
@@ -46,7 +46,7 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
 }
 
 // Serialize all props for an element using registry
-function serializeRegistryProps(node: RenderableNode): string[] {
+function serializeRegistryProps(node: Renderable): string[] {
   const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry?.properties) return []
 
@@ -65,7 +65,7 @@ function serializeRegistryProps(node: RenderableNode): string[] {
 
 // Generate exportable animation as a TSX module with single default export
 // Note: We export children of the root frame, not the root itself (which is the editor canvas)
-export function generateAnimationModule(frames: RenderableNode[], fps: number, name = "Animation"): string {
+export function generateAnimationModule(frames: Renderable[], fps: number, name = "Animation"): string {
   const framesCodes = frames.map((frame, i) => {
     // Export children of root, not root itself (root is the editor canvas with bg/padding)
     const children = frame.children
@@ -112,12 +112,12 @@ interface CodegenOptions {
 }
 
 // Generate code for children only (used for editor preview, hides root wrapper)
-export function generateChildrenCode(node: RenderableNode, opts: CodegenOptions = {}): string {
+export function generateChildrenCode(node: Renderable, opts: CodegenOptions = {}): string {
   if (node.children.length === 0) return ""
   return node.children.map((c) => generateCode(c, 0, opts)).join("\n")
 }
 
-export function generateCode(node: RenderableNode, indent = 0, opts: CodegenOptions = {}): string {
+export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions = {}): string {
   const pad = "  ".repeat(indent)
   const props: string[] = []
   const { stripInternal = false } = opts
@@ -135,7 +135,7 @@ export function generateCode(node: RenderableNode, indent = 0, opts: CodegenOpti
   const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry) return "" // Should not happen
 
-  if (isContainerNode(node)) {
+  if (isContainerRenderable(node)) {
     // Border properties (container-only)
     if (node.border) {
       if (node.borderSides && node.borderSides.length > 0) {
@@ -216,7 +216,7 @@ export function generateCode(node: RenderableNode, indent = 0, opts: CodegenOpti
 
   // Text element - has special content formatting, keep manual
   if (node.type === "text") {
-    const textNode = node as TextNode
+    const textNode = node as TextRenderable
     const registryProps = serializeRegistryProps(node)
     // Include style props for positioning
     if (styleProps.length > 0) {

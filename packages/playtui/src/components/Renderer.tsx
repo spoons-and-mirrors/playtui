@@ -1,9 +1,9 @@
-import type { RenderableNode } from "../lib/types"
+import type { Renderable } from "../lib/types"
 import { RENDERABLE_REGISTRY } from "./renderables"
 import { log } from "../lib/logger"
 
 // ============================================================================
-// Renderer - renders RenderableNode tree
+// Renderer - renders Renderable tree
 // ============================================================================
 
 export interface DragEvent {
@@ -13,7 +13,7 @@ export interface DragEvent {
 }
 
 export interface RendererProps {
-  node: RenderableNode
+  node: Renderable
   selectedId: string | null
   hoveredId: string | null
   onSelect: (id: string) => void

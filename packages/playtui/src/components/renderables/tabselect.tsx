@@ -1,5 +1,5 @@
 import type { MouseEvent } from "@opentui/core"
-import type { RenderableNode, TabSelectNode } from "../../lib/types"
+import type { Renderable, TabSelectNode } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
   StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
@@ -19,7 +19,7 @@ export const TABSELECT_DEFAULTS: Partial<TabSelectNode> = {
 // =============================================================================
 
 interface TabSelectRendererProps {
-  node: RenderableNode
+  node: Renderable
   isSelected: boolean
   isHovered: boolean
   onSelect: () => void
@@ -79,8 +79,8 @@ export function TabSelectRenderer({ node: genericNode, isSelected, isHovered, on
 // =============================================================================
 
 interface TabSelectPropertiesProps {
-  node: RenderableNode
-  onUpdate: (updates: Partial<RenderableNode>) => void
+  node: Renderable
+  onUpdate: (updates: Partial<Renderable>) => void
   focusedField: string | null
   setFocusedField: (f: string | null) => void
   collapsed: boolean
