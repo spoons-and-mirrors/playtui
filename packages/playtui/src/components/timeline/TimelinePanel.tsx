@@ -28,15 +28,15 @@ export function TimelinePanel({
         <Dopesheet 
           projectHook={projectHook}
           width={width}
-          onSelectProperty={(nodeId, property) =>
-            setTimelineView({ type: "curve", nodeId, property })
+          onSelectProperty={(renderableId, property) =>
+            setTimelineView({ type: "curve", renderableId, property })
           }
         />
       ) : (
         <ValueGraph 
           projectHook={projectHook}
           width={width}
-          nodeId={view.nodeId} 
+          renderableId={view.renderableId} 
           property={view.property} 
           onBack={() => setTimelineView({ type: "dopesheet" })}
         />

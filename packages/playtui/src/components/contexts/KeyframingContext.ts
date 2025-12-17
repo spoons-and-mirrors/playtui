@@ -10,9 +10,9 @@ export interface KeyframingContextValue {
   autoKeyEnabled: boolean
   currentFrame: number
   animatedProperties: AnimatedProperty[]
-  hasKeyframe: (nodeId: string, property: string, frame: number) => boolean
-  addKeyframe: (nodeId: string, property: string, value: number) => void
-  removeKeyframe: (nodeId: string, property: string) => void
+  hasKeyframe: (renderableId: string, property: string, frame: number) => boolean
+  addKeyframe: (renderableId: string, property: string, value: number) => void
+  removeKeyframe: (renderableId: string, property: string) => void
   selectedId: string | null
 }
 

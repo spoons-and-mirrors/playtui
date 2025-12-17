@@ -121,7 +121,7 @@ export function Builder({ width, height }: BuilderProps) {
 
   // Track dragging state for positioned elements
   const dragStartRef = useRef<{
-    nodeId: string
+    renderableId: string
     mouseX: number
     mouseY: number
     nodeX: number
@@ -135,9 +135,9 @@ export function Builder({ width, height }: BuilderProps) {
       autoKeyEnabled: project.animation.keyframing.autoKeyEnabled,
       currentFrame: project.animation.currentFrameIndex,
       animatedProperties: project.animation.keyframing.animatedProperties,
-      hasKeyframe: (nodeId: string, property: string, frame: number) => {
+      hasKeyframe: (renderableId: string, property: string, frame: number) => {
         const { hasKeyframeAt } = require("./lib/keyframing")
-        return hasKeyframeAt(project.animation.keyframing.animatedProperties, nodeId, property, frame)
+        return hasKeyframeAt(project.animation.keyframing.animatedProperties, renderableId, property, frame)
       },
       addKeyframe,
       removeKeyframe,
@@ -154,12 +154,12 @@ export function Builder({ width, height }: BuilderProps) {
   const code = useMemo(() => tree ? generateChildrenCode(tree) : "", [tree])
 
   const {
-    handleAddElement,
+    handleAddRenderable,
     handleCopy,
     handlePaste,
     handleDelete,
     handleDuplicate,
-    handleMoveNode,
+    handleMoveRenderable,
     handleUpdate,
     handleRename,
     navigateTree,
@@ -190,9 +190,9 @@ export function Builder({ width, height }: BuilderProps) {
     onPaste: handlePaste,
     onUndo: undo,
     onRedo: redo,
-    onMoveNode: handleMoveNode,
+    onMoveRenderable: handleMoveRenderable,
     onNavigateTree: navigateTree,
-    onAddElement: handleAddElement,
+    onAddRenderable: handleAddRenderable,
     // Animation Actions
     onAnimNextFrame: () => project?.animation && setCurrentFrame(Math.min(project.animation.frames.length - 1, project.animation.currentFrameIndex + 1)),
     onAnimPrevFrame: () => project?.animation && setCurrentFrame(Math.max(0, project.animation.currentFrameIndex - 1)),
@@ -240,12 +240,12 @@ export function Builder({ width, height }: BuilderProps) {
   // Handle drag for positioned elements (both absolute and relative)
   const handleDragStart = useCallback((event: DragEvent) => {
     if (!tree) return
-    const node = findRenderable(tree, event.nodeId)
+    const node = findRenderable(tree, event.renderableId)
     if (!node) return
     
     // Store initial mouse position and node position
     dragStartRef.current = {
-      nodeId: event.nodeId,
+      renderableId: event.renderableId,
       mouseX: event.x,
       mouseY: event.y,
       nodeX: (node as any).x ?? 0,
@@ -255,13 +255,13 @@ export function Builder({ width, height }: BuilderProps) {
 
   const handleDragMove = useCallback((event: DragEvent) => {
     if (!tree || !dragStartRef.current) return
-    if (dragStartRef.current.nodeId !== event.nodeId) return
+    if (dragStartRef.current.renderableId !== event.renderableId) return
     
     // Calculate delta from initial mouse position
     const deltaX = event.x - dragStartRef.current.mouseX
     const deltaY = event.y - dragStartRef.current.mouseY
     
-    const node = findRenderable(tree, event.nodeId)
+    const node = findRenderable(tree, event.renderableId)
     if (!node) return
 
     const newX = dragStartRef.current.nodeX + deltaX
@@ -269,36 +269,36 @@ export function Builder({ width, height }: BuilderProps) {
     
     // Update node position (without adding to history during drag)
     const updated = { ...node, x: newX, y: newY } as Renderable
-    const newTree = updateRenderable(tree, event.nodeId, updated)
+    const newTree = updateRenderable(tree, event.renderableId, updated)
     updateTree(newTree, false) // false = don't add to history
     
     // If in play mode and properties are keyframed, update keyframes during drag
     // This ensures the baked display tree shows the dragged position
     if (mode === "play" && project?.animation.keyframing.animatedProperties) {
       const animProps = project.animation.keyframing.animatedProperties
-      const hasXKeyframe = animProps.some(p => p.nodeId === event.nodeId && p.property === "x")
-      const hasYKeyframe = animProps.some(p => p.nodeId === event.nodeId && p.property === "y")
+      const hasXKeyframe = animProps.some(p => p.renderableId === event.renderableId && p.property === "x")
+      const hasYKeyframe = animProps.some(p => p.renderableId === event.renderableId && p.property === "y")
       
-      if (hasXKeyframe) addKeyframe(event.nodeId, "x", newX)
-      if (hasYKeyframe) addKeyframe(event.nodeId, "y", newY)
+      if (hasXKeyframe) addKeyframe(event.renderableId, "x", newX)
+      if (hasYKeyframe) addKeyframe(event.renderableId, "y", newY)
     }
   }, [tree, updateTree, mode, project?.animation.keyframing.animatedProperties, addKeyframe])
 
-  const handleDragEnd = useCallback((nodeId: string) => {
+  const handleDragEnd = useCallback((renderableId: string) => {
     if (!dragStartRef.current) return
     
-    const node = tree ? findRenderable(tree, nodeId) : null
+    const node = tree ? findRenderable(tree, renderableId) : null
     const finalX = node ? (node as any).x ?? 0 : dragStartRef.current.nodeX
     const finalY = node ? (node as any).y ?? 0 : dragStartRef.current.nodeY
     
     // If in play mode and properties are keyframed, ensure final keyframe is set
     if (mode === "play" && project?.animation.keyframing.animatedProperties) {
       const animProps = project.animation.keyframing.animatedProperties
-      const hasXKeyframe = animProps.some(p => p.nodeId === nodeId && p.property === "x")
-      const hasYKeyframe = animProps.some(p => p.nodeId === nodeId && p.property === "y")
+      const hasXKeyframe = animProps.some(p => p.renderableId === renderableId && p.property === "x")
+      const hasYKeyframe = animProps.some(p => p.renderableId === renderableId && p.property === "y")
       
-      if (hasXKeyframe) addKeyframe(nodeId, "x", finalX)
-      if (hasYKeyframe) addKeyframe(nodeId, "y", finalY)
+      if (hasXKeyframe) addKeyframe(renderableId, "x", finalX)
+      if (hasYKeyframe) addKeyframe(renderableId, "y", finalY)
     }
     
     // Reset drag start position
@@ -323,14 +323,14 @@ export function Builder({ width, height }: BuilderProps) {
 
   // Handle focusing an element in the canvas (double-click in tree)
   // Centers the element in the visible canvas area
-  const handleFocusElement = useCallback((nodeId: string) => {
+  const handleFocusRenderable = useCallback((renderableId: string) => {
     if (!tree) return
     
-    const node = findRenderable(tree, nodeId)
+    const node = findRenderable(tree, renderableId)
     if (!node) return
     
     // Get the node's accumulated position from tree root
-    const pos = getRenderablePosition(tree, nodeId)
+    const pos = getRenderablePosition(tree, renderableId)
     if (!pos) return
     
     // Get element dimensions (use defaults if not set)
@@ -479,7 +479,7 @@ export function Builder({ width, height }: BuilderProps) {
             <Title onLogoClick={() => setMode("docs")} />
             <scrollbox id="tree-scroll" style={{ flexGrow: 1, contentOptions: { flexDirection: "column" } }}>
               <TreeView key={treeKey} root={tree} selectedId={selectedId} collapsed={new Set(collapsed)}
-                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} onFocusElement={handleFocusElement} />
+                onSelect={setProjectSelectedId} onToggle={handleToggleCollapse} onRename={handleRename} onFocusRenderable={handleFocusRenderable} />
             </scrollbox>
           </box>
         )}
@@ -503,7 +503,7 @@ export function Builder({ width, height }: BuilderProps) {
           addMode={addMode}
           onFileAction={handleFileAction}
           onToggleAddMode={() => setAddMode(!addMode)}
-          onAddElement={handleAddElement}
+          onAddRenderable={handleAddRenderable}
           selectedNode={selectedNode}
           onUpdateNode={handleUpdate}
           focusedField={focusedField}

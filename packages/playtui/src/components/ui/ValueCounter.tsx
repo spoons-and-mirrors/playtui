@@ -30,7 +30,7 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
 
   // Check if this property is keyframed (has any keyframes)
   const isKeyframed = keyframing && keyframing.selectedId && property 
-    ? keyframing.animatedProperties?.some(p => p.nodeId === keyframing.selectedId && p.property === property)
+    ? keyframing.animatedProperties?.some(p => p.renderableId === keyframing.selectedId && p.property === property)
     : false
 
   // Check if there's a keyframe at the current frame

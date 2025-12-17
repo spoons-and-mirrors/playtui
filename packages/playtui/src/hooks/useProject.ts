@@ -55,14 +55,13 @@ export interface UseProjectReturn {
   importAnimation: (frames: Renderable[], fps: number) => void
 
   // Keyframing
-  toggleAutoKey: () => void
-  addKeyframe: (nodeId: string, property: string, value: number) => void
-  removeKeyframe: (nodeId: string, property: string) => void
-  setKeyframeHandle: (nodeId: string, property: string, frame: number, handleX: number, handleY: number) => void
+  addKeyframe: (renderableId: string, property: string, value: number) => void
+  removeKeyframe: (renderableId: string, property: string) => void
+  setKeyframeHandle: (renderableId: string, property: string, frame: number, handleX: number, handleY: number) => void
   setTimelineView: (
     view:
       | { type: "dopesheet" }
-      | { type: "curve"; nodeId: string; property: string }
+      | { type: "curve"; renderableId: string; property: string }
   ) => void
  
   // Palettes
@@ -614,13 +613,13 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Keyframing: Add or update keyframe at current frame
-  const addKeyframe = useCallback((nodeId: string, property: string, value: number) => {
+  const addKeyframe = useCallback((renderableId: string, property: string, value: number) => {
     setProject((prev) => {
       if (!prev) return prev
       const frame = prev.animation.currentFrameIndex
       const nextAnimated = upsertDomainKeyframe(
         prev.animation.keyframing.animatedProperties,
-        nodeId,
+        renderableId,
         property,
         frame,
         value
@@ -640,13 +639,13 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Keyframing: Remove keyframe at current frame
-  const removeKeyframe = useCallback((nodeId: string, property: string) => {
+  const removeKeyframe = useCallback((renderableId: string, property: string) => {
     setProject((prev) => {
       if (!prev) return prev
       const frame = prev.animation.currentFrameIndex
       const nextAnimated = removeDomainKeyframe(
         prev.animation.keyframing.animatedProperties,
-        nodeId,
+        renderableId,
         property,
         frame
       )
@@ -665,12 +664,12 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
 
   // Keyframing: Set bezier handle for a keyframe
-  const setKeyframeHandle = useCallback((nodeId: string, property: string, frame: number, handleX: number, handleY: number) => {
+  const setKeyframeHandle = useCallback((renderableId: string, property: string, frame: number, handleX: number, handleY: number) => {
     setProject((prev) => {
       if (!prev) return prev
       const nextAnimated = setDomainKeyframeHandle(
         prev.animation.keyframing.animatedProperties,
-        nodeId,
+        renderableId,
         property,
         frame,
         handleX,
@@ -691,7 +690,7 @@ export function useProject(): UseProjectReturn {
   }, [scheduleSave])
  
   // Keyframing: Set active timeline view (dopesheet or curve)
-  const setTimelineView = useCallback((view: { type: "dopesheet" } | { type: "curve"; nodeId: string; property: string }) => {
+  const setTimelineView = useCallback((view: { type: "dopesheet" } | { type: "curve"; renderableId: string; property: string }) => {
     setProject((prev) => {
       if (!prev) return prev
       const prevKeyframing = prev.animation.keyframing

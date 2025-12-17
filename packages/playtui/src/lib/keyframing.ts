@@ -25,7 +25,7 @@ export interface Keyframe {
 }
 
 export interface AnimatedProperty {
-  nodeId: string
+  renderableId: string
   property: PropertyPath
   keyframes: Keyframe[]
 }
@@ -36,7 +36,7 @@ export interface KeyframingState {
   animatedProperties: AnimatedProperty[]
   timeline: {
     panelOpen: boolean
-    view: { type: "dopesheet" } | { type: "curve"; nodeId: string; property: PropertyPath }
+    view: { type: "dopesheet" } | { type: "curve"; renderableId: string; property: PropertyPath }
   }
 }
 
@@ -57,25 +57,25 @@ export function createDefaultKeyframingState(): KeyframingState {
   }
 }
 
-export function keyframedPropertyId(nodeId: string, property: PropertyPath): KeyframedPropertyId {
-  return `${nodeId}:${property}`
+export function keyframedPropertyId(renderableId: string, property: PropertyPath): KeyframedPropertyId {
+  return `${renderableId}:${property}`
 }
 
 export function getAnimatedProperty(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath
 ): AnimatedProperty | undefined {
-  return animated.find((p) => p.nodeId === nodeId && p.property === property)
+  return animated.find((p) => p.renderableId === renderableId && p.property === property)
 }
 
 export function hasKeyframeAt(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number
 ): boolean {
-  const prop = getAnimatedProperty(animated, nodeId, property)
+  const prop = getAnimatedProperty(animated, renderableId, property)
   if (!prop) return false
   return prop.keyframes.some((k) => k.frame === frame)
 }
@@ -261,16 +261,16 @@ function easeWithHandle(t: number, handle: BezierHandle): number {
 
 export function upsertKeyframe(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number,
   value: number
 ): AnimatedProperty[] {
-  const existing = getAnimatedProperty(animated, nodeId, property)
+  const existing = getAnimatedProperty(animated, renderableId, property)
 
   if (!existing) {
     const newProp: AnimatedProperty = {
-      nodeId,
+      renderableId,
       property,
       keyframes: [{ 
         frame, 
@@ -304,7 +304,7 @@ export function upsertKeyframe(
   nextKeyframes = sortKeyframes(nextKeyframes)
 
   return animated.map((p) => {
-    if (p.nodeId === nodeId && p.property === property) {
+    if (p.renderableId === renderableId && p.property === property) {
       return { ...p, keyframes: nextKeyframes }
     }
     return p
@@ -313,20 +313,20 @@ export function upsertKeyframe(
 
 export function removeKeyframe(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number
 ): AnimatedProperty[] {
-  const existing = getAnimatedProperty(animated, nodeId, property)
+  const existing = getAnimatedProperty(animated, renderableId, property)
   if (!existing) return animated
 
   const nextKeyframes = existing.keyframes.filter((k) => k.frame !== frame)
   if (nextKeyframes.length === 0) {
-    return animated.filter((p) => !(p.nodeId === nodeId && p.property === property))
+    return animated.filter((p) => !(p.renderableId === renderableId && p.property === property))
   }
 
   return animated.map((p) => {
-    if (p.nodeId === nodeId && p.property === property) {
+    if (p.renderableId === renderableId && p.property === property) {
       return { ...p, keyframes: nextKeyframes }
     }
     return p
@@ -336,13 +336,13 @@ export function removeKeyframe(
 // Update bezier handle for a keyframe (updates both In and Out symmetrically)
 export function setKeyframeHandle(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number,
   handleX: number,
   handleY: number
 ): AnimatedProperty[] {
-  const existing = getAnimatedProperty(animated, nodeId, property)
+  const existing = getAnimatedProperty(animated, renderableId, property)
   if (!existing) return animated
 
   const nextKeyframes = existing.keyframes.map((k) => {
@@ -361,7 +361,7 @@ export function setKeyframeHandle(
   })
 
   return animated.map((p) => {
-    if (p.nodeId === nodeId && p.property === property) {
+    if (p.renderableId === renderableId && p.property === property) {
       return { ...p, keyframes: nextKeyframes }
     }
     return p
@@ -419,7 +419,7 @@ export function getDrivenValue(prop: AnimatedProperty, frame: number): number {
 // Legacy function - now unused but kept for compatibility
 export function setSegmentPoint(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number,
   percent: number
@@ -428,8 +428,8 @@ export function setSegmentPoint(
   return animated
 }
 
-function applyDrivenValue(frameTree: Renderable, nodeId: string, property: PropertyPath, value: number): void {
-  const node = findRenderable(frameTree, nodeId)
+function applyDrivenValue(frameTree: Renderable, renderableId: string, property: PropertyPath, value: number): void {
+  const node = findRenderable(frameTree, renderableId)
   if (!node) return
   ;(node as any)[property] = value
 }
@@ -441,7 +441,7 @@ export function bakeFrame(frameTree: Renderable, animated: AnimatedProperty[], f
 
   for (const prop of animated) {
     const value = getDrivenValue(prop, frameIndex)
-    applyDrivenValue(nextTree, prop.nodeId, prop.property, value)
+    applyDrivenValue(nextTree, prop.renderableId, prop.property, value)
   }
 
   return nextTree
@@ -484,11 +484,11 @@ export function shiftKeyframesOnDelete(animated: AnimatedProperty[], atIndex: nu
 // Get keyframe at specific frame for handle editing
 export function getKeyframeAt(
   animated: AnimatedProperty[],
-  nodeId: string,
+  renderableId: string,
   property: PropertyPath,
   frame: number
 ): Keyframe | undefined {
-  const prop = getAnimatedProperty(animated, nodeId, property)
+  const prop = getAnimatedProperty(animated, renderableId, property)
   if (!prop) return undefined
   return prop.keyframes.find((k) => k.frame === frame)
 }

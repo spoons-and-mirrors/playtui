@@ -12,7 +12,7 @@ interface PlayPageProps {
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
-  onDragEnd?: (nodeId: string) => void
+  onDragEnd?: (renderableId: string) => void
 }
 
 export function PlayPage({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPageProps) {

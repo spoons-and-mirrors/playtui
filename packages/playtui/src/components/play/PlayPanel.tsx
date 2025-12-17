@@ -14,7 +14,7 @@ interface PlayPanelProps {
   onTogglePlay: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
-  onDragEnd?: (nodeId: string) => void
+  onDragEnd?: (renderableId: string) => void
 }
 
 export function PlayPanel({ projectHook, isPlaying, canvasOffset, canvasOffsetAdjustY, onCanvasOffsetChange, onTogglePlay, onDragStart, onDragMove, onDragEnd }: PlayPanelProps) {

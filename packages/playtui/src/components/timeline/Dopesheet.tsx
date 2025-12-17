@@ -10,9 +10,9 @@ import { Bind, isKeybind } from "../../lib/shortcuts"
 import { getPrevKeyframeFrameForNode, getNextKeyframeFrameForNode } from "../../lib/keyframing"
  
 // Get display name for an element (capitalize type)
-function getElementName(tree: any, nodeId: string): string {
-  const node = findRenderable(tree, nodeId)
-  if (!node) return nodeId
+function getRenderableName(tree: any, renderableId: string): string {
+  const node = findRenderable(tree, renderableId)
+  if (!node) return renderableId
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
@@ -25,7 +25,7 @@ export function Dopesheet({
 }: { 
   projectHook: UseProjectReturn
   width: number
-  onSelectProperty: (nodeId: string, property: string) => void 
+  onSelectProperty: (renderableId: string, property: string) => void 
 }) {
   const { project, setCurrentFrame } = projectHook
   const scrollRefs = useRef<Map<string, React.RefObject<ScrollBoxRenderable | null>>>(new Map())
@@ -39,16 +39,16 @@ export function Dopesheet({
   const tree = project.tree
   const selectedId = project.selectedId
   
-  // Group by Node ID
+  // Group by Renderable ID
   const grouped: Record<string, typeof animatedProperties> = {}
   for (const prop of animatedProperties) {
-    if (!grouped[prop.nodeId]) grouped[prop.nodeId] = []
-    grouped[prop.nodeId].push(prop)
+    if (!grouped[prop.renderableId]) grouped[prop.renderableId] = []
+    grouped[prop.renderableId].push(prop)
   }
 
   // Create refs for each row (no hooks in loop - just create ref objects)
   const rowKeys = Object.entries(grouped).flatMap(([_, props]) => 
-    props.map(prop => `${prop.nodeId}:${prop.property}`)
+    props.map(prop => `${prop.renderableId}:${prop.property}`)
   )
   
   // Initialize refs for all rows
@@ -103,15 +103,15 @@ export function Dopesheet({
   return (
     <box flexDirection="column" flexGrow={1}>
       <box flexDirection="column" overflow="scroll">
-        {Object.entries(grouped).map(([nodeId, props]) => (
-          <box key={nodeId} flexDirection="column">
+        {Object.entries(grouped).map(([renderableId, props]) => (
+          <box key={renderableId} flexDirection="column">
             {/* Node Header */}
             <box height={1} backgroundColor={COLORS.bgAlt} paddingLeft={1}>
-              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>{getElementName(tree, nodeId)}</text>
+              <text fg={COLORS.accent} attributes={TextAttributes.BOLD}>{getRenderableName(tree, renderableId)}</text>
             </box>
             {/* Properties */}
             {props.map(prop => {
-              const rowKey = `${prop.nodeId}:${prop.property}`
+              const rowKey = `${prop.renderableId}:${prop.property}`
               const scrollRef = scrollRefs.current.get(rowKey)
               return (
                 <DopesheetRow
@@ -120,7 +120,7 @@ export function Dopesheet({
                   frameCount={frameCount}
                   currentFrame={currentFrame}
                   fps={fps}
-                  onSelect={() => onSelectProperty(prop.nodeId, prop.property)}
+                  onSelect={() => onSelectProperty(prop.renderableId, prop.property)}
                   scrollRef={scrollRef}
                 />
               )

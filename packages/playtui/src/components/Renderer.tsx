@@ -7,7 +7,7 @@ import { log } from "../lib/logger"
 // ============================================================================
 
 export interface DragEvent {
-  nodeId: string
+  renderableId: string
   x: number
   y: number
 }
@@ -65,7 +65,7 @@ export function Renderer({ node, selectedId, hoveredId, onSelect, onHover, onDra
     isHovered,
     onSelect: () => onSelect(node.id),
     onHover: (h: boolean) => onHover(h ? node.id : null),
-    onDragStart: onDragStart ? (x: number, y: number) => onDragStart({ nodeId: node.id, x, y }) : undefined,
+    onDragStart: onDragStart ? (x: number, y: number) => onDragStart({ renderableId: node.id, x, y }) : undefined,
     children,
   })
 }

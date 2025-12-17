@@ -10,9 +10,9 @@ import { findRenderable } from "../../lib/tree"
 import { Bind, isKeybind } from "../../lib/shortcuts"
  
 // Get display name for an element (capitalize type)
-function getElementName(tree: any, nodeId: string): string {
-  const node = findRenderable(tree, nodeId)
-  if (!node) return nodeId
+function getRenderableName(tree: any, renderableId: string): string {
+  const node = findRenderable(tree, renderableId)
+  if (!node) return renderableId
   const type = node.type as string
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
@@ -24,13 +24,13 @@ const GRAPH_HEIGHT = 12
 export function ValueGraph({ 
   projectHook,
   width,
-  nodeId, 
+  renderableId, 
   property,
   onBack
 }: { 
   projectHook: UseProjectReturn
   width: number
-  nodeId: string
+  renderableId: string
   property: string
   onBack: () => void
 }) {
@@ -45,7 +45,7 @@ export function ValueGraph({
   // J/K shortcuts for prev/next keyframe
   useKeyboard((key) => {
     if (!project) return
-    const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, nodeId, property)
+    const animProp = getAnimatedProperty(project.animation.keyframing.animatedProperties, renderableId, property)
     if (!animProp) return
     
     if (isKeybind(key, Bind.TIMELINE_PREV_KEYFRAME)) {
@@ -84,7 +84,7 @@ export function ValueGraph({
   
   const animatedProp = getAnimatedProperty(
     project.animation.keyframing.animatedProperties, 
-    nodeId, 
+    renderableId, 
     property
   )
 
@@ -138,7 +138,7 @@ export function ValueGraph({
   // Get current keyframe if one exists at current frame
   const currentKeyframe = getKeyframeAt(
     project.animation.keyframing.animatedProperties,
-    nodeId,
+    renderableId,
     property,
     currentFrame
   )
@@ -162,7 +162,7 @@ export function ValueGraph({
 
   // Handle value change from the slider
   const handleValueChange = (newValue: number) => {
-    addKeyframe(nodeId, property, newValue)
+    addKeyframe(renderableId, property, newValue)
   }
 
   // Handle click on timeline cell to navigate to that frame
@@ -186,7 +186,7 @@ export function ValueGraph({
       >
         {/* Left: Element:property name */}
         <box paddingLeft={0} paddingRight={2}>
-          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getElementName(project.tree, nodeId)}:{property}</text>
+          <text fg={COLORS.accent} attributes={TextAttributes.BOLD} selectable={false}>{getRenderableName(project.tree, renderableId)}:{property}</text>
         </box>
         
         {/* Frame indicator */}
@@ -209,14 +209,14 @@ export function ValueGraph({
               id="handle-x"
               label="spd"
               value={handle.x}
-              onChange={(v) => setKeyframeHandle(nodeId, property, currentFrame, v, handleRef.current.y)}
+              onChange={(v) => setKeyframeHandle(renderableId, property, currentFrame, v, handleRef.current.y)}
               resetTo={33}
             />
             <ValueSlider
               id="handle-y"
               label="bnc"
               value={handle.y}
-              onChange={(v) => setKeyframeHandle(nodeId, property, currentFrame, handleRef.current.x, v)}
+              onChange={(v) => setKeyframeHandle(renderableId, property, currentFrame, handleRef.current.x, v)}
               resetTo={0}
             />
           </>

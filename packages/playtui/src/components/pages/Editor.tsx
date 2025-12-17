@@ -46,7 +46,7 @@ interface EditorPanelProps {
   onBackgroundClick: () => void
   onDragStart?: (event: DragEvent) => void
   onDragMove?: (event: DragEvent) => void
-  onDragEnd?: (nodeId: string) => void
+  onDragEnd?: (renderableId: string) => void
 }
 
 export function EditorPanel({
@@ -65,14 +65,14 @@ export function EditorPanel({
   onDragEnd,
 }: EditorPanelProps) {
   // Track which node is being dragged (captured at canvas level)
-  const draggingNodeId = useRef<string | null>(null)
+  const draggingRenderableId = useRef<string | null>(null)
 
   // Track pan start position
   const panStartRef = useRef<{ mouseX: number; mouseY: number; offsetX: number; offsetY: number } | null>(null)
 
   // Handle drag start from an element - store the node ID for canvas-level tracking
   const handleElementDragStart = (event: DragEvent) => {
-    draggingNodeId.current = event.nodeId
+    draggingRenderableId.current = event.renderableId
     onDragStart?.(event)
   }
 
@@ -90,11 +90,11 @@ export function EditorPanel({
     }
 
     // Handle element dragging
-    if (!draggingNodeId.current || !onDragMove) return
+    if (!draggingRenderableId.current || !onDragMove) return
 
     e.stopPropagation()
     onDragMove({
-      nodeId: draggingNodeId.current,
+      renderableId: draggingRenderableId.current,
       x: e.x,
       y: e.y,
     })
@@ -109,12 +109,12 @@ export function EditorPanel({
     }
 
     // End element dragging
-    if (!draggingNodeId.current || !onDragEnd) return
+    if (!draggingRenderableId.current || !onDragEnd) return
 
     e.stopPropagation()
-    const nodeId = draggingNodeId.current
-    draggingNodeId.current = null
-    onDragEnd(nodeId)
+    const renderableId = draggingRenderableId.current
+    draggingRenderableId.current = null
+    onDragEnd(renderableId)
   }
 
   return (

@@ -197,7 +197,7 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   },
    [Bind.EDITOR_ENTER_ADD_MODE]: {
      id: Bind.EDITOR_ENTER_ADD_MODE,
-     label: "Add Element...",
+     label: "Add Renderable...",
      keys: [{ name: "a" }],
      category: "Editor"
    },

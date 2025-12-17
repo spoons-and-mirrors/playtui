@@ -27,9 +27,9 @@ interface UseBuilderKeyboardParams {
   onPaste: () => void
   onUndo: () => void
   onRedo: () => void
-  onMoveNode: (direction: "up" | "down") => void
+  onMoveRenderable: (direction: "up" | "down") => void
   onNavigateTree: (direction: "up" | "down") => void
-  onAddElement: (type: RenderableType) => void
+  onAddRenderable: (type: RenderableType) => void
 
   // Animation actions
   onAnimNextFrame?: () => void
@@ -62,9 +62,9 @@ export function useBuilderKeyboard({
   onPaste,
   onUndo,
   onRedo,
-  onMoveNode,
+  onMoveRenderable,
   onNavigateTree,
-  onAddElement,
+  onAddRenderable,
   onAnimNextFrame,
   onAnimPrevFrame,
   onAnimPlayToggle,
@@ -133,7 +133,7 @@ export function useBuilderKeyboard({
       // Check all add shortcuts (direct key matching from registry)
       for (const binding of ADD_MODE_BINDINGS) {
         if (key.name === binding.key) {
-          onAddElement(binding.type)
+          onAddRenderable(binding.type)
           return
         }
       }
@@ -148,8 +148,8 @@ export function useBuilderKeyboard({
     else if (isKeybind(key, Bind.EDITOR_PASTE)) onPaste()
     else if (isKeybind(key, Bind.EDITOR_UNDO)) onUndo()
     else if (isKeybind(key, Bind.EDITOR_REDO)) onRedo()
-    else if (isKeybind(key, Bind.EDITOR_MOVE_UP)) onMoveNode("up")
-    else if (isKeybind(key, Bind.EDITOR_MOVE_DOWN)) onMoveNode("down")
+    else if (isKeybind(key, Bind.EDITOR_MOVE_UP)) onMoveRenderable("up")
+    else if (isKeybind(key, Bind.EDITOR_MOVE_DOWN)) onMoveRenderable("down")
     else if (isKeybind(key, Bind.NAV_TREE_UP)) onNavigateTree("up")
     else if (isKeybind(key, Bind.NAV_TREE_DOWN)) onNavigateTree("down")
     else if (isKeybind(key, Bind.CANCEL_SELECTION)) setSelectedId(null)

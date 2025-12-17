@@ -22,7 +22,7 @@ interface HeaderProps {
   addMode: boolean
   onFileAction: (action: MenuAction) => void
   onToggleAddMode: () => void
-  onAddElement: (type: RenderableType) => void
+  onAddRenderable: (type: RenderableType) => void
   // Selected node for type/name display
   selectedNode?: Renderable | null
   onUpdateNode?: (updates: Partial<Renderable>) => void
@@ -146,11 +146,11 @@ function ElementToolbarBtn({ type, icon, label, shortcut, onPress }: { type: Ren
 function ElementToolbar({
   expanded,
   onToggle,
-  onAddElement,
+  onAddRenderable,
 }: {
   expanded: boolean
   onToggle: () => void
-  onAddElement: (type: RenderableType) => void
+  onAddRenderable: (type: RenderableType) => void
 }) {
   return (
     <box id="element-toolbar" style={{ flexDirection: "row", gap: 0 }}>
@@ -181,7 +181,7 @@ function ElementToolbar({
                  icon={icon}
                  label={label}
                  shortcut={binding.key}
-                 onPress={() => onAddElement(binding.type)}
+                  onPress={() => onAddRenderable(binding.type)}
                />
              )
            })}
@@ -199,7 +199,7 @@ export function Header({
   addMode,
   onFileAction,
   onToggleAddMode,
-  onAddElement,
+  onAddRenderable,
   selectedNode,
   onUpdateNode,
   focusedField,
@@ -264,7 +264,7 @@ export function Header({
 
       {/* Row 2: Element toolbar */}
       <box style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddElement={onAddElement} />
+        <ElementToolbar expanded={addMode} onToggle={onToggleAddMode} onAddRenderable={onAddRenderable} />
       </box>
 
       {/* Separator line */}
