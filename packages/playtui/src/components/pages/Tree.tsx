@@ -28,10 +28,9 @@ function TreeNode({ node, selectedId, collapsed, editingId, onSelect, onToggle, 
   const lastClickRef = useRef<number>(0)
   
   const canCollapse = hasChildren && (node.type === "box" || node.type === "scrollbox")
-  let icon = RENDERABLE_REGISTRY[node.type]?.icon || "?"
-  if (canCollapse) {
-    icon = isCollapsed ? "" : ""
-  }
+  const icon = canCollapse
+    ? (isCollapsed ? "▸" : "▾")
+    : (RENDERABLE_REGISTRY[node.type]?.icon || "?")
   const typeLabel = node.type.charAt(0).toUpperCase() + node.type.slice(1)
 
   const label = node.name || (node.type === "text" ? `"${(node.content || "").slice(0, 8)}"` : typeLabel)
