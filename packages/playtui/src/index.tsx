@@ -552,7 +552,7 @@ export function Builder({ width, height }: BuilderProps) {
 <box id="builder-sidebar" border={["left"]} borderColor={COLORS.border} customBorderChars={ThinBorderLeft}
              style={{ width: sidebarWidth, flexDirection: "column", backgroundColor: COLORS.bgAlt, padding: 1, flexShrink: 0 }}>
             {/* Palette - always visible */}
-            <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center" }}>
+            <box id="palette-header" border={["bottom"]} borderColor={COLORS.border} style={{ marginBottom: 1, justifyContent: "center", flexShrink: 0 }}>
               <PaletteControl
                 palettes={palettes}
                 activePaletteIndex={activePaletteIndex}
