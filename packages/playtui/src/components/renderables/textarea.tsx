@@ -2,8 +2,10 @@ import type { MouseEvent } from "@opentui/core"
 import type { Renderable, TextareaRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  StringProp, NumberProp, ToggleProp, ColorControl, SectionHeader
+  StringProp, NumberProp, ToggleProp, SectionHeader, ManagedColorControl
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle } from "./styleHelpers"
 
 // =============================================================================
 // TEXTAREA DEFAULTS
@@ -32,35 +34,17 @@ interface TextareaRendererProps {
 
 export function TextareaRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextareaRendererProps) {
   const node = genericNode as TextareaRenderable
-  // Enable dragging for all positioned elements
-  const isDraggable = true
-
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
+  
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
-      style={{
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-        position: node.position,
-        top: node.y,
-        left: node.x,
-        zIndex: node.zIndex,
-      }}
+      style={buildPositioningStyle(node)}
     >
       <text fg={node.placeholderColor || COLORS.muted} wrapMode="word">
         {node.initialValue || node.placeholder || "Multi-line input..."}
@@ -134,15 +118,15 @@ export function TextareaProperties({ node: genericNode, onUpdate, focusedField, 
           />
 
           {/* Tab indicator color */}
-          <ColorControl
+          <ManagedColorControl
             label="Tab Clr"
-            value={node.tabIndicatorColor || ""}
-            focused={focusedField === "tabIndicatorColor"}
-            onFocus={() => setFocusedField("tabIndicatorColor")}
-            onBlur={() => setFocusedField(null)}
-            onChange={(v) => onUpdate({ tabIndicatorColor: v })}
-            pickMode={pickingForField === "tabIndicatorColor"}
-            onPickStart={() => setPickingForField?.("tabIndicatorColor")}
+            field="tabIndicatorColor"
+            value={node.tabIndicatorColor}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            onUpdate={onUpdate}
+            pickingForField={pickingForField}
+            setPickingForField={setPickingForField}
           />
         </box>
       )}

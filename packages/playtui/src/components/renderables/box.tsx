@@ -2,8 +2,10 @@ import type { Renderable, BoxRenderable } from "../../lib/types"
 import type { MouseEvent } from "@opentui/core"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, StringProp, ColorControl, SectionHeader, BorderSidesProp
+  ToggleProp, SelectProp, StringProp, SectionHeader, BorderSidesProp, ManagedColorControl
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle, parseSize } from "./styleHelpers"
 
 // =============================================================================
 // BOX DEFAULTS
@@ -35,20 +37,15 @@ interface BoxRendererProps {
   children?: React.ReactNode
 }
 
-// Parse size value (number, "auto", or percentage string)
-const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
-  if (val === undefined || val === "auto") return undefined
-  return val
-}
-
 export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: BoxRendererProps) {
   const node = genericNode as BoxRenderable
   const hasBorder = node.border === true
   
-  // Enable dragging for all positioned elements
-  const isDraggable = true
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   const boxStyle = {
+    ...buildPositioningStyle(node),
+    
     // Sizing
     width: parseSize(node.width),
     height: parseSize(node.height),
@@ -81,34 +78,12 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     paddingBottom: node.paddingBottom,
     paddingLeft: node.paddingLeft,
 
-    // Margin
-    margin: node.margin,
-    marginTop: node.marginTop,
-    marginRight: node.marginRight,
-    marginBottom: node.marginBottom,
-    marginLeft: node.marginLeft,
-
-    // Positioning
-    position: node.position,
-    top: node.y,
-    left: node.x,
-    zIndex: node.zIndex,
-
     // Overflow
     overflow: node.overflow,
 
     // Background
     backgroundColor: node.backgroundColor || "transparent",
   } as const
-
-  // Drag start handler - canvas handles move/end
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
 
   // Border props - only include when border is enabled
   const borderProps = hasBorder ? {
@@ -123,8 +98,8 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       {...borderProps}
       shouldFill={node.shouldFill}
       visible={node.visible !== false}
@@ -187,27 +162,27 @@ export function BoxBorderProperties({ node: genericNode, onUpdate, focusedField,
               />
 
               {/* Border color */}
-              <ColorControl
+              <ManagedColorControl
                 label="Color"
-                value={node.borderColor || ""}
-                focused={focusedField === "borderColor"}
-                onFocus={() => setFocusedField("borderColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ borderColor: v })}
-                pickMode={pickingForField === "borderColor"}
-                onPickStart={() => setPickingForField?.("borderColor")}
+                field="borderColor"
+                value={node.borderColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
 
               {/* Focused border color */}
-              <ColorControl
+              <ManagedColorControl
                 label="Focus Clr"
-                value={node.focusedBorderColor || ""}
-                focused={focusedField === "focusedBorderColor"}
-                onFocus={() => setFocusedField("focusedBorderColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ focusedBorderColor: v })}
-                pickMode={pickingForField === "focusedBorderColor"}
-                onPickStart={() => setPickingForField?.("focusedBorderColor")}
+                field="focusedBorderColor"
+                value={node.focusedBorderColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
 
               {/* Title */}

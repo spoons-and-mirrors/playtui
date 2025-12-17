@@ -1,9 +1,10 @@
-import type { MouseEvent } from "@opentui/core"
 import type { Renderable, SliderRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  NumberProp, SelectProp, ColorControl, SectionHeader
+  NumberProp, SelectProp, ManagedColorControl, SectionHeader
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle } from "./styleHelpers"
 
 // =============================================================================
 // SLIDER DEFAULTS
@@ -24,14 +25,14 @@ export const SLIDER_DEFAULTS: Partial<SliderRenderable> = {
 
 interface SliderRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
+  isSelected?: boolean
+  isHovered?: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
 }
 
-export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: SliderRendererProps) {
+export function SliderRenderer({ node: genericNode, onSelect, onHover, onDragStart }: SliderRendererProps) {
   const node = genericNode as SliderRenderable
   const isHorizontal = node.orientation !== "vertical"
   const val = node.value ?? 50
@@ -40,35 +41,17 @@ export function SliderRenderer({ node: genericNode, isSelected, isHovered, onSel
   const pct = Math.round(((val - min) / (max - min)) * 100)
   const trackChar = isHorizontal ? "─" : "│"
   const thumbChar = "●"
-  // Enable dragging for all positioned elements
-  const isDraggable = true
-
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
+  
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
-      style={{
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-        position: node.position,
-        top: node.y,
-        left: node.x,
-        zIndex: node.zIndex,
-      }}
+      style={buildPositioningStyle(node)}
     >
       <text fg={node.foregroundColor || COLORS.accent}>
         {isHorizontal
@@ -125,8 +108,6 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
                 label="Min"
                 value={min}
                 min={0}
-
-
                 max={1000}
                 onChange={(v) => onUpdate({ min: v })}
               />
@@ -137,8 +118,6 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
                 label="Max"
                 value={max}
                 min={0}
-
-
                 max={1000}
                 onChange={(v) => onUpdate({ max: v })}
               />
@@ -170,27 +149,27 @@ export function SliderProperties({ node: genericNode, onUpdate, focusedField, se
 
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="BG"
-                value={node.backgroundColor || ""}
-                focused={focusedField === "backgroundColor"}
-                onFocus={() => setFocusedField("backgroundColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ backgroundColor: v })}
-                pickMode={pickingForField === "backgroundColor"}
-                onPickStart={() => setPickingForField?.("backgroundColor")}
+                field="backgroundColor"
+                value={node.backgroundColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="Thumb"
-                value={node.foregroundColor || ""}
-                focused={focusedField === "foregroundColor"}
-                onFocus={() => setFocusedField("foregroundColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ foregroundColor: v })}
-                pickMode={pickingForField === "foregroundColor"}
-                onPickStart={() => setPickingForField?.("foregroundColor")}
+                field="foregroundColor"
+                value={node.foregroundColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
           </box>

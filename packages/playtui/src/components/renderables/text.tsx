@@ -4,8 +4,10 @@ import type { MouseEvent } from "@opentui/core"
 import type { Renderable, TextRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, ColorControl, PropRow
+  ToggleProp, SelectProp, ManagedColorControl, PropRow
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle } from "./styleHelpers"
 
 import type { ColorPalette } from "../../lib/projectTypes"
 
@@ -34,8 +36,7 @@ interface TextRendererProps {
 export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: TextRendererProps) {
   const node = genericNode as TextRenderable
   
-  // Enable dragging for all positioned elements
-  const isDraggable = true
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
   
   // Build text attributes bitmask
   let attrs = 0
@@ -45,39 +46,22 @@ export function TextRenderer({ node: genericNode, isSelected, isHovered, onSelec
   if (node.dim) attrs |= TextAttributes.DIM
   if (node.strikethrough) attrs |= TextAttributes.STRIKETHROUGH
 
-  // Drag start handler - canvas handles move/end
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
-
   const wrapperStyle = {
+    ...buildPositioningStyle(node),
     backgroundColor: "transparent",
-    margin: node.margin,
-    marginTop: node.marginTop,
-    marginRight: node.marginRight,
-    marginBottom: node.marginBottom,
-    marginLeft: node.marginLeft,
     padding: node.padding,
     paddingTop: node.paddingTop,
     paddingRight: node.paddingRight,
     paddingBottom: node.paddingBottom,
     paddingLeft: node.paddingLeft,
-    position: node.position,
-    top: node.y,
-    left: node.x,
-    zIndex: node.zIndex,
   }
 
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
       style={wrapperStyle}
     >
@@ -169,15 +153,15 @@ export function TextProperties({ node: genericNode, onUpdate, focusedField, setF
         </PropRow>
 
         {/* Fill color */}
-        <ColorControl
+        <ManagedColorControl
           label="Fill"
-          value={node.fg || ""}
-          onChange={(v) => onUpdate({ fg: v || undefined })}
-          focused={focusedField === "fg"}
-          onFocus={() => setFocusedField("fg")}
-          onBlur={() => setFocusedField(null)}
-          pickMode={pickingForField === "fg"}
-          onPickStart={() => setPickingForField?.("fg")}
+          field="fg"
+          value={node.fg}
+          focusedField={focusedField}
+          setFocusedField={setFocusedField}
+          onUpdate={onUpdate}
+          pickingForField={pickingForField}
+          setPickingForField={setPickingForField}
         />
 
         {/* Wrap */}

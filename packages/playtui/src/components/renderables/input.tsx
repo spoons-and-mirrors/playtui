@@ -2,8 +2,10 @@ import type { MouseEvent } from "@opentui/core"
 import type { Renderable, InputRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  StringProp, NumberProp, SelectProp, ColorControl, SectionHeader
+  StringProp, NumberProp, SelectProp, SectionHeader, ManagedColorControl
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle } from "./styleHelpers"
 
 // =============================================================================
 // INPUT DEFAULTS
@@ -30,35 +32,17 @@ interface InputRendererProps {
 
 export function InputRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: InputRendererProps) {
   const node = genericNode as InputRenderable
-  // Enable dragging for all positioned elements
-  const isDraggable = true
-
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
+  
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
-      style={{
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-        position: node.position,
-        top: node.y,
-        left: node.x,
-        zIndex: node.zIndex,
-      }}
+      style={buildPositioningStyle(node)}
     >
       <text fg={node.placeholderColor || COLORS.muted}>
         {node.placeholder || "Input..."}
@@ -117,27 +101,27 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           {/* Text colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="Text"
-                value={node.textColor || ""}
-                focused={focusedField === "textColor"}
-                onFocus={() => setFocusedField("textColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ textColor: v })}
-                pickMode={pickingForField === "textColor"}
-                onPickStart={() => setPickingForField?.("textColor")}
+                field="textColor"
+                value={node.textColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="Foc Txt"
-                value={node.focusedTextColor || ""}
-                focused={focusedField === "focusedTextColor"}
-                onFocus={() => setFocusedField("focusedTextColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ focusedTextColor: v })}
-                pickMode={pickingForField === "focusedTextColor"}
-                onPickStart={() => setPickingForField?.("focusedTextColor")}
+                field="focusedTextColor"
+                value={node.focusedTextColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
           </box>
@@ -145,41 +129,41 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
           {/* Background colors row */}
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="BG"
-                value={node.backgroundColor || ""}
-                focused={focusedField === "backgroundColor"}
-                onFocus={() => setFocusedField("backgroundColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ backgroundColor: v })}
-                pickMode={pickingForField === "backgroundColor"}
-                onPickStart={() => setPickingForField?.("backgroundColor")}
+                field="backgroundColor"
+                value={node.backgroundColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="Foc BG"
-                value={node.focusedBackgroundColor || ""}
-                focused={focusedField === "focusedBackgroundColor"}
-                onFocus={() => setFocusedField("focusedBackgroundColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ focusedBackgroundColor: v })}
-                pickMode={pickingForField === "focusedBackgroundColor"}
-                onPickStart={() => setPickingForField?.("focusedBackgroundColor")}
+                field="focusedBackgroundColor"
+                value={node.focusedBackgroundColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
           </box>
 
           {/* Placeholder color */}
-          <ColorControl
+          <ManagedColorControl
             label="Plchld Clr"
-            value={node.placeholderColor || ""}
-            focused={focusedField === "placeholderColor"}
-            onFocus={() => setFocusedField("placeholderColor")}
-            onBlur={() => setFocusedField(null)}
-            onChange={(v) => onUpdate({ placeholderColor: v })}
-            pickMode={pickingForField === "placeholderColor"}
-            onPickStart={() => setPickingForField?.("placeholderColor")}
+            field="placeholderColor"
+            value={node.placeholderColor}
+            focusedField={focusedField}
+            setFocusedField={setFocusedField}
+            onUpdate={onUpdate}
+            pickingForField={pickingForField}
+            setPickingForField={setPickingForField}
           />
 
           {/* Cursor section header */}
@@ -198,15 +182,15 @@ export function InputProperties({ node: genericNode, onUpdate, focusedField, set
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="Color"
-                value={node.cursorColor || ""}
-                focused={focusedField === "cursorColor"}
-                onFocus={() => setFocusedField("cursorColor")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ cursorColor: v })}
-                pickMode={pickingForField === "cursorColor"}
-                onPickStart={() => setPickingForField?.("cursorColor")}
+                field="cursorColor"
+                value={node.cursorColor}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
           </box>

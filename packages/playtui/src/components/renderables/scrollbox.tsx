@@ -1,9 +1,10 @@
-import type { MouseEvent } from "@opentui/core"
 import type { Renderable, ScrollboxRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
 import {
-  ToggleProp, SelectProp, ColorControl, SectionHeader
+  ToggleProp, SelectProp, ManagedColorControl, SectionHeader
 } from "../controls"
+import { useRenderableMouseHandlers } from "./useRenderableMouseHandlers"
+import { buildPositioningStyle } from "./styleHelpers"
 
 // =============================================================================
 // SCROLLBOX DEFAULTS
@@ -25,38 +26,22 @@ export const SCROLLBOX_DEFAULTS: Partial<ScrollboxRenderable> = {
 
 interface ScrollboxRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
+  isSelected?: boolean
+  isHovered?: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
   children?: React.ReactNode
 }
 
-export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
+export function ScrollboxRenderer({ node: genericNode, onSelect, onHover, onDragStart, children }: ScrollboxRendererProps) {
   const node = genericNode as ScrollboxRenderable
   const hasBorder = node.border === true
   const borderValue = hasBorder
     ? (node.borderSides && node.borderSides.length > 0 ? node.borderSides : true)
     : undefined
 
-  const parseSize = (val: number | "auto" | `${number}%` | undefined) => {
-    if (val === undefined || val === "auto") return undefined
-    return val
-  }
-
-  // Split positioning styles from box styles
-  const positionStyle = {
-    margin: node.margin,
-    marginTop: node.marginTop,
-    marginRight: node.marginRight,
-    marginBottom: node.marginBottom,
-    marginLeft: node.marginLeft,
-    position: node.position,
-    top: node.y,
-    left: node.x,
-    zIndex: node.zIndex,
-  }
+  const { handleMouseDown, handleMouseOver, handleMouseOut } = useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   const scrollboxStyle = {
     flexDirection: node.flexDirection || "column",
@@ -84,25 +69,14 @@ export function ScrollboxRenderer({ node: genericNode, isSelected, isHovered, on
     },
   } : undefined
 
-  // Enable dragging for all positioned elements
-  const isDraggable = true
-
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
-
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
-      style={positionStyle}
+      style={buildPositioningStyle(node)}
     >
       <scrollbox
         border={borderValue}
@@ -207,27 +181,27 @@ export function ScrollboxProperties({ node: genericNode, onUpdate, focusedField,
 
           <box style={{ flexDirection: "row", gap: 1 }}>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="FG"
-                value={node.scrollbarForeground || ""}
-                focused={focusedField === "scrollbarForeground"}
-                onFocus={() => setFocusedField("scrollbarForeground")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ scrollbarForeground: v })}
-                pickMode={pickingForField === "scrollbarForeground"}
-                onPickStart={() => setPickingForField?.("scrollbarForeground")}
+                field="scrollbarForeground"
+                value={node.scrollbarForeground}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
             <box style={{ flexGrow: 1 }}>
-              <ColorControl
+              <ManagedColorControl
                 label="BG"
-                value={node.scrollbarBackground || ""}
-                focused={focusedField === "scrollbarBackground"}
-                onFocus={() => setFocusedField("scrollbarBackground")}
-                onBlur={() => setFocusedField(null)}
-                onChange={(v) => onUpdate({ scrollbarBackground: v })}
-                pickMode={pickingForField === "scrollbarBackground"}
-                onPickStart={() => setPickingForField?.("scrollbarBackground")}
+                field="scrollbarBackground"
+                value={node.scrollbarBackground}
+                focusedField={focusedField}
+                setFocusedField={setFocusedField}
+                onUpdate={onUpdate}
+                pickingForField={pickingForField}
+                setPickingForField={setPickingForField}
               />
             </box>
           </box>
