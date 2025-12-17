@@ -5,7 +5,7 @@ import {
    NumberProp, SelectProp, ToggleProp, StringProp, SizeProp, 
    SectionHeader, BorderSidesProp, SpacingControl, MarginControl, ColorControl, 
    PositionControl, FlexDirectionPicker, FlexAlignmentGrid, GapControl,
-    OverflowPicker, DimensionsControl
+   OverflowPicker, DimensionsControl
 } from "../controls"
 import { RENDERABLE_REGISTRY, PROPERTY_SECTIONS, isContainerRenderable, type SerializableProp, type PropertySection } from "../renderables"
 import { COLORS } from "../../theme"
@@ -157,6 +157,9 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         <BorderSidesProp key={key} label={label} value={val as BorderSide[] | undefined}
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)} />
       )
+    }
+    if (prop.type === "object") {
+      return null
     }
     return (
       <StringProp key={key} label={label} value={String(val || "")} focused={focusedField === prop.key}
@@ -313,6 +316,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
     const container = node as BoxRenderable | ScrollboxRenderable
     
     const isCollapsed = collapsed["flexContainer"]
+    const justifyProp = props.find(p => p.key === "justifyContent")
+    const alignProp = props.find(p => p.key === "alignItems")
     const wrapProp = props.find(p => p.key === "flexWrap")
     const alignContentProp = props.find(p => p.key === "alignContent")
     const flexMeta = PROPERTY_SECTIONS.find((meta) => meta.id === "flexContainer")
@@ -326,10 +331,18 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
           <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
             <FlexDirectionPicker value={container.flexDirection} onChange={(v) => onUpdate({ flexDirection: v } as Partial<Renderable>)} />
             {wrapProp && renderProp(wrapProp)}
+            
             <FlexAlignmentGrid justify={container.justifyContent} align={container.alignItems} direction={container.flexDirection}
               onJustifyChange={(v) => onUpdate({ justifyContent: v } as Partial<Renderable>)} 
               onAlignChange={(v) => onUpdate({ alignItems: v } as Partial<Renderable>)} 
               onBothChange={(j, a) => onUpdate({ justifyContent: j, alignItems: a } as Partial<Renderable>)} />
+            
+            {/* Advanced alignment overrides for space-evenly, baseline, etc. */}
+            <box style={{ marginTop: 1, gap: 0, flexDirection: "column" }}>
+              {justifyProp && renderProp(justifyProp)}
+              {alignProp && renderProp(alignProp)}
+            </box>
+
             {container.flexWrap === "wrap" && alignContentProp && renderProp(alignContentProp)}
             <box id="flex-gap-sliders" flexDirection="column" gap={1} marginTop={1}>
               <GapControl

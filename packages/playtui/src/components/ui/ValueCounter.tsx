@@ -108,8 +108,8 @@ export function ValueCounter({ id, label, property, value, onChange, onChangeEnd
     setDragging(false)
   }
 
-  // Use warning color if property is keyframed
-  const valueTextColor = isKeyframed ? COLORS.warning : COLORS.bg
+  // Use text color if property is keyframed, otherwise use light text on muted bg
+  const valueTextColor = isKeyframed ? COLORS.warning : COLORS.text
 
   return (
     <box id={id} flexDirection="row" alignItems="center">

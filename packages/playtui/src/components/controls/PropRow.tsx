@@ -7,9 +7,9 @@ export function PropRow({ label, children, isSet }: { label: string; children: R
         {isSet !== undefined && (
           <text fg={isSet ? COLORS.accent : "transparent"} style={{ width: 1 }}>•</text>
         )}
-        <text fg={COLORS.text} style={{ width: 8 }}><strong>{label}</strong></text>
+        <text fg={COLORS.text} style={{ width: 8 }}>{label}</text>
       </box>
-      <box style={{ flexDirection: "row", flexGrow: 1, justifyContent: "center" }}>
+      <box style={{ flexDirection: "row", flexGrow: 1, justifyContent: "flex-start" }}>
         {children}
       </box>
     </box>

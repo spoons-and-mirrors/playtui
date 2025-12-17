@@ -31,37 +31,58 @@ export function GapControl({
 }
 
 export function FlexDirectionPicker({ value, onChange }: {
-
   value: FlexDirection | undefined
   onChange: (v: FlexDirection) => void
 }) {
-  const isRow = value === "row"
-  const isCol = value === "column" || !value
+  const current = value || "column"
+  const isRow = current === "row" || current === "row-reverse"
+  const isCol = current === "column" || current === "column-reverse"
+  const isReverse = current.endsWith("-reverse")
+
+  const toggleReverse = () => {
+    const base = isRow ? "row" : "column"
+    if (isReverse) {
+      onChange(base)
+    } else {
+      onChange(`${base}-reverse` as FlexDirection)
+    }
+  }
 
   return (
     <PropRow label="Direction">
       <box style={{ flexDirection: "row", gap: 1 }}>
         <box
           id="flex-dir-row"
-          onMouseDown={() => onChange("row")}
+          onMouseDown={() => onChange(isReverse ? "row-reverse" : "row")}
           style={{
             backgroundColor: isRow ? COLORS.accent : COLORS.bgAlt,
             paddingLeft: 1, paddingRight: 1,
             flexDirection: "row", gap: 0
           }}
         >
-          <text fg={isRow ? COLORS.bg : COLORS.muted}>→ Row</text>
+          <text fg={isRow ? COLORS.bg : COLORS.text}>Row</text>
         </box>
         <box
           id="flex-dir-col"
-          onMouseDown={() => onChange("column")}
+          onMouseDown={() => onChange(isReverse ? "column-reverse" : "column")}
           style={{
             backgroundColor: isCol ? COLORS.accent : COLORS.bgAlt,
             paddingLeft: 1, paddingRight: 1,
             flexDirection: "row", gap: 0
           }}
         >
-          <text fg={isCol ? COLORS.bg : COLORS.muted}>↓ Col</text>
+          <text fg={isCol ? COLORS.bg : COLORS.text}>Col</text>
+        </box>
+        <box
+          id="flex-dir-reverse"
+          onMouseDown={toggleReverse}
+          style={{
+            backgroundColor: isReverse ? COLORS.accent : COLORS.bgAlt,
+            paddingLeft: 1, paddingRight: 1,
+            flexDirection: "row", gap: 0
+          }}
+        >
+          <text fg={isReverse ? COLORS.bg : COLORS.text}>Rev</text>
         </box>
       </box>
     </PropRow>
@@ -83,15 +104,15 @@ export function FlexAlignmentGrid({
   onAlignChange: (v: AlignItems) => void
   onBothChange: (j: JustifyContent, a: AlignItems) => void
 }) {
-  const opts: JustifyContent[] = ["flex-start", "center", "flex-end"]
+  const opts: JustifyContent[] = ["flex-start", "center", "flex-end", "space-between", "space-around", "space-evenly"]
   
-  const currentJ = justify ?? "flex-start"
-  const currentA = align ?? "flex-start"
+  const currentJ = (justify as any) === "auto" ? "flex-start" : (justify ?? "flex-start")
+  const currentA = (align as any) === "auto" ? "flex-start" : (align ?? "flex-start")
   
   const isRow = direction === "row"
   
-  const jIdx = opts.indexOf(currentJ)
-  const aIdx = opts.indexOf(currentA === "stretch" ? "flex-start" : currentA)
+  const jIdx = opts.indexOf(currentJ as any)
+  const aIdx = opts.indexOf((currentA === "stretch" ? "flex-start" : currentA) as any)
 
   // For row: cols = justify (X main), rows = align (Y cross)
   // For column: cols = align (X cross), rows = justify (Y main)
@@ -122,11 +143,11 @@ export function FlexAlignmentGrid({
         ))}
       </box>
       <box style={{ flexDirection: "row", gap: 1, marginTop: 1 }}>
-        <text fg={COLORS.muted} style={{ width: 8 }}>Justify:</text>
+        <text fg={COLORS.text} style={{ width: 10 }}>Justify:</text>
         <text fg={COLORS.accent}>{currentJ.replace("flex-", "")}</text>
       </box>
       <box style={{ flexDirection: "row", gap: 1 }}>
-        <text fg={COLORS.muted} style={{ width: 8 }}>Align:</text>
+        <text fg={COLORS.text} style={{ width: 10 }}>Align:</text>
         <text fg={COLORS.accent}>{currentA.replace("flex-", "")}</text>
       </box>
     </box>
@@ -139,10 +160,10 @@ export function OverflowPicker({ value, onChange }: {
   value: Overflow | undefined
   onChange: (v: Overflow) => void
 }) {
-  const options: { val: Overflow; icon: string; label: string }[] = [
-    { val: "visible", icon: "◻", label: "Vis" },
-    { val: "hidden", icon: "▣", label: "Hide" },
-    { val: "scroll", icon: "↕", label: "Scroll" },
+  const options: { val: Overflow; label: string }[] = [
+    { val: "visible", label: "Vis" },
+    { val: "hidden", label: "Hide" },
+    { val: "scroll", label: "Scroll" },
   ]
   const current = value || "visible"
 
@@ -161,7 +182,7 @@ export function OverflowPicker({ value, onChange }: {
                 paddingLeft: 1, paddingRight: 1
               }}
             >
-              <text fg={isSelected ? COLORS.bg : COLORS.muted}>{opt.icon}{opt.label}</text>
+              <text fg={isSelected ? COLORS.bg : COLORS.text}>{opt.label}</text>
             </box>
           )
         })}

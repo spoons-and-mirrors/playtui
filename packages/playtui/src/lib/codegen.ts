@@ -32,6 +32,11 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
     return `${key}="${strVal}"`
   }
 
+  // Object props (e.g. customBorderChars)
+  if (type === "object") {
+    return `${key}={${JSON.stringify(value)}}`
+  }
+
   // Number props
   if (type === "number") {
     return `${key}={${value}}`
@@ -135,33 +140,12 @@ export function generateCode(node: Renderable, indent = 0, opts: CodegenOptions 
   const entry = RENDERABLE_REGISTRY[node.type]
   if (!entry) return "" // Should not happen
 
-  if (isContainerRenderable(node)) {
-    // Border properties (container-only)
-    if (node.border) {
-      if (node.borderSides && node.borderSides.length > 0) {
-        props.push(`border={[${node.borderSides.map(s => `"${s}"`).join(", ")}]}`)
-      } else {
-        props.push("border")
-      }
-      if (node.borderStyle && node.borderStyle !== "single") {
-        props.push(`borderStyle="${node.borderStyle}"`)
-      }
-      // Only output borderColor if border is enabled
-      if (node.borderColor) props.push(`borderColor="${node.borderColor}"`)
-      if (node.focusedBorderColor) props.push(`focusedBorderColor="${node.focusedBorderColor}"`)
-    }
-    if (node.shouldFill === false) props.push("shouldFill={false}")
-    if (node.title) props.push(`title="${node.title}"`)
-    if (node.titleAlignment && node.titleAlignment !== "left") {
-      props.push(`titleAlignment="${node.titleAlignment}"`)
-    }
-    // Background color is handled via styleProp for container nodes in registry, 
-    // BUT OpenTUI box/scrollbox also support backgroundColor as a direct prop for historical reasons.
-    // However, our registry now marks it as a styleProp. 
-    // To maintain existing behavior where some props might be direct, we rely on the registry.
-    // If a prop is NOT in styleProps, serializeRegistryProps handles it.
-    
-    if (node.visible === false) props.push("visible={false}")
+  // Filter out style props from the registry-driven props
+  const directProps = entry.properties.filter(p => !p.styleProp)
+  for (const prop of directProps) {
+    const value = (node as unknown as Record<string, unknown>)[prop.key]
+    const serialized = serializeProp(prop, value)
+    if (serialized) props.push(serialized)
   }
 
   const styleProps: string[] = []

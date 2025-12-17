@@ -116,6 +116,7 @@ export function BoxRenderer({ node: genericNode, isSelected, isHovered, onSelect
     borderStyle: node.borderStyle || "single",
     borderColor: node.borderColor,
     focusedBorderColor: node.focusedBorderColor,
+    customBorderChars: node.customBorderChars,
   } : {}
 
   return (

@@ -30,12 +30,12 @@ export type {
 
 // UI subset types - Extract from OpenTUI types for type safety
 // These are the values exposed in our property editor controls
-export type FlexDirection = Extract<FlexDirectionString, "row" | "column">
-export type FlexWrap = Extract<WrapString, "wrap" | "no-wrap">
-export type JustifyContent = Extract<JustifyString, "flex-start" | "center" | "flex-end" | "space-between" | "space-around">
-export type AlignItems = Extract<AlignString, "flex-start" | "center" | "flex-end" | "stretch">
-export type AlignContent = Extract<AlignString, "flex-start" | "center" | "flex-end" | "stretch" | "space-between" | "space-around">
-export type AlignSelf = Extract<AlignString, "auto" | "flex-start" | "center" | "flex-end" | "stretch">
+export type FlexDirection = FlexDirectionString
+export type FlexWrap = WrapString
+export type JustifyContent = JustifyString
+export type AlignItems = AlignString
+export type AlignContent = AlignString
+export type AlignSelf = AlignString
 export type Position = Extract<PositionTypeString, "relative" | "absolute">
 export type Overflow = OverflowString
 
@@ -128,6 +128,7 @@ export interface ContainerProps {
   borderStyle?: BorderStyle
   borderColor?: string
   focusedBorderColor?: string
+  customBorderChars?: any // Using any for now to avoid import issues, will refine if possible
   shouldFill?: boolean
   title?: string
   titleAlignment?: TitleAlignment

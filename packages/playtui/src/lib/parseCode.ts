@@ -42,7 +42,7 @@ function applyRegistryProps(renderable: Partial<Renderable>, type: RenderableTyp
 
 interface ParseResult {
   success: boolean
-  renderable?: Renderable
+  node?: Renderable
   error?: string
 }
 

@@ -104,7 +104,7 @@
           },
           "reasoning": true,
           "options": {
-            "reasoningEffort": "high"
+            "reasoningEffort": "medium"
           },
           "modalities": {
             "input": ["image", "text"],
