@@ -492,6 +492,8 @@ export function PropertyPane({ node, onUpdate, focusedField, setFocusedField, pa
         ref={scrollRef}
         style={{ flexGrow: 1, backgroundColor: COLORS.bgAlt, contentOptions: { flexDirection: "column", gap: 0, paddingBottom: 2, backgroundColor: COLORS.bgAlt } }}
         scrollbarOptions={{
+          visible: false,
+   
           trackOptions: { foregroundColor: "transparent", backgroundColor: "transparent" }
         }}
         onMouseScroll={(e) => {
