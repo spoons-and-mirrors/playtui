@@ -2,6 +2,7 @@ export { ActionBtn } from "./ActionBtn"
 export { NavBar, Footer, ModeTabBar } from "./NavBar"
 export { ProjectModal } from "./ProjectModal"
 export { ValueSlider } from "./ValueSlider"
+export { ValueSelect } from "./ValueSelect"
 
 export { KeyframeDiamond } from "./KeyframeDiamond"
 export { KeyframeContextMenu } from "./KeyframeContextMenu"

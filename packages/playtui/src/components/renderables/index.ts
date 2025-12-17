@@ -6,7 +6,7 @@ export { TextareaRenderer, TextareaProperties } from "./textarea"
 export { SelectRenderer, SelectProperties } from "./select"
 export { ScrollboxRenderer, ScrollboxProperties } from "./scrollbox"
 export { SliderRenderer, SliderProperties } from "./slider"
-export { AsciiFontRenderer, AsciiFontProperties } from "./asciifont"
+export { AsciiFontRenderer } from "./asciifont"
 export { TabSelectRenderer, TabSelectProperties } from "./tabselect"
 
 import { BoxRenderer, BoxBorderProperties, BOX_DEFAULTS } from "./box"
@@ -16,7 +16,7 @@ import { TextareaRenderer, TextareaProperties, TEXTAREA_DEFAULTS } from "./texta
 import { SelectRenderer, SelectProperties, SELECT_DEFAULTS } from "./select"
 import { ScrollboxRenderer, ScrollboxProperties, SCROLLBOX_DEFAULTS } from "./scrollbox"
 import { SliderRenderer, SliderProperties, SLIDER_DEFAULTS } from "./slider"
-import { AsciiFontRenderer, AsciiFontProperties, ASCIIFONT_DEFAULTS } from "./asciifont"
+import { AsciiFontRenderer, ASCIIFONT_DEFAULTS } from "./asciifont"
 import { TabSelectRenderer, TabSelectProperties, TABSELECT_DEFAULTS } from "./tabselect"
 import type { RenderableType, Renderable, BoxRenderable, ScrollboxRenderable } from "../../lib/types"
 import type { ColorPalette } from "../../lib/projectTypes"
@@ -585,7 +585,7 @@ export const RENDERABLE_REGISTRY: Record<RenderableType, RenderableRegistryEntry
       ...POSITION_PROPS,
       // AsciiFont-specific props
       { key: "text", type: "string", escape: true },
-      { key: "font", type: "string" },
+      { key: "font", type: "select", options: ["tiny", "block", "slick", "shade"] },
       { key: "color", type: "color" },
       { key: "visible", type: "boolean", jsxBoolean: true, jsxBooleanDefault: true },
     ],

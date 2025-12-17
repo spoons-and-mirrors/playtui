@@ -1,9 +1,9 @@
 import type { MouseEvent } from "@opentui/core"
 import type { Renderable, AsciiFontRenderable } from "../../lib/types"
 import { COLORS } from "../../theme"
-import {
-  StringProp, SelectProp, ColorControl, SectionHeader
-} from "../controls"
+
+// Valid font names in OpenTUI
+const VALID_FONTS = ["tiny", "block", "slick", "shade"] as const
 
 // =============================================================================
 // ASCIIFONT DEFAULTS
@@ -30,6 +30,8 @@ interface AsciiFontRendererProps {
 
 export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, onSelect, onHover, onDragStart }: AsciiFontRendererProps) {
   const node = genericNode as AsciiFontRenderable
+  
+  const safeFont = node.font && VALID_FONTS.includes(node.font as any) ? node.font : "block"
   
   // Enable dragging for all positioned elements
   const isDraggable = true
@@ -67,66 +69,10 @@ export function AsciiFontRenderer({ node: genericNode, isSelected, isHovered, on
       {node.text ? (
         <ascii-font
           text={node.text}
-          font={node.font || "block"}
+          font={safeFont}
           color={node.color || COLORS.accent}
         />
       ) : null}
-    </box>
-  )
-}
-
-// =============================================================================
-// ASCII-FONT PROPERTIES PANEL
-// =============================================================================
-
-interface AsciiFontPropertiesProps {
-  node: Renderable
-  onUpdate: (updates: Partial<Renderable>) => void
-  focusedField: string | null
-  setFocusedField: (f: string | null) => void
-  collapsed: boolean
-  onToggle: () => void
-  pickingForField?: string | null
-  setPickingForField?: (f: string | null) => void
-}
-
-export function AsciiFontProperties({ node: genericNode, onUpdate, focusedField, setFocusedField, collapsed, onToggle, pickingForField, setPickingForField }: AsciiFontPropertiesProps) {
-  const node = genericNode as AsciiFontRenderable
-  return (
-    <box id="section-asciifont" style={{ flexDirection: "column" }}>
-      <SectionHeader title="A ASCII Font" collapsed={collapsed} onToggle={onToggle} />
-      {!collapsed && (
-        <box style={{ flexDirection: "column", gap: 0, paddingLeft: 1 }}>
-          {/* Text content */}
-          <StringProp
-            label="Text"
-            value={node.text || ""}
-            focused={focusedField === "text"}
-            onFocus={() => setFocusedField("text")}
-            onChange={(v) => onUpdate({ text: v })}
-          />
-
-          {/* Font selection */}
-          <SelectProp
-            label="Font"
-            value={node.font || "tiny"}
-            options={["tiny", "block", "slick", "shade", "huge", "grid", "pallet"]}
-            onChange={(v) => onUpdate({ font: v as any })}
-          />
-
-          {/* Color */}
-          <ColorControl
-            label="Color"
-            value={node.color || ""}
-            focused={focusedField === "color"}
-            onFocus={() => setFocusedField("color")}
-            onBlur={() => setFocusedField(null)}
-            onChange={(v) => onUpdate({ color: v })}
-            pickMode={pickingForField === "color"}
-            onPickStart={() => setPickingForField?.("color")}
-          />
-        </box>
-      )}
     </box>
   )
 }
