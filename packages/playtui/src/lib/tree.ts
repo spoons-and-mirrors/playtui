@@ -126,6 +126,38 @@ export function moveRenderable(
   return updateRenderable(root, parent.id, { children: newChildren })
 }
 
+/**
+ * Reorders a renderable by moving it from its current location to a new parent and index.
+ */
+export function reorderRenderable(
+  root: Renderable,
+  id: string,
+  targetParentId: string,
+  targetIndex: number,
+): Renderable {
+  const node = findRenderable(root, id)
+  if (!node) return root
+
+  // Prevent moving into itself or its descendants
+  if (findRenderable(node, targetParentId)) return root
+
+  // 1. Remove from current parent
+  const treeWithoutNode = removeRenderable(root, id)
+
+  // 2. Find target parent in the new tree
+  const targetParent = findRenderable(treeWithoutNode, targetParentId)
+  if (!targetParent) return root
+
+  // 3. Insert into target parent
+  const newChildren = [...targetParent.children]
+  const safeIndex = Math.max(0, Math.min(targetIndex, newChildren.length))
+  newChildren.splice(safeIndex, 0, node)
+
+  return updateRenderable(treeWithoutNode, targetParentId, {
+    children: newChildren,
+  })
+}
+
 // Calculate approximate position of a renderable by accumulating x/y offsets up the tree
 // Returns { x, y } representing the renderable's offset from the root
 export function getRenderablePosition(

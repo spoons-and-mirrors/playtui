@@ -136,13 +136,17 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   [Bind.NAV_TREE_UP]: {
     id: Bind.NAV_TREE_UP,
     label: 'Select Previous',
-    keys: [{ name: 'up' }, { name: 'k' }],
+    keys: [
+      { name: 'up' },
+    ],
     category: 'Editor',
   },
   [Bind.NAV_TREE_DOWN]: {
     id: Bind.NAV_TREE_DOWN,
     label: 'Select Next',
-    keys: [{ name: 'down' }, { name: 'j' }],
+    keys: [
+      { name: 'down' },
+    ],
     category: 'Editor',
   },
 
@@ -162,13 +166,13 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   [Bind.EDITOR_COPY]: {
     id: Bind.EDITOR_COPY,
     label: 'Copy',
-    keys: [{ name: 'c', shift: true }], // Using Shift+C per existing code
+    keys: [{ name: 'c', shift: true }],
     category: 'Editor',
   },
   [Bind.EDITOR_PASTE]: {
     id: Bind.EDITOR_PASTE,
     label: 'Paste',
-    keys: [{ name: 'v', ctrl: false }], // Explicitly !ctrl per existing code
+    keys: [{ name: 'v', ctrl: false }],
     category: 'Editor',
   },
   [Bind.EDITOR_UNDO]: {
@@ -180,19 +184,28 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   [Bind.EDITOR_REDO]: {
     id: Bind.EDITOR_REDO,
     label: 'Redo',
-    keys: [{ name: 'y' }, { name: 'z', shift: true }],
+    keys: [
+      { name: 'y' },
+      { name: 'z', shift: true },
+    ],
     category: 'Editor',
   },
   [Bind.EDITOR_MOVE_UP]: {
     id: Bind.EDITOR_MOVE_UP,
     label: 'Move Up',
-    keys: [{ name: 'up', option: true }],
+    keys: [
+      { name: 'up', ctrl: true },
+      { name: 'up', option: true },
+    ],
     category: 'Editor',
   },
   [Bind.EDITOR_MOVE_DOWN]: {
     id: Bind.EDITOR_MOVE_DOWN,
     label: 'Move Down',
-    keys: [{ name: 'down', option: true }],
+    keys: [
+      { name: 'down', ctrl: true },
+      { name: 'down', option: true },
+    ],
     category: 'Editor',
   },
   [Bind.EDITOR_ENTER_ADD_MODE]: {
@@ -249,11 +262,6 @@ export const KEYBOARD_SHORTCUTS: Record<Bind, ShortcutDef> = {
   },
 }
 
-/**
- * Dynamically generated from RENDERABLE_REGISTRY.addModeKey
- * Maps each element type that supports add-mode to its key.
- * This replaces the hardcoded array that required manual sync with the registry.
- */
 export const ADD_MODE_BINDINGS = getAddModeBindings().map(([type, key]) => ({
   type,
   key,
@@ -264,18 +272,7 @@ export function isKeybind(event: KeyEvent, bind: Bind): boolean {
   if (!def) return false
 
   return def.keys.some((k) => {
-    // Check main key name
     if (k.name !== event.name) return false
-
-    // Check modifiers if they are defined in the shortcut definition.
-    // If defined in shortcut as true, must be true in event.
-    // If defined in shortcut as false, must be false in event.
-    // If undefined in shortcut, we generally ignore it (or strict match? usually strict match is better for shortcuts to avoid accidental triggers)
-
-    // Strict matching strategy:
-    // If shortcut says ctrl:true, event must have ctrl.
-    // If shortcut says ctrl:false (or undefined), event must NOT have ctrl.
-
     if (!!k.ctrl !== !!event.ctrl) return false
     if (!!k.shift !== !!event.shift) return false
     if (!!k.option !== !!event.option) return false
@@ -285,7 +282,6 @@ export function isKeybind(event: KeyEvent, bind: Bind): boolean {
   })
 }
 
-// Helper to get formatted string for display (e.g. "Ctrl+Q")
 export function getShortcutLabel(bind: Bind): string {
   const def = KEYBOARD_SHORTCUTS[bind]
   if (!def || def.keys.length === 0) return ''

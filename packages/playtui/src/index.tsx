@@ -197,10 +197,16 @@ export function Builder({ width, height }: BuilderProps) {
     handleDelete,
     handleDuplicate,
     handleMoveRenderable,
+    handleReorder,
     handleUpdate,
     handleRename,
     navigateTree,
   } = useBuilderActions({
+
+
+
+
+
     tree,
     selectedId,
     clipboard,
@@ -625,7 +631,13 @@ export function Builder({ width, height }: BuilderProps) {
                 onToggle={handleToggleCollapse}
                 onRename={handleRename}
                 onFocusRenderable={handleFocusRenderable}
+                onReorder={handleReorder}
               />
+
+
+
+
+
             </scrollbox>
           </box>
         )}

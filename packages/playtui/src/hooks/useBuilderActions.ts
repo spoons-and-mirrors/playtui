@@ -11,6 +11,7 @@ import {
   flattenTree,
   cloneRenderable,
   moveRenderable,
+  reorderRenderable,
 } from '../lib/tree'
 import { RENDERABLE_REGISTRY } from '../components/renderables'
 
@@ -143,6 +144,15 @@ export function useBuilderActions({
     [selectedId, tree, updateTree],
   )
 
+  const handleReorder = useCallback(
+    (id: string, targetParentId: string, targetIndex: number) => {
+      if (!tree) return
+      const newTree = reorderRenderable(tree, id, targetParentId, targetIndex)
+      updateTree(newTree, true)
+    },
+    [tree, updateTree],
+  )
+
   const handleUpdate = useCallback(
     (updates: Partial<Renderable>, pushHistory = true) => {
       const currentSelectedId = selectedIdRef.current
@@ -197,6 +207,7 @@ export function useBuilderActions({
     handleDelete,
     handleDuplicate,
     handleMoveRenderable,
+    handleReorder,
     handleUpdate,
     handleRename,
     navigateTree,
