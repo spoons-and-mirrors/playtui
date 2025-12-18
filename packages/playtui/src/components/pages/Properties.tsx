@@ -258,30 +258,40 @@ export function PropertyPane({
 
     // Using SpacingControl which wraps ValueSlider (supporting keyframing)
     return (
-      <box
-        key="padding"
-        id="section-padding"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        marginTop={1}
-      >
-        <text fg={COLORS.text}>
-          <strong>Padding</strong>
-        </text>
-        <SpacingControl
-          label="padding"
-          values={values}
-          properties={{
-            top: 'paddingTop',
-            right: 'paddingRight',
-            bottom: 'paddingBottom',
-            left: 'paddingLeft',
-          }}
-          onChange={(key, v) => handleChange(key, v ?? 0)}
-          onChangeEnd={(key, v) => handleChangeEnd(key, v ?? 0)}
+      <>
+        <box
+          key="padding"
+          id="section-padding"
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between"
+          marginTop={1}
+        >
+          <text fg={COLORS.text}>
+            <strong>Padding</strong>
+          </text>
+          <SpacingControl
+            label="padding"
+            values={values}
+            properties={{
+              top: 'paddingTop',
+              right: 'paddingRight',
+              bottom: 'paddingBottom',
+              left: 'paddingLeft',
+            }}
+            onChange={(key, v) => handleChange(key, v ?? 0)}
+            onChangeEnd={(key, v) => handleChangeEnd(key, v ?? 0)}
+          />
+        </box>
+        <box
+          key="padding-sep"
+          height={1}
+          border={['top']}
+          borderColor={COLORS.border}
+          borderStyle="single"
+          marginTop={1}
         />
-      </box>
+      </>
     )
   }
 
