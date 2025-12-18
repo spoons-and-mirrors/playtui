@@ -1,4 +1,4 @@
-import { useState, useRef, createContext, useContext } from 'react'
+import { useState, useRef } from 'react'
 import {
   MouseButton,
   type MouseEvent,
@@ -31,6 +31,10 @@ import {
   PropRow,
 } from '../controls'
 import {
+  DragCaptureContext,
+  useDragCaptureImplementation,
+} from '../contexts/DragCaptureContext'
+import {
   RENDERABLE_REGISTRY,
   PROPERTY_SECTIONS,
   isContainerRenderable,
@@ -38,19 +42,6 @@ import {
   type PropertySection,
 } from '../renderables'
 import { COLORS } from '../../theme'
-
-// Drag capture context - allows value controls to register drags at the panel level
-// This ensures dragging continues even when mouse leaves the control bounds
-export type DragRegisterFn = (
-  startX: number,
-  startY: number,
-  startValue: number,
-  onChange: (value: number) => void,
-  onChangeEnd?: (value: number) => void,
-) => void
-
-export const DragCaptureContext = createContext<DragRegisterFn | null>(null)
-export const useDragCapture = () => useContext(DragCaptureContext)
 
 // Helper type for dynamic property access
 
@@ -101,52 +92,8 @@ export function PropertyPane({
 
   // Drag capture system for value controls (sliders, counters)
   // This allows drag to continue even when mouse leaves the control bounds
-  const activeDrag = useRef<{
-    startX: number
-    startY: number
-    startValue: number
-    lastValue: number
-    hasMoved: boolean
-    onChange: (value: number) => void
-    onChangeEnd?: (value: number) => void
-  } | null>(null)
-
-  const handlePanelDrag = (e: MouseEvent) => {
-    if (!activeDrag.current) return
-    const deltaX = e.x - activeDrag.current.startX
-    const deltaY = activeDrag.current.startY - e.y // up = positive
-    const next = activeDrag.current.startValue + deltaX + deltaY
-    activeDrag.current.lastValue = next
-    activeDrag.current.hasMoved = true
-    activeDrag.current.onChange(next)
-  }
-
-  const handlePanelDragEnd = () => {
-    if (!activeDrag.current) return
-    // Only call onChangeEnd if drag actually moved
-    if (activeDrag.current.hasMoved && activeDrag.current.onChangeEnd) {
-      activeDrag.current.onChangeEnd(activeDrag.current.lastValue)
-    }
-    activeDrag.current = null
-  }
-
-  const registerDrag = (
-    startX: number,
-    startY: number,
-    startValue: number,
-    onChange: (v: number) => void,
-    onChangeEnd?: (v: number) => void,
-  ) => {
-    activeDrag.current = {
-      startX,
-      startY,
-      startValue,
-      lastValue: startValue,
-      hasMoved: false,
-      onChange,
-      onChangeEnd,
-    }
-  }
+  const { registerDrag, handleDrag, handleDragEnd } =
+    useDragCaptureImplementation()
 
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
@@ -795,8 +742,8 @@ export function PropertyPane({
           const delta = e.scroll.direction === 'up' ? -1 : 1
           sb.scrollBy(delta * 6)
         }}
-        onMouseDrag={handlePanelDrag}
-        onMouseDragEnd={handlePanelDragEnd}
+        onMouseDrag={handleDrag}
+        onMouseDragEnd={handleDragEnd}
         onMouseDown={(e) => {
           // Clicking on the panel background (not on controls) deselects focused fields
           // Controls that should maintain focus will stopPropagation

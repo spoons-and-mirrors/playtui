@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import type { MouseEvent } from '@opentui/core'
 import { MouseButton } from '@opentui/core'
 import { COLORS } from '../../theme'
-import { useDragCapture } from '../pages/Properties'
+import { useDragCapture } from '../contexts/DragCaptureContext'
 import { useKeyframing } from '../contexts/KeyframingContext'
 import { KeyframeContextMenu } from './KeyframeContextMenu'
 

@@ -13,6 +13,10 @@ import {
   getNextKeyframeFrame,
 } from '../../lib/keyframing'
 import { ValueSlider } from '../ui/ValueSlider'
+import {
+  DragCaptureContext,
+  useDragCaptureImplementation,
+} from '../contexts/DragCaptureContext'
 import { findRenderable } from '../../lib/tree'
 import { Bind, isKeybind } from '../../lib/shortcuts'
 
@@ -47,6 +51,9 @@ export function ValueGraph({
   const [zoom2x, setZoom2x] = useState(true)
   const scrollRef = useRef<ScrollBoxRenderable>(null)
   const handleRef = useRef({ x: 33, y: 0 })
+
+  const { registerDrag, handleDrag, handleDragEnd } =
+    useDragCaptureImplementation()
 
   const currentFrame = project?.animation.currentFrameIndex ?? 0
 
@@ -194,12 +201,15 @@ export function ValueGraph({
   const cellWidth = zoom2x ? 2 : 1
 
   return (
-    <box
-      id="curve-editor"
-      flexDirection="column"
-      width={width}
-      overflow="hidden"
-    >
+    <DragCaptureContext.Provider value={registerDrag}>
+      <box
+        id="curve-editor"
+        flexDirection="column"
+        width={width}
+        overflow="hidden"
+        onMouseDrag={handleDrag}
+        onMouseDragEnd={handleDragEnd}
+      >
       {/* Header row */}
       <box
         id="curve-header"
@@ -464,5 +474,7 @@ export function ValueGraph({
         </box>
       </box>
     </box>
-  )
+  </DragCaptureContext.Provider>
+)
 }
+

@@ -2,6 +2,10 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { TextAttributes } from '@opentui/core'
 import type { TextareaRenderable } from '@opentui/core'
 import { useKeyboard } from '@opentui/react'
+import {
+  DragCaptureContext,
+  useDragCaptureImplementation,
+} from '../contexts/DragCaptureContext'
 import { ValueSlider, RenderPreviewModal } from '../ui'
 import { COLORS } from '../../theme'
 import type { Renderable } from '../../lib/types'
@@ -40,6 +44,10 @@ export function CodePanel({
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showRenderPreview, setShowRenderPreview] = useState(false)
+
+  // Drag capture system for value controls (sliders, counters)
+  const { registerDrag, handleDrag, handleDragEnd } =
+    useDragCaptureImplementation()
 
   // Notify parent of focus changes
   useEffect(() => {
@@ -147,7 +155,7 @@ export function CodePanel({
   }, [])
 
   return (
-    <>
+    <DragCaptureContext.Provider value={registerDrag}>
       <box
         id="code-panel"
         flexDirection="column"
@@ -157,6 +165,8 @@ export function CodePanel({
           e.stopPropagation() // Prevent parent from blurring us
           setIsFocused(true)
         }}
+        onMouseDrag={handleDrag}
+        onMouseDragEnd={handleDragEnd}
       >
         {/* Header row */}
         <box
@@ -301,6 +311,6 @@ export function CodePanel({
           height={screenHeight}
         />
       )}
-    </>
+    </DragCaptureContext.Provider>
   )
 }

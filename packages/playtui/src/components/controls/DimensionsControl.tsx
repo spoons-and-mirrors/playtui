@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { MouseEvent } from '@opentui/core'
 import { COLORS } from '../../theme'
-import { useDragCapture } from '../pages/Properties'
+import { useDragCapture } from '../contexts/DragCaptureContext'
 import type { SizeValue } from '../../lib/types'
 
 type SizeMode = 'hug' | 'fill' | 'fixed' | 'percent'
