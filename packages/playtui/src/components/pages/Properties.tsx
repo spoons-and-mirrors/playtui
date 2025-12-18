@@ -28,6 +28,7 @@ import {
   GapControl,
   OverflowPicker,
   DimensionsControl,
+  PropRow,
 } from '../controls'
 import {
   RENDERABLE_REGISTRY,
@@ -493,69 +494,85 @@ export function PropertyPane({
             />
             {wrapProp && renderProp(wrapProp)}
 
-            <FlexAlignmentGrid
-              justify={container.justifyContent}
-              align={container.alignItems}
-              direction={container.flexDirection}
-              onJustifyChange={(v) =>
-                onUpdate({ justifyContent: v } as Partial<Renderable>)
-              }
-              onAlignChange={(v) =>
-                onUpdate({ alignItems: v } as Partial<Renderable>)
-              }
-              onBothChange={(j, a) =>
-                onUpdate({
-                  justifyContent: j,
-                  alignItems: a,
-                } as Partial<Renderable>)
-              }
-            />
+            <box style={{ marginTop: 1 }} />
 
-            {/* Advanced alignment overrides for space-evenly, baseline, etc. */}
-            <box style={{ marginTop: 1, gap: 0, flexDirection: 'column' }}>
-              {justifyProp && renderProp(justifyProp)}
-              {alignProp && renderProp(alignProp)}
-            </box>
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 2,
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+              }}
+            >
+               <box id="flex-gap-sliders" flexDirection="column" gap={0}>
+                 <GapControl
+                   label="gap"
+                   property="gap"
+                   value={container.gap}
+                   onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
+                   onChangeEnd={(v) =>
+                     onUpdate({ gap: v } as Partial<Renderable>, true)
+                   }
+                 />
+                 <GapControl
+                   label="row"
+                   property="rowGap"
+                   value={container.rowGap}
+                   onChange={(v) =>
+                     onUpdate({ rowGap: v } as Partial<Renderable>)
+                   }
+                   onChangeEnd={(v) =>
+                     onUpdate({ rowGap: v } as Partial<Renderable>, true)
+                   }
+                 />
+                 <GapControl
+                   label="col"
+                   property="columnGap"
+                   value={container.columnGap}
+                   onChange={(v) =>
+                     onUpdate({ columnGap: v } as Partial<Renderable>)
+                   }
+                   onChangeEnd={(v) =>
+                     onUpdate({ columnGap: v } as Partial<Renderable>, true)
+                   }
+                 />
+               </box>
 
-            {container.flexWrap === 'wrap' &&
+              <FlexAlignmentGrid
+                justify={container.justifyContent}
+                align={container.alignItems}
+                direction={container.flexDirection}
+                onJustifyChange={(v) =>
+                  onUpdate({ justifyContent: v } as Partial<Renderable>)
+                }
+                onAlignChange={(v) =>
+                  onUpdate({ alignItems: v } as Partial<Renderable>)
+                }
+                onBothChange={(j, a) =>
+                  onUpdate({
+                    justifyContent: j,
+                    alignItems: a,
+                  } as Partial<Renderable>)
+                }
+                />
+              </box>
+
+              <box style={{ marginTop: 1 }} />
+
+              <PropRow label="Justify">
+                <text fg={COLORS.accent}>
+                  {(container.justifyContent || 'start').replace('flex-', '')}
+                </text>
+              </PropRow>
+              <PropRow label="Align">
+                <text fg={COLORS.accent}>
+                  {(container.alignItems || 'start').replace('flex-', '')}
+                </text>
+              </PropRow>
+
+              {container.flexWrap === 'wrap' &&
               alignContentProp &&
               renderProp(alignContentProp)}
-            <box
-              id="flex-gap-sliders"
-              flexDirection="column"
-              gap={1}
-              marginTop={1}
-            >
-              <GapControl
-                label="gap"
-                property="gap"
-                value={container.gap}
-                onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
-                onChangeEnd={(v) =>
-                  onUpdate({ gap: v } as Partial<Renderable>, true)
-                }
-              />
-              <GapControl
-                label="rowGap"
-                property="rowGap"
-                value={container.rowGap}
-                onChange={(v) => onUpdate({ rowGap: v } as Partial<Renderable>)}
-                onChangeEnd={(v) =>
-                  onUpdate({ rowGap: v } as Partial<Renderable>, true)
-                }
-              />
-              <GapControl
-                label="colGap"
-                property="columnGap"
-                value={container.columnGap}
-                onChange={(v) =>
-                  onUpdate({ columnGap: v } as Partial<Renderable>)
-                }
-                onChangeEnd={(v) =>
-                  onUpdate({ columnGap: v } as Partial<Renderable>, true)
-                }
-              />
-            </box>
           </box>
         )}
       </box>

@@ -142,13 +142,7 @@ export function FlexAlignmentGrid({
   // For row: cols = justify (X main), rows = align (Y cross)
   // For column: cols = align (X cross), rows = justify (Y main)
   return (
-    <box
-      id="flex-align-grid"
-      style={{ flexDirection: 'column', gap: 0, marginTop: 1 }}
-    >
-      <text fg={COLORS.muted} style={{ marginBottom: 0 }}>
-        Alignment
-      </text>
+    <box id="flex-align-grid" style={{ flexDirection: 'column', gap: 0 }}>
       <box id="align-matrix" style={{ flexDirection: 'column', gap: 0 }}>
         {[0, 1, 2].map((rowIdx) => (
           <box
@@ -175,18 +169,6 @@ export function FlexAlignmentGrid({
             })}
           </box>
         ))}
-      </box>
-      <box style={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
-        <text fg={COLORS.text} style={{ width: 10 }}>
-          Justify:
-        </text>
-        <text fg={COLORS.accent}>{currentJ.replace('flex-', '')}</text>
-      </box>
-      <box style={{ flexDirection: 'row', gap: 1 }}>
-        <text fg={COLORS.text} style={{ width: 10 }}>
-          Align:
-        </text>
-        <text fg={COLORS.accent}>{currentA.replace('flex-', '')}</text>
       </box>
     </box>
   )
