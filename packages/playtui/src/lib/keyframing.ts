@@ -31,11 +31,9 @@ export interface AnimatedProperty {
 }
 
 export interface KeyframingState {
-  enabled: boolean
   autoKeyEnabled: boolean
   animatedProperties: AnimatedProperty[]
   timeline: {
-    panelOpen: boolean
     view:
       | { type: 'dopesheet' }
       | { type: 'curve'; renderableId: string; property: PropertyPath }
@@ -49,11 +47,9 @@ export function createDefaultHandle(): BezierHandle {
 
 export function createDefaultKeyframingState(): KeyframingState {
   return {
-    enabled: true,
     autoKeyEnabled: false,
     animatedProperties: [],
     timeline: {
-      panelOpen: false,
       view: { type: 'dopesheet' },
     },
   }
@@ -246,36 +242,6 @@ function cubicBezier(
   return clamp(y, -0.5, 1.5)
 }
 
-// Simplified easing based on single handle
-function easeWithHandle(t: number, handle: BezierHandle): number {
-  // x controls horizontal easing (ease-in vs ease-out)
-  // y controls overshoot
-
-  const tension = handle.x / 100 // 0 = linear, 1 = max ease
-  const overshoot = handle.y / 100 // -1 to 1
-
-  // Apply easing curve
-  let eased: number
-  if (tension < 0.5) {
-    // More ease-out (fast start, slow end)
-    const power = 1 + (0.5 - tension) * 4
-    eased = 1 - Math.pow(1 - t, power)
-  } else {
-    // More ease-in (slow start, fast end)
-    const power = 1 + (tension - 0.5) * 4
-    eased = Math.pow(t, power)
-  }
-
-  // Apply overshoot/undershoot
-  if (overshoot !== 0) {
-    // Add sine wave for overshoot effect
-    const wave = Math.sin(t * Math.PI) * overshoot * 0.3
-    eased = eased + wave
-  }
-
-  return clamp(eased, -0.2, 1.2) // Allow slight overshoot
-}
-
 export function upsertKeyframe(
   animated: AnimatedProperty[],
   renderableId: string,
@@ -438,18 +404,6 @@ export function getDrivenValue(prop: AnimatedProperty, frame: number): number {
 
   // Interpolate value
   return startKf.value + (endKf.value - startKf.value) * easedT
-}
-
-// Legacy function - now unused but kept for compatibility
-export function setSegmentPoint(
-  animated: AnimatedProperty[],
-  renderableId: string,
-  property: PropertyPath,
-  frame: number,
-  percent: number,
-): AnimatedProperty[] {
-  // This is now a no-op - bezier handles replace per-frame editing
-  return animated
 }
 
 function applyDrivenValue(

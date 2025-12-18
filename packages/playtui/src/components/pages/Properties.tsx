@@ -234,8 +234,9 @@ export function PropertyPane({
     }
 
     return (
-      <box key={meta.id}>
+      <>
         <box
+          key={meta.id}
           id={`section-${meta.id}`}
           flexDirection="row"
           alignItems="center"
@@ -255,6 +256,7 @@ export function PropertyPane({
         </box>
         {meta.id === 'padding' && (
           <box
+            key={`${meta.id}-sep`}
             height={1}
             border={['top']}
             borderColor={COLORS.border}
@@ -262,7 +264,7 @@ export function PropertyPane({
             marginTop={1}
           />
         )}
-      </box>
+      </>
     )
   }
 
