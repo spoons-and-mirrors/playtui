@@ -10,7 +10,6 @@ export { StringProp } from './StringProp'
 export { SectionHeader } from './SectionHeader'
 export { BorderSidesProp } from './BorderSidesProp'
 export { SpacingControl } from './SpacingControl'
-export { MarginControl } from './MarginControl'
 export { PositionControl } from './PositionControl'
 export {
   FlexDirectionPicker,

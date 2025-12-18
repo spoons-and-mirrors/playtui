@@ -2,7 +2,7 @@ export { ActionBtn } from './ActionBtn'
 export { NavBar, Footer, ModeTabBar } from './NavBar'
 export { ProjectModal } from './ProjectModal'
 export { RenderPreviewModal } from './RenderPreviewModal'
-export { ValueSlider } from './ValueSlider'
+export { ValueControl } from './ValueControl'
 export { ValueSelect } from './ValueSelect'
 
 export { KeyframeDiamond } from './KeyframeDiamond'

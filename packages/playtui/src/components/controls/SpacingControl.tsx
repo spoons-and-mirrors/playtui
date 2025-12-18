@@ -1,4 +1,4 @@
-import { ValueSlider } from '../ui/ValueSlider'
+import { ValueControl } from '../ui/ValueControl'
 
 export function SpacingControl({
   label,
@@ -35,7 +35,8 @@ export function SpacingControl({
 
   return (
     <box id={`spacing-ctrl-${label}`} style={{ flexDirection: 'row', gap: 1 }}>
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id={`${label}-top`}
         label="t"
         property={properties?.top}
@@ -45,7 +46,8 @@ export function SpacingControl({
           onChangeEnd ? (v) => onChangeEnd('top', Math.max(0, v)) : undefined
         }
       />
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id={`${label}-right`}
         label="r"
         property={properties?.right}
@@ -55,7 +57,8 @@ export function SpacingControl({
           onChangeEnd ? (v) => onChangeEnd('right', Math.max(0, v)) : undefined
         }
       />
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id={`${label}-bottom`}
         label="b"
         property={properties?.bottom}
@@ -65,7 +68,8 @@ export function SpacingControl({
           onChangeEnd ? (v) => onChangeEnd('bottom', Math.max(0, v)) : undefined
         }
       />
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id={`${label}-left`}
         label="l"
         property={properties?.left}

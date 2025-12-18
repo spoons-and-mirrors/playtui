@@ -6,7 +6,7 @@ import {
   DragCaptureContext,
   useDragCaptureImplementation,
 } from '../contexts/DragCaptureContext'
-import { ValueSlider, RenderPreviewModal } from '../ui'
+import { ValueControl, RenderPreviewModal } from '../ui'
 import { COLORS } from '../../theme'
 import type { Renderable } from '../../lib/types'
 import { parseCodeMultiple } from '../../lib/parseCode'
@@ -189,7 +189,8 @@ export function CodePanel({
 
           {/* Height Slider */}
           <box paddingRight={1}>
-            <ValueSlider
+            <ValueControl
+              variant="slider"
               id="code-height"
               label="Height"
               value={height}

@@ -1,5 +1,5 @@
 import { COLORS } from '../../theme'
-import { ValueCounter } from '../ui/ValueCounter'
+import { ValueControl } from '../ui/ValueControl'
 import { PropRow } from './PropRow'
 import type {
   FlexDirection,
@@ -24,7 +24,8 @@ export function GapControl({
   const val = value ?? 0
 
   return (
-    <ValueCounter
+    <ValueControl
+      variant="counter"
       id={`gap-${label}`}
       label={label}
       property={property}

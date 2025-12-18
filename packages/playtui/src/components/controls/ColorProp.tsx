@@ -1,6 +1,6 @@
 import { COLORS } from '../../theme'
 import { PropRow } from './PropRow'
-import { ValueSlider } from '../ui/ValueSlider'
+import { ValueControl } from '../ui/ValueControl'
 
 /**
  * Reusable color control with hex input and palette picker button
@@ -80,7 +80,8 @@ export function ColorControl({
   return (
     <PropRow label={label}>
       <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-        <ValueSlider
+        <ValueControl
+          variant="slider"
           id={`color-alpha-${label}`}
           label=""
           value={Math.round((alpha / 255) * 100)}

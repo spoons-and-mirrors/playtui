@@ -1,4 +1,4 @@
-import { ValueCounter } from '../ui/ValueCounter'
+import { ValueControl } from '../ui/ValueControl'
 import { PropRow } from './PropRow'
 
 interface NumberPropProps {
@@ -40,7 +40,8 @@ export function NumberProp({
 
   return (
     <PropRow label={label}>
-      <ValueCounter
+      <ValueControl
+        variant="counter"
         id={id}
         label=""
         property={property}

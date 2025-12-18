@@ -1,5 +1,4 @@
-import { COLORS } from '../../theme'
-import { ValueSlider } from '../ui/ValueSlider'
+import { ValueControl } from '../ui/ValueControl'
 
 interface PositionControlProps {
   x?: number
@@ -18,7 +17,8 @@ export function PositionControl({
 }: PositionControlProps) {
   return (
     <box id="position-control" style={{ flexDirection: 'row', gap: 1 }}>
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id="pos-x"
         label="x"
         property="x"
@@ -26,7 +26,8 @@ export function PositionControl({
         onChange={(v) => onChange('x', v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd('x', v) : undefined}
       />
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id="pos-y"
         label="y"
         property="y"
@@ -34,7 +35,8 @@ export function PositionControl({
         onChange={(v) => onChange('y', v)}
         onChangeEnd={onChangeEnd ? (v) => onChangeEnd('y', v) : undefined}
       />
-      <ValueSlider
+      <ValueControl
+        variant="slider"
         id="pos-z"
         label="z"
         property="zIndex"

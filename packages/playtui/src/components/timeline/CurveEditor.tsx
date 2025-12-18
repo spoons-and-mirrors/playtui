@@ -12,7 +12,7 @@ import {
   getPrevKeyframeFrame,
   getNextKeyframeFrame,
 } from '../../lib/keyframing'
-import { ValueSlider } from '../ui/ValueSlider'
+import { ValueControl } from '../ui/ValueControl'
 import {
   DragCaptureContext,
   useDragCaptureImplementation,
@@ -237,7 +237,8 @@ export function ValueGraph({
         </box>
 
         {/* Value slider - editable */}
-        <ValueSlider
+        <ValueControl
+          variant="slider"
           id="curve-value"
           label="val"
           value={Math.round(displayValue)}
@@ -247,7 +248,8 @@ export function ValueGraph({
         {/* Easing controls when keyframe selected */}
         {isKeyframeSelected && (
           <>
-            <ValueSlider
+            <ValueControl
+              variant="slider"
               id="handle-x"
               label="spd"
               value={handle.x}
@@ -262,7 +264,8 @@ export function ValueGraph({
               }
               resetTo={33}
             />
-            <ValueSlider
+            <ValueControl
+              variant="slider"
               id="handle-y"
               label="bnc"
               value={handle.y}
