@@ -4,18 +4,24 @@ export function SectionHeader({
   title,
   collapsed,
   onToggle,
+  collapsible = true,
 }: {
   title: string
   collapsed: boolean
   onToggle: () => void
+  collapsible?: boolean
 }) {
   return (
     <box
       id={`section-${title}`}
-      onMouseDown={onToggle}
+      onMouseDown={collapsible ? onToggle : undefined}
       style={{ flexDirection: 'row', gap: 1, height: 1, marginTop: 1 }}
     >
-      <text fg={COLORS.accent}>{collapsed ? '▸' : '▾'}</text>
+      {collapsible ? (
+        <text fg={COLORS.accent}>{collapsed ? '▸' : '▾'}</text>
+      ) : (
+        <box width={1} />
+      )}
       <text fg={COLORS.text}>
         <strong>{title}</strong>
       </text>

@@ -7,7 +7,7 @@ export function SelectProp({
   options,
   onChange,
 }: {
-  label: string
+  label: string | null
   value: string
   options: string[]
   onChange: (v: string) => void
@@ -17,21 +17,24 @@ export function SelectProp({
     .replace('flex-', '')
     .replace('space-', 'sp-')
     .slice(0, 10)
-  return (
-    <PropRow label={label}>
-      <box
-        id={`sel-${label}`}
-        onMouseDown={() => onChange(options[(idx + 1) % options.length])}
-        style={{
-          flexDirection: 'row',
-          backgroundColor: COLORS.bgAlt,
-          paddingLeft: 1,
-          paddingRight: 1,
-        }}
-      >
-        <text fg={COLORS.accent}>{display}</text>
-        <text fg={COLORS.muted}> ◂▸</text>
-      </box>
-    </PropRow>
+
+  const content = (
+    <box
+      id={`sel-${label || value}`}
+      onMouseDown={() => onChange(options[(idx + 1) % options.length])}
+      style={{
+        flexDirection: 'row',
+        backgroundColor: COLORS.bgAlt,
+        paddingLeft: 1,
+        paddingRight: 1,
+      }}
+    >
+      <text fg={COLORS.accent}>{display}</text>
+      <text fg={COLORS.muted}> ◂▸</text>
+    </box>
   )
+
+  if (label === null) return content
+
+  return <PropRow label={label}>{content}</PropRow>
 }

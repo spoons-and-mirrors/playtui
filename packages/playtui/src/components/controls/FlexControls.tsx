@@ -39,9 +39,11 @@ export function GapControl({
 export function FlexDirectionPicker({
   value,
   onChange,
+  label = 'Direction',
 }: {
   value: FlexDirection | undefined
   onChange: (v: FlexDirection) => void
+  label?: string | null
 }) {
   const current = value || 'column'
   const isRow = current === 'row' || current === 'row-reverse'
@@ -57,66 +59,66 @@ export function FlexDirectionPicker({
     }
   }
 
-  return (
-    <PropRow label="Direction">
-      <box style={{ flexDirection: 'row', gap: 1 }}>
-        <box
-          id="flex-dir-row"
-          onMouseDown={() => onChange(isReverse ? 'row-reverse' : 'row')}
-          style={{
-            backgroundColor: isRow ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1,
-            paddingRight: 1,
-            flexDirection: 'row',
-            gap: 0,
-          }}
-        >
-          <text fg={isRow ? COLORS.bg : COLORS.text}>Row</text>
-        </box>
-        <box
-          id="flex-dir-col"
-          onMouseDown={() => onChange(isReverse ? 'column-reverse' : 'column')}
-          style={{
-            backgroundColor: isCol ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1,
-            paddingRight: 1,
-            flexDirection: 'row',
-            gap: 0,
-          }}
-        >
-          <text fg={isCol ? COLORS.bg : COLORS.text}>Col</text>
-        </box>
-        <box
-          id="flex-dir-reverse"
-          onMouseDown={toggleReverse}
-          style={{
-            backgroundColor: isReverse ? COLORS.accent : COLORS.bgAlt,
-            paddingLeft: 1,
-            paddingRight: 1,
-            flexDirection: 'row',
-            gap: 0,
-          }}
-        >
-          <text fg={isReverse ? COLORS.bg : COLORS.text}>Rev</text>
-        </box>
+  const content = (
+    <box style={{ flexDirection: 'row', gap: 1 }}>
+      <box
+        id="flex-dir-row"
+        onMouseDown={() => onChange(isReverse ? 'row-reverse' : 'row')}
+        style={{
+          backgroundColor: isRow ? COLORS.accent : COLORS.bg,
+          paddingLeft: 1,
+          paddingRight: 1,
+          flexDirection: 'row',
+          gap: 0,
+        }}
+      >
+        <text fg={isRow ? COLORS.bg : COLORS.text}>Row</text>
       </box>
-    </PropRow>
+      <box
+        id="flex-dir-col"
+        onMouseDown={() => onChange(isReverse ? 'column-reverse' : 'column')}
+        style={{
+          backgroundColor: isCol ? COLORS.accent : COLORS.bg,
+          paddingLeft: 1,
+          paddingRight: 1,
+          flexDirection: 'row',
+          gap: 0,
+        }}
+      >
+        <text fg={isCol ? COLORS.bg : COLORS.text}>Col</text>
+      </box>
+      <box
+        id="flex-dir-reverse"
+        onMouseDown={toggleReverse}
+        style={{
+          backgroundColor: isReverse ? COLORS.accent : COLORS.bg,
+          paddingLeft: 1,
+          paddingRight: 1,
+          flexDirection: 'row',
+          gap: 0,
+        }}
+      >
+        <text fg={isReverse ? COLORS.bg : COLORS.text}>Rev</text>
+      </box>
+    </box>
   )
+
+  if (label === null) return content
+
+  return <PropRow label={label}>{content}</PropRow>
 }
 
 export function FlexAlignmentGrid({
   justify,
   align,
   direction,
-  onJustifyChange,
-  onAlignChange,
   onBothChange,
 }: {
   justify: JustifyContent | undefined
   align: AlignItems | undefined
   direction: FlexDirection | undefined
-  onJustifyChange: (v: JustifyContent) => void
-  onAlignChange: (v: AlignItems) => void
+  onJustifyChange?: (v: JustifyContent) => void
+  onAlignChange?: (v: AlignItems) => void
   onBothChange: (j: JustifyContent, a: AlignItems) => void
 }) {
   const opts: JustifyContent[] = [
@@ -133,15 +135,13 @@ export function FlexAlignmentGrid({
   const currentA =
     (align as any) === 'auto' ? 'flex-start' : (align ?? 'flex-start')
 
-  const isRow = direction === 'row'
+  const isRow = direction === 'row' || direction === 'row-reverse'
 
   const jIdx = opts.indexOf(currentJ as any)
   const aIdx = opts.indexOf(
     (currentA === 'stretch' ? 'flex-start' : currentA) as any,
   )
 
-  // For row: cols = justify (X main), rows = align (Y cross)
-  // For column: cols = align (X cross), rows = justify (Y main)
   return (
     <box id="flex-align-grid" style={{ flexDirection: 'column', gap: 0 }}>
       <box id="align-matrix" style={{ flexDirection: 'column', gap: 0 }}>
@@ -174,8 +174,6 @@ export function FlexAlignmentGrid({
     </box>
   )
 }
-
-// Removed duplicate GapControl
 
 export function OverflowPicker({
   value,

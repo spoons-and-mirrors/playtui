@@ -1,7 +1,5 @@
 import { useState, useRef } from 'react'
-import {
-  type ScrollBoxRenderable,
-} from '@opentui/core'
+import { type ScrollBoxRenderable } from '@opentui/core'
 import type {
   Renderable,
   BorderSide,
@@ -145,7 +143,7 @@ export function PropertyPane({
         <StringProp
           key={key}
           label={label}
-          value={(val as string[] || []).join(', ')}
+          value={((val as string[]) || []).join(', ')}
           focused={focusedField === prop.key}
           onFocus={() => setFocusedField(prop.key)}
           onChange={(v) =>
@@ -248,7 +246,7 @@ export function PropertyPane({
     )
   }
 
-  const renderSpacingSection = (meta: typeof PROPERTY_SECTIONS[number]) => {
+  const renderSpacingSection = (meta: (typeof PROPERTY_SECTIONS)[number]) => {
     if (!meta.keys) return null
     const label = meta.label.replace(/^[^\s]+\s/, '')
 
@@ -371,28 +369,21 @@ export function PropertyPane({
           title={flexMeta.label}
           collapsed={isCollapsed}
           onToggle={() => toggleSection('flexContainer')}
+          collapsible={flexMeta.collapsible !== false}
         />
 
         {!isCollapsed && (
-          <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
-            <FlexDirectionPicker
-              value={container.flexDirection}
-              onChange={(v) =>
-                onUpdate({ flexDirection: v } as Partial<Renderable>)
-              }
-            />
-            {wrapProp && renderProp(wrapProp)}
-
-            <box style={{ marginTop: 1 }} />
-
-            <box
-              style={{
-                flexDirection: 'row',
-                gap: 2,
-                alignItems: 'flex-start',
-                justifyContent: 'center',
-              }}
-            >
+          <box
+            style={{
+              flexDirection: 'row',
+              gap: 2,
+              paddingLeft: 1,
+              marginTop: 1,
+              alignItems: 'flex-start',
+            }}
+          >
+            {/* Column 1: Gaps and Direction */}
+            <box style={{ flexDirection: 'column', gap: 1, alignItems: 'center' }}>
               <box id="flex-gap-sliders" flexDirection="column" gap={0}>
                 <GapControl
                   label="gap"
@@ -426,7 +417,17 @@ export function PropertyPane({
                   }
                 />
               </box>
+              <FlexDirectionPicker
+                label={null}
+                value={container.flexDirection}
+                onChange={(v) =>
+                  onUpdate({ flexDirection: v } as Partial<Renderable>)
+                }
+              />
+            </box>
 
+            {/* Column 2: Alignment and Wrap */}
+            <box style={{ flexDirection: 'column', gap: 1, alignItems: 'center' }}>
               <FlexAlignmentGrid
                 justify={container.justifyContent}
                 align={container.alignItems}
@@ -444,10 +445,21 @@ export function PropertyPane({
                   } as Partial<Renderable>)
                 }
               />
+              {wrapProp && (
+                <SelectProp
+                  label={null}
+                  value={String((node as any).flexWrap || 'nowrap')}
+                  options={wrapProp.options!}
+                  onChange={(v) =>
+                    onUpdate({ flexWrap: v } as Partial<Renderable>)
+                  }
+                />
+              )}
             </box>
-
-            <box style={{ marginTop: 1 }} />
-
+          </box>
+        )}
+        {!isCollapsed && (
+          <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
             <PropRow label="Justify">
               <text fg={COLORS.accent}>
                 {(container.justifyContent || 'start').replace('flex-', '')}
@@ -589,7 +601,11 @@ export function PropertyPane({
     // Filter by ownerTypes if specified (section only shows for matching node types)
     if (meta.ownerTypes && !meta.ownerTypes.includes(node.type)) return null
 
-    const isCollapsed = collapsed[section]
+    const collapsible = meta.collapsible !== false
+    const isCollapsed = collapsible ? collapsed[section] : false
+
+    // Spacing between major layout blocks
+    const needsTopSpacing = meta.hasTopSpacing
 
     // Use specialized layout renderers if defined in metadata
     if (meta.layout && !isCollapsed) {
@@ -620,15 +636,26 @@ export function PropertyPane({
       <box
         key={section}
         id={`section-${section}`}
-        style={{ flexDirection: 'column' }}
+        style={{
+          flexDirection: 'column',
+          marginTop: needsTopSpacing ? 1 : 0,
+        }}
       >
         <SectionHeader
           title={meta.label}
           collapsed={isCollapsed}
           onToggle={() => toggleSection(section)}
+          collapsible={collapsible}
         />
         {!isCollapsed && (
-          <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
+          <box
+            style={{
+              flexDirection: 'column',
+              gap: 1,
+              paddingLeft: 1,
+              marginTop: 1,
+            }}
+          >
             {ungrouped.map((prop) => renderProp(prop))}
             {Object.entries(groups).map(([group, groupProps]) => (
               <PropRow key={group} label="">

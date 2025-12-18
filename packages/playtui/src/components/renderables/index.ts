@@ -102,6 +102,8 @@ interface PropertySectionMeta {
   ownerTypes?: RenderableType[]
   layout?: PropertyLayout
   keys?: Record<string, string>
+  collapsible?: boolean
+  hasTopSpacing?: boolean
 }
 
 export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
@@ -110,12 +112,14 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     label: '◫ Dimensions',
     defaultExpanded: true,
     layout: 'dimensions',
+    collapsible: false,
   },
   {
     id: 'position',
     label: '◎ Position',
     defaultExpanded: false,
     layout: 'position',
+    collapsible: false,
   },
   {
     id: 'margin',
@@ -128,6 +132,7 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
       bottom: 'marginBottom',
       left: 'marginLeft',
     },
+    collapsible: false,
   },
   {
     id: 'padding',
@@ -140,12 +145,14 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
       bottom: 'paddingBottom',
       left: 'paddingLeft',
     },
+    collapsible: false,
   },
   {
     id: 'flexContainer',
-    label: '⬓ Layout',
+    label: '⊞ Layout',
     defaultExpanded: true,
     layout: 'flex',
+    hasTopSpacing: true,
   },
   {
     id: 'flexItem',
@@ -156,11 +163,13 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     id: 'background',
     label: '▦ Fill',
     defaultExpanded: true,
+    hasTopSpacing: true,
   },
   {
     id: 'border',
     label: '▢ Border',
     defaultExpanded: true,
+    hasTopSpacing: true,
   },
   {
     id: 'overflow',
