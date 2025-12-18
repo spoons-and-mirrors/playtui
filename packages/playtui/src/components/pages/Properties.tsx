@@ -1,7 +1,5 @@
 import { useState, useRef } from 'react'
 import {
-  MouseButton,
-  type MouseEvent,
   type ScrollBoxRenderable,
 } from '@opentui/core'
 import type {
@@ -20,7 +18,6 @@ import {
   SectionHeader,
   BorderSidesProp,
   SpacingControl,
-  MarginControl,
   ColorControl,
   PositionControl,
   FlexDirectionPicker,
@@ -44,7 +41,6 @@ import {
 import { COLORS } from '../../theme'
 
 // Helper type for dynamic property access
-
 type AnyNodeProps = Record<string, unknown>
 
 interface PropertyPaneProps {
@@ -74,7 +70,6 @@ export function PropertyPane({
   setFocusedField,
   palettes,
   activePaletteIndex,
-  onShowHex,
   onUpdateSwatch,
   onChangePalette,
   pickingForField,
@@ -91,7 +86,6 @@ export function PropertyPane({
   const scrollRef = useRef<ScrollBoxRenderable>(null)
 
   // Drag capture system for value controls (sliders, counters)
-  // This allows drag to continue even when mouse leaves the control bounds
   const { registerDrag, handleDrag, handleDragEnd } =
     useDragCaptureImplementation()
 
@@ -201,191 +195,77 @@ export function PropertyPane({
     )
   }
 
-  // Render padding section - non-collapsible, all inline
-  const renderPaddingSection = () => {
-    if (!isContainerRenderable(node) && node.type !== 'text') return null
-    const container = node as
-      | BoxRenderable
-      | ScrollboxRenderable
-      | TextRenderable
+  const renderSpacingSection = (meta: typeof PROPERTY_SECTIONS[number]) => {
+    if (!meta.keys) return null
+    const label = meta.label.replace(/^[^\s]+\s/, '')
 
+    const nodeProps = node as unknown as AnyNodeProps
     const values = {
-      top: container.paddingTop ?? 0,
-      right: container.paddingRight ?? 0,
-      bottom: container.paddingBottom ?? 0,
-      left: container.paddingLeft ?? 0,
+      top: (nodeProps[meta.keys.top] as number) ?? 0,
+      right: (nodeProps[meta.keys.right] as number) ?? 0,
+      bottom: (nodeProps[meta.keys.bottom] as number) ?? 0,
+      left: (nodeProps[meta.keys.left] as number) ?? 0,
     }
 
     const handleChange = (
       key: 'top' | 'right' | 'bottom' | 'left' | 'all',
-      val: number,
+      val: number | undefined,
     ) => {
       if (key === 'all') {
-        onUpdate(
-          {
-            paddingTop: val,
-            paddingRight: val,
-            paddingBottom: val,
-            paddingLeft: val,
-          } as Partial<Renderable>,
-          false,
-        )
+        const updates: Record<string, number | undefined> = {}
+        Object.values(meta.keys!).forEach((k) => (updates[k] = val))
+        onUpdate(updates as Partial<Renderable>, false)
         return
       }
-      const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
-      onUpdate({ [propKey]: val } as Partial<Renderable>, false)
+      onUpdate({ [meta.keys![key]]: val } as Partial<Renderable>, false)
     }
 
     const handleChangeEnd = (
       key: 'top' | 'right' | 'bottom' | 'left' | 'all',
-      val: number,
+      val: number | undefined,
     ) => {
       if (key === 'all') {
-        onUpdate(
-          {
-            paddingTop: val,
-            paddingRight: val,
-            paddingBottom: val,
-            paddingLeft: val,
-          } as Partial<Renderable>,
-          true,
-        )
+        const updates: Record<string, number | undefined> = {}
+        Object.values(meta.keys!).forEach((k) => (updates[k] = val))
+        onUpdate(updates as Partial<Renderable>, true)
         return
       }
-      const propKey = `padding${key.charAt(0).toUpperCase()}${key.slice(1)}`
-      onUpdate({ [propKey]: val } as Partial<Renderable>, true)
+      onUpdate({ [meta.keys![key]]: val } as Partial<Renderable>, true)
     }
 
-    // Using SpacingControl which wraps ValueSlider (supporting keyframing)
     return (
-      <>
+      <box key={meta.id}>
         <box
-          key="padding"
-          id="section-padding"
+          id={`section-${meta.id}`}
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between"
           marginTop={1}
         >
           <text fg={COLORS.text}>
-            <strong>Padding</strong>
+            <strong>{label}</strong>
           </text>
           <SpacingControl
-            label="padding"
+            label={meta.id}
             values={values}
-            properties={{
-              top: 'paddingTop',
-              right: 'paddingRight',
-              bottom: 'paddingBottom',
-              left: 'paddingLeft',
-            }}
-            onChange={(key, v) => handleChange(key, v ?? 0)}
-            onChangeEnd={(key, v) => handleChangeEnd(key, v ?? 0)}
+            properties={meta.keys as any}
+            onChange={handleChange}
+            onChangeEnd={handleChangeEnd}
           />
         </box>
-        <box
-          key="padding-sep"
-          height={1}
-          border={['top']}
-          borderColor={COLORS.border}
-          borderStyle="single"
-          marginTop={1}
-        />
-      </>
-    )
-  }
-
-  // Render margin section - non-collapsible, all inline
-  const renderMarginSection = () => {
-    const values = {
-      top: node.marginTop ?? 0,
-      right: node.marginRight ?? 0,
-      bottom: node.marginBottom ?? 0,
-      left: node.marginLeft ?? 0,
-    }
-
-    const handleChange = (
-      key: 'top' | 'right' | 'bottom' | 'left' | 'all',
-      val: number | undefined,
-    ) => {
-      if (key === 'all') {
-        onUpdate(
-          {
-            marginTop: val,
-            marginRight: val,
-            marginBottom: val,
-            marginLeft: val,
-          } as Partial<Renderable>,
-          false,
-        )
-        return
-      }
-      if (key === 'top')
-        onUpdate({ marginTop: val } as Partial<Renderable>, false)
-      if (key === 'right')
-        onUpdate({ marginRight: val } as Partial<Renderable>, false)
-      if (key === 'bottom')
-        onUpdate({ marginBottom: val } as Partial<Renderable>, false)
-      if (key === 'left')
-        onUpdate({ marginLeft: val } as Partial<Renderable>, false)
-    }
-
-    const handleChangeEnd = (
-      key: 'top' | 'right' | 'bottom' | 'left' | 'all',
-      val: number | undefined,
-    ) => {
-      if (key === 'all') {
-        onUpdate(
-          {
-            marginTop: val,
-            marginRight: val,
-            marginBottom: val,
-            marginLeft: val,
-          } as Partial<Renderable>,
-          true,
-        )
-        return
-      }
-      if (key === 'top')
-        onUpdate({ marginTop: val } as Partial<Renderable>, true)
-      if (key === 'right')
-        onUpdate({ marginRight: val } as Partial<Renderable>, true)
-      if (key === 'bottom')
-        onUpdate({ marginBottom: val } as Partial<Renderable>, true)
-      if (key === 'left')
-        onUpdate({ marginLeft: val } as Partial<Renderable>, true)
-    }
-
-    // Using SpacingControl which wraps ValueSlider (supporting keyframing)
-    return (
-      <box
-        key="margin"
-        id="section-margin"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        marginTop={1}
-      >
-        <text fg={COLORS.text}>
-          <strong>Margin</strong>
-        </text>
-        <SpacingControl
-          label="margin"
-          values={values}
-          properties={{
-            top: 'marginTop',
-            right: 'marginRight',
-            bottom: 'marginBottom',
-            left: 'marginLeft',
-          }}
-          onChange={handleChange}
-          onChangeEnd={handleChangeEnd}
-        />
+        {meta.id === 'padding' && (
+          <box
+            height={1}
+            border={['top']}
+            borderColor={COLORS.border}
+            borderStyle="single"
+            marginTop={1}
+          />
+        )}
       </box>
     )
   }
 
-  // Render dimensions section - non-collapsible
   const renderDimensionsSection = () => {
     return (
       <box
@@ -414,14 +294,11 @@ export function PropertyPane({
     )
   }
 
-  // Render flex container section with visual controls
   const renderFlexContainerSection = () => {
     if (!isContainerRenderable(node)) return null
     const container = node as BoxRenderable | ScrollboxRenderable
 
     const isCollapsed = collapsed['flexContainer']
-    const justifyProp = props.find((p) => p.key === 'justifyContent')
-    const alignProp = props.find((p) => p.key === 'alignItems')
     const wrapProp = props.find((p) => p.key === 'flexWrap')
     const alignContentProp = props.find((p) => p.key === 'alignContent')
     const flexMeta = PROPERTY_SECTIONS.find(
@@ -461,39 +338,39 @@ export function PropertyPane({
                 justifyContent: 'center',
               }}
             >
-               <box id="flex-gap-sliders" flexDirection="column" gap={0}>
-                 <GapControl
-                   label="gap"
-                   property="gap"
-                   value={container.gap}
-                   onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
-                   onChangeEnd={(v) =>
-                     onUpdate({ gap: v } as Partial<Renderable>, true)
-                   }
-                 />
-                 <GapControl
-                   label="row"
-                   property="rowGap"
-                   value={container.rowGap}
-                   onChange={(v) =>
-                     onUpdate({ rowGap: v } as Partial<Renderable>)
-                   }
-                   onChangeEnd={(v) =>
-                     onUpdate({ rowGap: v } as Partial<Renderable>, true)
-                   }
-                 />
-                 <GapControl
-                   label="col"
-                   property="columnGap"
-                   value={container.columnGap}
-                   onChange={(v) =>
-                     onUpdate({ columnGap: v } as Partial<Renderable>)
-                   }
-                   onChangeEnd={(v) =>
-                     onUpdate({ columnGap: v } as Partial<Renderable>, true)
-                   }
-                 />
-               </box>
+              <box id="flex-gap-sliders" flexDirection="column" gap={0}>
+                <GapControl
+                  label="gap"
+                  property="gap"
+                  value={container.gap}
+                  onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
+                  onChangeEnd={(v) =>
+                    onUpdate({ gap: v } as Partial<Renderable>, true)
+                  }
+                />
+                <GapControl
+                  label="row"
+                  property="rowGap"
+                  value={container.rowGap}
+                  onChange={(v) =>
+                    onUpdate({ rowGap: v } as Partial<Renderable>)
+                  }
+                  onChangeEnd={(v) =>
+                    onUpdate({ rowGap: v } as Partial<Renderable>, true)
+                  }
+                />
+                <GapControl
+                  label="col"
+                  property="columnGap"
+                  value={container.columnGap}
+                  onChange={(v) =>
+                    onUpdate({ columnGap: v } as Partial<Renderable>)
+                  }
+                  onChangeEnd={(v) =>
+                    onUpdate({ columnGap: v } as Partial<Renderable>, true)
+                  }
+                />
+              </box>
 
               <FlexAlignmentGrid
                 justify={container.justifyContent}
@@ -511,23 +388,23 @@ export function PropertyPane({
                     alignItems: a,
                   } as Partial<Renderable>)
                 }
-                />
-              </box>
+              />
+            </box>
 
-              <box style={{ marginTop: 1 }} />
+            <box style={{ marginTop: 1 }} />
 
-              <PropRow label="Justify">
-                <text fg={COLORS.accent}>
-                  {(container.justifyContent || 'start').replace('flex-', '')}
-                </text>
-              </PropRow>
-              <PropRow label="Align">
-                <text fg={COLORS.accent}>
-                  {(container.alignItems || 'start').replace('flex-', '')}
-                </text>
-              </PropRow>
+            <PropRow label="Justify">
+              <text fg={COLORS.accent}>
+                {(container.justifyContent || 'start').replace('flex-', '')}
+              </text>
+            </PropRow>
+            <PropRow label="Align">
+              <text fg={COLORS.accent}>
+                {(container.alignItems || 'start').replace('flex-', '')}
+              </text>
+            </PropRow>
 
-              {container.flexWrap === 'wrap' &&
+            {container.flexWrap === 'wrap' &&
               alignContentProp &&
               renderProp(alignContentProp)}
           </box>
@@ -536,11 +413,9 @@ export function PropertyPane({
     )
   }
 
-  // Render position section - non-collapsible
   const renderPositionSection = () => {
     return (
       <box key="position" id="section-position" flexDirection="column">
-        {/* Rel/Abs tabs on top line, right-aligned */}
         <box
           id="pos-mode-tabs"
           flexDirection="row"
@@ -591,7 +466,6 @@ export function PropertyPane({
             </text>
           </box>
         </box>
-        {/* Position title left, x y z right */}
         <box
           id="pos-row"
           flexDirection="row"
@@ -617,7 +491,6 @@ export function PropertyPane({
     )
   }
 
-  // Render overflow section
   const renderOverflowSection = () => {
     if (!isContainerRenderable(node)) return null
     const container = node as BoxRenderable | ScrollboxRenderable
@@ -654,7 +527,6 @@ export function PropertyPane({
     )
   }
 
-  // Render element-specific section using registry
   const renderElementSection = (section: PropertySection) => {
     const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
     if (!meta) return null
@@ -682,7 +554,6 @@ export function PropertyPane({
     })
   }
 
-  // Main section renderer
   const renderSection = (section: PropertySection) => {
     const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
     if (!meta) return null
@@ -690,15 +561,13 @@ export function PropertyPane({
     if (meta.ownerTypes && meta.ownerTypes.length > 0) {
       return renderElementSection(section)
     }
-    // Custom visual sections
-    if (section === 'dimensions') return renderDimensionsSection()
-    if (section === 'padding') return renderPaddingSection()
-    if (section === 'margin') return renderMarginSection()
-    if (section === 'flexContainer') return renderFlexContainerSection()
-    if (section === 'position') return renderPositionSection()
-    if (section === 'overflow') return renderOverflowSection()
 
-    // Generic section rendering
+    if (meta.layout === 'dimensions') return renderDimensionsSection()
+    if (meta.layout === 'position') return renderPositionSection()
+    if (meta.layout === 'spacing') return renderSpacingSection(meta)
+    if (meta.layout === 'flex') return renderFlexContainerSection()
+    if (meta.layout === 'overflow') return renderOverflowSection()
+
     const sectionProps = props.filter((p) => p.section === section)
     if (sectionProps.length === 0) return null
     const isCollapsed = collapsed[section]
@@ -740,7 +609,6 @@ export function PropertyPane({
         }}
         scrollbarOptions={{
           visible: false,
-
           trackOptions: {
             foregroundColor: 'transparent',
             backgroundColor: 'transparent',
@@ -755,8 +623,6 @@ export function PropertyPane({
         onMouseDrag={handleDrag}
         onMouseDragEnd={handleDragEnd}
         onMouseDown={(e) => {
-          // Clicking on the panel background (not on controls) deselects focused fields
-          // Controls that should maintain focus will stopPropagation
           if (e.target === scrollRef.current) {
             setFocusedField(null)
             setPickingForField?.(null)

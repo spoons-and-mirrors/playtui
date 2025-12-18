@@ -103,11 +103,20 @@ export type PropertySection =
   | 'tabSelect'
   | 'scrollbox'
 
+export type PropertyLayout =
+  | 'dimensions'
+  | 'position'
+  | 'spacing'
+  | 'flex'
+  | 'overflow'
+
 interface PropertySectionMeta {
   id: PropertySection
   label: string
   defaultExpanded: boolean
   ownerTypes?: RenderableType[]
+  layout?: PropertyLayout
+  keys?: Record<string, string>
 }
 
 export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
@@ -115,26 +124,43 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     id: 'dimensions',
     label: '◫ Dimensions',
     defaultExpanded: true,
+    layout: 'dimensions',
   },
   {
     id: 'position',
     label: '◎ Position',
     defaultExpanded: false,
+    layout: 'position',
   },
   {
     id: 'margin',
     label: '⊟ Margin',
     defaultExpanded: false,
+    layout: 'spacing',
+    keys: {
+      top: 'marginTop',
+      right: 'marginRight',
+      bottom: 'marginBottom',
+      left: 'marginLeft',
+    },
   },
   {
     id: 'padding',
     label: '⊞ Padding',
     defaultExpanded: false,
+    layout: 'spacing',
+    keys: {
+      top: 'paddingTop',
+      right: 'paddingRight',
+      bottom: 'paddingBottom',
+      left: 'paddingLeft',
+    },
   },
   {
     id: 'flexContainer',
     label: '⬓ Layout',
     defaultExpanded: true,
+    layout: 'flex',
   },
   {
     id: 'flexItem',
@@ -156,6 +182,7 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     id: 'overflow',
     label: '⋯ Overflow',
     defaultExpanded: false,
+    layout: 'overflow',
   },
   {
     id: 'visibility',
