@@ -8,7 +8,7 @@ import type {
   Overflow,
 } from '../../lib/types'
 
-export function GapControl({
+export function NumericProp({
   label,
   value,
   property,
@@ -26,7 +26,7 @@ export function GapControl({
   return (
     <ValueControl
       variant="counter"
-      id={`gap-${label}`}
+      id={`num-${label}`}
       label={label}
       property={property}
       value={val}

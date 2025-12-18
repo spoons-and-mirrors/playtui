@@ -14,7 +14,7 @@ export { PositionControl } from './PositionControl'
 export {
   FlexDirectionPicker,
   FlexAlignmentGrid,
-  GapControl,
+  NumericProp,
   OverflowPicker,
 } from './FlexControls'
 export { DimensionsControl } from './DimensionsControl'

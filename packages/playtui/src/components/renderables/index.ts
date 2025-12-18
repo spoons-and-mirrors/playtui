@@ -149,6 +149,7 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     id: 'flexItem',
     label: '▧ Flex Item',
     defaultExpanded: false,
+    hasTopSpacing: true,
   },
   {
     id: 'background',

@@ -15,7 +15,12 @@ export function SectionHeader({
     <box
       id={`section-${title}`}
       onMouseDown={collapsible ? onToggle : undefined}
-      style={{ flexDirection: 'row', gap: 1, height: 1, marginTop: 1 }}
+      style={{
+        flexDirection: 'row',
+        gap: 1,
+        height: 1,
+        marginBottom: 1,
+      }}
     >
       {collapsible ? (
         <text fg={COLORS.accent}>{collapsed ? '▸' : '▾'}</text>

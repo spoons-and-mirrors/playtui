@@ -23,7 +23,7 @@ import {
   PositionControl,
   FlexDirectionPicker,
   FlexAlignmentGrid,
-  GapControl,
+  NumericProp,
   OverflowPicker,
   DimensionsControl,
   PropRow,
@@ -90,7 +90,22 @@ export function PropertyPane({
   const { registerDrag, handleDrag, handleDragEnd } =
     useDragCaptureImplementation()
 
-  const toggleSection = (section: string) => {
+    const cycleProp = (key: string, current: any) => {
+      const opts =
+        (RENDERABLE_REGISTRY[node.type].properties.find((p) => p.key === key)
+          ?.options as any[]) || []
+      const idx = opts.indexOf(current || opts[0])
+      const next = opts[(idx + 1) % opts.length]
+      onUpdate({ [key]: next } as Partial<Renderable>)
+    }
+
+    const flexProps = RENDERABLE_REGISTRY.box.properties
+    const flexDirectionOpts =
+      flexProps.find((p) => p.key === 'flexDirection')?.options || []
+    const flexWrapOpts =
+      flexProps.find((p) => p.key === 'flexWrap')?.options || []
+
+    const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
@@ -351,6 +366,95 @@ export function PropertyPane({
     )
   }
 
+  const renderFlexItemSection = () => {
+    const isCollapsed = collapsed['flexItem']
+    const flexItemMeta = PROPERTY_SECTIONS.find(
+      (meta) => meta.id === 'flexItem',
+    )
+    if (!flexItemMeta) return null
+
+    return (
+      <box
+        key="flexItem"
+        id="section-flexItem"
+        style={{ flexDirection: 'column', marginTop: 1 }}
+      >
+        <SectionHeader
+          title={flexItemMeta.label}
+          collapsed={isCollapsed}
+          onToggle={() => toggleSection('flexItem')}
+        />
+
+        {!isCollapsed && (
+          <box
+            id="flex-item-2x2"
+            style={{
+              flexDirection: 'column',
+              gap: 1,
+              paddingLeft: 1,
+            }}
+          >
+            <box style={{ flexDirection: 'row', gap: 0 }}>
+              <box style={{ flexGrow: 1, flexBasis: 0 }}>
+                <NumericProp
+                  label="grow"
+                  property="flexGrow"
+                  value={node.flexGrow}
+                  onChange={(v: number) =>
+                    onUpdate({ flexGrow: v } as Partial<Renderable>)
+                  }
+                  onChangeEnd={(v: number) =>
+                    onUpdate({ flexGrow: v } as Partial<Renderable>, true)
+                  }
+                />
+              </box>
+              <box style={{ flexGrow: 1, flexBasis: 0 }}>
+                <SizeProp
+                  label="basis"
+                  value={node.flexBasis as any}
+                  onChange={(v) =>
+                    onUpdate({ flexBasis: v } as Partial<Renderable>)
+                  }
+                />
+              </box>
+            </box>
+            <box style={{ flexDirection: 'row', gap: 0 }}>
+              <box style={{ flexGrow: 1, flexBasis: 0 }}>
+                <NumericProp
+                  label="shrink"
+                  property="flexShrink"
+                  value={node.flexShrink}
+                  onChange={(v: number) =>
+                    onUpdate({ flexShrink: v } as Partial<Renderable>)
+                  }
+                  onChangeEnd={(v: number) =>
+                    onUpdate({ flexShrink: v } as Partial<Renderable>, true)
+                  }
+                />
+              </box>
+              <box
+                style={{
+                  flexGrow: 1,
+                  flexBasis: 0,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+                onMouseDown={() => cycleProp('alignSelf', node.alignSelf)}
+              >
+                <text fg={COLORS.muted}>align</text>
+                <text fg={COLORS.accent}>
+                  {String(node.alignSelf || 'auto')
+                    .replace('flex-', '')
+                    .slice(0, 10)}
+                </text>
+              </box>
+            </box>
+          </box>
+        )}
+      </box>
+    )
+  }
+
   const renderFlexContainerSection = () => {
     if (!isContainerRenderable(node)) return null
     const container = node as BoxRenderable | ScrollboxRenderable
@@ -381,10 +485,57 @@ export function PropertyPane({
             style={{
               flexDirection: 'column',
               paddingLeft: 1,
-              marginTop: 1,
               gap: 1,
             }}
           >
+            {/* Direction and Wrap Row - 2 column layout */}
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 0,
+                alignItems: 'flex-start',
+              }}
+            >
+              <box
+                style={{
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                }}
+              >
+                <SelectProp
+                  label={null}
+                  value={String(container.flexDirection || 'row')}
+                  options={flexDirectionOpts}
+                  onChange={(v) =>
+                    onUpdate({
+                      flexDirection: v as FlexDirection,
+                    } as Partial<Renderable>)
+                  }
+                />
+              </box>
+              <box
+                style={{
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                }}
+              >
+                {wrapProp && (
+                  <SelectProp
+                    label={null}
+                    value={String((node as any).flexWrap || 'nowrap')}
+                    options={flexWrapOpts}
+                    onChange={(v) =>
+                      onUpdate({ flexWrap: v } as Partial<Renderable>)
+                    }
+                  />
+                )}
+              </box>
+            </box>
+
             {/* Main Controls Row: Stable 2-column split */}
             <box
               style={{
@@ -393,7 +544,7 @@ export function PropertyPane({
                 alignItems: 'flex-start',
               }}
             >
-              {/* Column 1: Gaps and Direction */}
+              {/* Column 1: Gaps */}
               <box
                 style={{
                   flexDirection: 'column',
@@ -404,48 +555,43 @@ export function PropertyPane({
                 }}
               >
                 <box id="flex-gap-sliders" flexDirection="column" gap={0}>
-                  <GapControl
+                  <NumericProp
                     label="gap"
                     property="gap"
                     value={container.gap}
-                    onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
-                    onChangeEnd={(v) =>
+                    onChange={(v: number) =>
+                      onUpdate({ gap: v } as Partial<Renderable>)
+                    }
+                    onChangeEnd={(v: number) =>
                       onUpdate({ gap: v } as Partial<Renderable>, true)
                     }
                   />
-                  <GapControl
+                  <NumericProp
                     label="row"
                     property="rowGap"
                     value={container.rowGap}
-                    onChange={(v) =>
+                    onChange={(v: number) =>
                       onUpdate({ rowGap: v } as Partial<Renderable>)
                     }
-                    onChangeEnd={(v) =>
+                    onChangeEnd={(v: number) =>
                       onUpdate({ rowGap: v } as Partial<Renderable>, true)
                     }
                   />
-                  <GapControl
+                  <NumericProp
                     label="col"
                     property="columnGap"
                     value={container.columnGap}
-                    onChange={(v) =>
+                    onChange={(v: number) =>
                       onUpdate({ columnGap: v } as Partial<Renderable>)
                     }
-                    onChangeEnd={(v) =>
+                    onChangeEnd={(v: number) =>
                       onUpdate({ columnGap: v } as Partial<Renderable>, true)
                     }
                   />
                 </box>
-                <FlexDirectionPicker
-                  label={null}
-                  value={container.flexDirection}
-                  onChange={(v) =>
-                    onUpdate({ flexDirection: v } as Partial<Renderable>)
-                  }
-                />
               </box>
 
-              {/* Column 2: Alignment and Wrap */}
+              {/* Column 2: Alignment Grid */}
               <box
                 style={{
                   flexDirection: 'column',
@@ -466,16 +612,6 @@ export function PropertyPane({
                     } as Partial<Renderable>)
                   }
                 />
-                {wrapProp && (
-                  <SelectProp
-                    label={null}
-                    value={String((node as any).flexWrap || 'nowrap')}
-                    options={wrapProp.options!}
-                    onChange={(v) =>
-                      onUpdate({ flexWrap: v } as Partial<Renderable>)
-                    }
-                  />
-                )}
               </box>
             </box>
 
@@ -494,15 +630,9 @@ export function PropertyPane({
                   flexBasis: 0,
                   alignItems: 'center',
                 }}
-                onMouseDown={() => {
-                  const opts = (RENDERABLE_REGISTRY.box.properties.find(
-                    (p) => p.key === 'justifyContent',
-                  )?.options as JustifyContent[]) || []
-                  const current = container.justifyContent || 'flex-start'
-                  const idx = opts.indexOf(current as any)
-                  const next = opts[(idx + 1) % opts.length]
-                  onUpdate({ justifyContent: next } as Partial<Renderable>)
-                }}
+                onMouseDown={() =>
+                  cycleProp('justifyContent', container.justifyContent)
+                }
               >
                 <text fg={COLORS.muted}>Justify</text>
                 <text fg={COLORS.accent}>
@@ -517,15 +647,7 @@ export function PropertyPane({
                   flexBasis: 0,
                   alignItems: 'center',
                 }}
-                onMouseDown={() => {
-                  const opts = (RENDERABLE_REGISTRY.box.properties.find(
-                    (p) => p.key === 'alignItems',
-                  )?.options as AlignItems[]) || []
-                  const current = container.alignItems || 'flex-start'
-                  const idx = opts.indexOf(current as any)
-                  const next = opts[(idx + 1) % opts.length]
-                  onUpdate({ alignItems: next } as Partial<Renderable>)
-                }}
+                onMouseDown={() => cycleProp('alignItems', container.alignItems)}
               >
                 <text fg={COLORS.muted}>Align</text>
                 <text fg={COLORS.accent}>
@@ -542,15 +664,9 @@ export function PropertyPane({
                     flexBasis: 0,
                     alignItems: 'center',
                   }}
-                  onMouseDown={() => {
-                    const opts = (RENDERABLE_REGISTRY.box.properties.find(
-                      (p) => p.key === 'alignContent',
-                    )?.options as AlignContent[]) || []
-                    const current = container.alignContent || 'flex-start'
-                    const idx = opts.indexOf(current as any)
-                    const next = opts[(idx + 1) % opts.length]
-                    onUpdate({ alignContent: next } as Partial<Renderable>)
-                  }}
+                  onMouseDown={() =>
+                    cycleProp('alignContent', container.alignContent)
+                  }
                 >
                   <text fg={COLORS.muted}>Content</text>
                   <text fg={COLORS.accent}>
@@ -700,6 +816,9 @@ export function PropertyPane({
       if (meta.layout === 'flex') return renderFlexContainerSection()
       if (meta.layout === 'overflow') return renderOverflowSection()
     }
+
+    // Special handling for flexItem section
+    if (section === 'flexItem') return renderFlexItemSection()
 
     const sectionProps = props.filter((p) => p.section === section)
     if (sectionProps.length === 0) return null

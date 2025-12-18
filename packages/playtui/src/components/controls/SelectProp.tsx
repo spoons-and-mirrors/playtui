@@ -30,7 +30,6 @@ export function SelectProp({
       }}
     >
       <text fg={COLORS.accent}>{display}</text>
-      <text fg={COLORS.muted}> ◂▸</text>
     </box>
   )
 
