@@ -81,8 +81,6 @@ export function Renderer({
 
   return RenderableRenderer({
     node,
-    isSelected,
-    isHovered,
     onSelect: () => onSelect(node.id),
     onHover: (h: boolean) => onHover(h ? node.id : null),
     onDragStart: onDragStart

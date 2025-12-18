@@ -1,4 +1,3 @@
-import type { MouseEvent } from '@opentui/core'
 import type { Renderable, TabSelectRenderable } from '../../lib/types'
 import { COLORS } from '../../theme'
 import {
@@ -8,6 +7,8 @@ import {
   ColorControl,
   SectionHeader,
 } from '../controls'
+import { useRenderableMouseHandlers } from './useRenderableMouseHandlers'
+import { buildPositioningStyle } from './styleHelpers'
 
 // =============================================================================
 // TABSELECT DEFAULTS
@@ -24,8 +25,6 @@ export const TABSELECT_DEFAULTS: Partial<TabSelectRenderable> = {
 
 interface TabSelectRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
@@ -33,43 +32,24 @@ interface TabSelectRendererProps {
 
 export function TabSelectRenderer({
   node: genericNode,
-  isSelected,
-  isHovered,
   onSelect,
   onHover,
   onDragStart,
 }: TabSelectRendererProps) {
   const node = genericNode as TabSelectRenderable
   const options = node.options || ['Tab 1', 'Tab 2']
-  // Enable dragging for all positioned elements
-  const isDraggable = true
 
-  const handleMouseDown = (e: MouseEvent) => {
-    e.stopPropagation()
-    onSelect()
-    if (isDraggable && onDragStart) {
-      onDragStart(e.x, e.y)
-    }
-  }
+  const { handleMouseDown, handleMouseOver, handleMouseOut } =
+    useRenderableMouseHandlers(onSelect, onHover, onDragStart)
 
   return (
     <box
       id={`render-${node.id}`}
       onMouseDown={handleMouseDown}
-      onMouseOver={() => onHover(true)}
-      onMouseOut={() => onHover(false)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
       visible={node.visible !== false}
-      style={{
-        margin: node.margin,
-        marginTop: node.marginTop,
-        marginRight: node.marginRight,
-        marginBottom: node.marginBottom,
-        marginLeft: node.marginLeft,
-        position: node.position,
-        top: node.y,
-        left: node.x,
-        zIndex: node.zIndex,
-      }}
+      style={buildPositioningStyle(node)}
     >
       <tab-select
         options={options.map((o) => ({ name: o, description: '' }))}

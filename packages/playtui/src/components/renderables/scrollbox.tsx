@@ -29,8 +29,6 @@ export const SCROLLBOX_DEFAULTS: Partial<ScrollboxRenderable> = {
 
 interface ScrollboxRendererProps {
   node: Renderable
-  isSelected?: boolean
-  isHovered?: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void

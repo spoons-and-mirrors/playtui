@@ -29,8 +29,6 @@ export const TEXT_DEFAULTS: Partial<TextRenderable> = {
 
 interface TextRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
@@ -38,8 +36,6 @@ interface TextRendererProps {
 
 export function TextRenderer({
   node: genericNode,
-  isSelected,
-  isHovered,
   onSelect,
   onHover,
   onDragStart,

@@ -28,8 +28,6 @@ export const SLIDER_DEFAULTS: Partial<SliderRenderable> = {
 
 interface SliderRendererProps {
   node: Renderable
-  isSelected?: boolean
-  isHovered?: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void

@@ -41,8 +41,6 @@ import type { ColorPalette } from '../../lib/projectTypes'
 // Renderer props shared by all renderable renderers
 export interface RendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void

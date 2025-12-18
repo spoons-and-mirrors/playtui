@@ -29,8 +29,6 @@ export const TEXTAREA_DEFAULTS: Partial<TextareaRenderable> = {
 
 interface TextareaRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
@@ -38,8 +36,6 @@ interface TextareaRendererProps {
 
 export function TextareaRenderer({
   node: genericNode,
-  isSelected,
-  isHovered,
   onSelect,
   onHover,
   onDragStart,

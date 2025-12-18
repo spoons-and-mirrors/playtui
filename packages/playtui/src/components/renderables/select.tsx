@@ -26,8 +26,6 @@ export const SELECT_DEFAULTS: Partial<SelectRenderable> = {
 
 interface SelectRendererProps {
   node: Renderable
-  isSelected?: boolean
-  isHovered?: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void

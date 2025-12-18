@@ -27,8 +27,6 @@ export const INPUT_DEFAULTS: Partial<InputRenderable> = {
 
 interface InputRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
@@ -36,8 +34,6 @@ interface InputRendererProps {
 
 export function InputRenderer({
   node: genericNode,
-  isSelected,
-  isHovered,
   onSelect,
   onHover,
   onDragStart,

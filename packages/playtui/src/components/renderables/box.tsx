@@ -34,8 +34,6 @@ export const BOX_DEFAULTS: Partial<BoxRenderable> = {
 
 interface BoxRendererProps {
   node: Renderable
-  isSelected: boolean
-  isHovered: boolean
   onSelect: () => void
   onHover: (hovering: boolean) => void
   onDragStart?: (x: number, y: number) => void
@@ -44,8 +42,6 @@ interface BoxRendererProps {
 
 export function BoxRenderer({
   node: genericNode,
-  isSelected,
-  isHovered,
   onSelect,
   onHover,
   onDragStart,
