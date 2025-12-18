@@ -1,6 +1,7 @@
 import { COLORS } from '../../theme'
 import { PropRow } from './PropRow'
 import { ValueControl } from '../ui/ValueControl'
+import type { ColorPalette } from '../../lib/projectTypes'
 
 /**
  * Reusable color control with hex input and palette picker button
@@ -18,6 +19,10 @@ export function ColorControl({
   onBlur,
   pickMode,
   onPickStart,
+  palettes,
+  activePaletteIndex,
+  onUpdateSwatch,
+  onChangePalette,
 }: {
   label: string
   value: string
@@ -27,6 +32,10 @@ export function ColorControl({
   onBlur?: () => void
   pickMode?: boolean
   onPickStart?: () => void
+  palettes?: ColorPalette[]
+  activePaletteIndex?: number
+  onUpdateSwatch?: (id: string, color: string) => void
+  onChangePalette?: (index: number) => void
 }) {
   const getAlpha = (hex: string) => {
     const cleanHex = (hex || '').replace('#', '')

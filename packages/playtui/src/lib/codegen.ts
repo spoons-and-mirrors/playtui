@@ -43,14 +43,14 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
     return `${key}={[${optionsStr}]}`
   }
 
-  // String/color props
-  if (type === 'string' || type === 'color') {
+  // String/color/select props
+  if (type === 'string' || type === 'color' || type === 'select') {
     const strVal = escape ? String(value).replace(/"/g, '\\"') : String(value)
     return `${key}="${strVal}"`
   }
 
-  // Object props (e.g. customBorderChars)
-  if (type === 'object') {
+  // Object/borderSides props
+  if (type === 'object' || type === 'borderSides') {
     return `${key}={${JSON.stringify(value)}}`
   }
 
@@ -59,9 +59,16 @@ function serializeProp(prop: SerializableProp, value: unknown): string | null {
     return `${key}={${value}}`
   }
 
-  // Boolean props (non-jsxBoolean)
-  if (type === 'boolean') {
+  // Boolean/toggle props (non-jsxBoolean)
+  if (type === 'boolean' || type === 'toggle') {
     return value ? `${key}={true}` : `${key}={false}`
+  }
+
+  // Size props (if direct)
+  if (type === 'size') {
+    const sizeVal = formatSize(value as SizeValue)
+    if (!sizeVal) return null
+    return `${key}={${sizeVal}}`
   }
 
   return null

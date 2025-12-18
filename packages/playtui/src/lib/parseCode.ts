@@ -32,7 +32,17 @@ function applyRegistryProps(
   if (!entry?.properties) return
 
   for (const propDef of entry.properties) {
-    const value = props[propDef.key]
+    let value = props[propDef.key]
+
+    // Special handling for border/borderSides split
+    // In JSX: border={["top", "bottom"]}
+    // In State: border: true, borderSides: ["top", "bottom"]
+    if (propDef.key === 'border' && Array.isArray(value)) {
+      ;(renderable as any).border = true
+      ;(renderable as any).borderSides = value as BorderSide[]
+      continue
+    }
+
     if (value === undefined) continue
 
     // Special handling for options arrays (select/tab-select)
@@ -47,6 +57,41 @@ function applyRegistryProps(
     // All other props - direct assignment
     ;(renderable as Record<string, unknown>)[propDef.key] = value
   }
+}
+
+// Create node from tag and props
+function createNode(
+  tagName: string,
+  props: Record<string, unknown>,
+): Renderable {
+  const type = tagName as RenderableType
+
+  log('PARSE_CREATE_NODE', {
+    tagName,
+    propsName: props.name,
+    propsKeys: Object.keys(props),
+  })
+
+  const node: Partial<Renderable> = {
+    id: genId(),
+    type,
+    name: props.name as string | undefined,
+    children: [],
+  }
+
+  // Apply style props first
+  if (props.style && typeof props.style === 'object') {
+    applyStyle(node, props.style as Record<string, unknown>)
+  }
+
+  // Apply registry-defined props for all renderable types
+  applyRegistryProps(node, type, props)
+
+  // Fallback for props not in registry but explicitly passed (e.g. name, visible)
+  if (props.name !== undefined) node.name = props.name as string
+  if (props.visible !== undefined) node.visible = props.visible as boolean
+
+  return node as Renderable
 }
 
 interface ParseResult {
@@ -142,6 +187,7 @@ function parseStyleObject(str: string): Record<string, unknown> {
   inner = inner.trim()
   if (inner.startsWith('{')) inner = inner.slice(1)
   if (inner.endsWith('}')) inner = inner.slice(0, -1)
+  inner = inner.trim()
 
   // Split by comma, but respect nested structures
   const parts: string[] = []
@@ -393,70 +439,6 @@ function keyInNode(node: Partial<Renderable>, key: string): boolean {
   // We allow arbitrary assignment to node from style for flexibility,
   // but strictly strictly defined registry props are preferred.
   return true
-}
-
-// Create node from tag and props
-function createNode(
-  tagName: string,
-  props: Record<string, unknown>,
-): Renderable {
-  const type = tagName as RenderableType
-
-  log('PARSE_CREATE_NODE', {
-    tagName,
-    propsName: props.name,
-    propsKeys: Object.keys(props),
-  })
-
-  const node: Partial<Renderable> = {
-    id: genId(),
-    type,
-    name: props.name as string | undefined,
-    children: [],
-  }
-
-  // Apply style props first
-  if (props.style && typeof props.style === 'object') {
-    applyStyle(node, props.style as Record<string, unknown>)
-  }
-
-  // Common container props (box/scrollbox)
-  if (type === 'box' || type === 'scrollbox') {
-    if (props.border !== undefined) {
-      if (Array.isArray(props.border)) {
-        ;(node as any).border = true
-        ;(node as any).borderSides = props.border as BorderSide[]
-      } else {
-        ;(node as any).border = Boolean(props.border)
-      }
-    }
-    if (props.borderStyle !== undefined)
-      (node as any).borderStyle = props.borderStyle
-    if (props.borderColor !== undefined)
-      (node as any).borderColor = props.borderColor
-    if (props.focusedBorderColor !== undefined)
-      (node as any).focusedBorderColor = props.focusedBorderColor
-    if (props.shouldFill !== undefined)
-      (node as any).shouldFill = props.shouldFill
-    if (props.title !== undefined) (node as any).title = props.title
-    if (props.titleAlignment !== undefined)
-      (node as any).titleAlignment = props.titleAlignment
-    if (props.backgroundColor !== undefined)
-      (node as any).backgroundColor = props.backgroundColor
-    if (props.visible !== undefined) node.visible = props.visible as boolean
-  }
-
-  // Apply registry-defined props for scrollbox (stickyScroll, scrollX, etc.)
-  if (type === 'scrollbox') {
-    applyRegistryProps(node, type, props)
-  }
-
-  // Apply registry-defined props for all other renderable types
-  if (type !== 'box' && type !== 'scrollbox') {
-    applyRegistryProps(node, type, props)
-  }
-
-  return node as Renderable
 }
 
 // Parse text content for formatting tags

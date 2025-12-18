@@ -7,7 +7,6 @@ import type {
   BorderSide,
   BoxRenderable,
   ScrollboxRenderable,
-  TextRenderable,
 } from '../../lib/types'
 import {
   NumberProp,
@@ -105,11 +104,61 @@ export function PropertyPane({
   }).map((meta) => meta.id)
 
   const renderProp = (prop: SerializableProp) => {
+    if (prop.visible && !prop.visible(node)) {
+      return null
+    }
     const nodeProps = node as unknown as AnyNodeProps
     const val = nodeProps[prop.key]
     const key = prop.key
     const label = prop.label || prop.key
 
+    if (prop.customRenderer) {
+      return (
+        <box key={key}>
+          {prop.customRenderer({
+            node,
+            onUpdate: (updates) => onUpdate(updates as Partial<Renderable>),
+            focusedField,
+            setFocusedField,
+            collapsed: false,
+            onToggle: () => {},
+            palettes: palettes as any,
+            activePaletteIndex,
+            onUpdateSwatch,
+            onChangePalette,
+            pickingForField,
+            setPickingForField,
+          })}
+        </box>
+      )
+    }
+
+    if (prop.type === 'header') {
+      return (
+        <box key={`header-${prop.label}`} style={{ marginTop: 1 }}>
+          <text fg={COLORS.muted}>─ {prop.label} ─</text>
+        </box>
+      )
+    }
+    if (prop.type === 'options') {
+      return (
+        <StringProp
+          key={key}
+          label={label}
+          value={(val as string[] || []).join(', ')}
+          focused={focusedField === prop.key}
+          onFocus={() => setFocusedField(prop.key)}
+          onChange={(v) =>
+            onUpdate({
+              [prop.key]: v
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean),
+            } as Partial<Renderable>)
+          }
+        />
+      )
+    }
     if (prop.type === 'number') {
       return (
         <NumberProp
@@ -157,6 +206,10 @@ export function PropertyPane({
           onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
           pickMode={pickingForField === prop.key}
           onPickStart={() => setPickingForField?.(prop.key)}
+          palettes={palettes}
+          activePaletteIndex={activePaletteIndex}
+          onUpdateSwatch={onUpdateSwatch}
+          onChangePalette={onChangePalette}
         />
       )
     }
@@ -529,50 +582,39 @@ export function PropertyPane({
     )
   }
 
-  const renderElementSection = (section: PropertySection) => {
-    const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
-    if (!meta) return null
-    if (meta.ownerTypes && !meta.ownerTypes.includes(node.type)) return null
-
-    const entry =
-      section === 'border' && node.type === 'scrollbox'
-        ? RENDERABLE_REGISTRY['box']
-        : RENDERABLE_REGISTRY[node.type]
-    if (!entry?.Properties) return null
-
-    return entry.Properties({
-      node,
-      onUpdate,
-      focusedField,
-      setFocusedField,
-      collapsed: collapsed[section],
-      onToggle: () => toggleSection(section),
-      palettes,
-      activePaletteIndex,
-      onUpdateSwatch,
-      onChangePalette,
-      pickingForField,
-      setPickingForField,
-    })
-  }
-
   const renderSection = (section: PropertySection) => {
     const meta = PROPERTY_SECTIONS.find((s) => s.id === section)
     if (!meta) return null
 
-    if (meta.ownerTypes && meta.ownerTypes.length > 0) {
-      return renderElementSection(section)
-    }
+    // Filter by ownerTypes if specified (section only shows for matching node types)
+    if (meta.ownerTypes && !meta.ownerTypes.includes(node.type)) return null
 
-    if (meta.layout === 'dimensions') return renderDimensionsSection()
-    if (meta.layout === 'position') return renderPositionSection()
-    if (meta.layout === 'spacing') return renderSpacingSection(meta)
-    if (meta.layout === 'flex') return renderFlexContainerSection()
-    if (meta.layout === 'overflow') return renderOverflowSection()
+    const isCollapsed = collapsed[section]
+
+    // Use specialized layout renderers if defined in metadata
+    if (meta.layout && !isCollapsed) {
+      if (meta.layout === 'dimensions') return renderDimensionsSection()
+      if (meta.layout === 'position') return renderPositionSection()
+      if (meta.layout === 'spacing') return renderSpacingSection(meta)
+      if (meta.layout === 'flex') return renderFlexContainerSection()
+      if (meta.layout === 'overflow') return renderOverflowSection()
+    }
 
     const sectionProps = props.filter((p) => p.section === section)
     if (sectionProps.length === 0) return null
-    const isCollapsed = collapsed[section]
+
+    // Group props by 'group' field for horizontal layout
+    const groups: Record<string, SerializableProp[]> = {}
+    const ungrouped: SerializableProp[] = []
+
+    sectionProps.forEach((p) => {
+      if (p.group) {
+        if (!groups[p.group]) groups[p.group] = []
+        groups[p.group].push(p)
+      } else {
+        ungrouped.push(p)
+      }
+    })
 
     return (
       <box
@@ -587,7 +629,12 @@ export function PropertyPane({
         />
         {!isCollapsed && (
           <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
-            {sectionProps.map(renderProp)}
+            {ungrouped.map((prop) => renderProp(prop))}
+            {Object.entries(groups).map(([group, groupProps]) => (
+              <PropRow key={group} label="">
+                {groupProps.map((prop) => renderProp(prop))}
+              </PropRow>
+            ))}
           </box>
         )}
       </box>
