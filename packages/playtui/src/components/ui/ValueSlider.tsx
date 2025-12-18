@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { MouseEvent } from '@opentui/core'
 import { MouseButton } from '@opentui/core'
 import { COLORS } from '../../theme'
@@ -19,6 +19,7 @@ interface ValueSliderProps {
 /**
  * Draggable value slider component: shows label:value
  * - Click and drag to change value
+ * - Single click to edit value via input
  * - Double click to reset to default
  * - Uses accent text on bg color styling
  * - Shows warning color when property has keyframes
@@ -34,13 +35,22 @@ export function ValueSlider({
   resetTo = 0,
 }: ValueSliderProps) {
   const [dragging, setDragging] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState('')
+  const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasMoved = useRef(false)
   const lastClickTime = useRef<number>(0)
-  const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
   const registerDrag = useDragCapture()
   const keyframing = useKeyframing()
   const [showMenu, setShowMenu] = useState<{ x: number; y: number } | null>(
     null,
   )
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeout.current) clearTimeout(clickTimeout.current)
+    }
+  }, [])
 
   // Check if this property is keyframed (has any keyframes, not just at current frame)
   const isKeyframed =
@@ -68,7 +78,9 @@ export function ValueSlider({
     }
   }
 
-  const handleValueMouseDown = (e: MouseEvent) => {
+  const handleMouseDown = (e: MouseEvent) => {
+    if (isEditing) return
+
     // Right click -> Context menu
     if (e.button === MouseButton.RIGHT && keyframing && property) {
       e.stopPropagation()
@@ -78,7 +90,11 @@ export function ValueSlider({
 
     const now = Date.now()
     // Double click detection
-    if (now - lastClickTime.current < 300) {
+    if (now - lastClickTime.current < 200) {
+      if (clickTimeout.current) {
+        clearTimeout(clickTimeout.current)
+        clickTimeout.current = null
+      }
       onChange(resetTo)
       if (onChangeEnd) onChangeEnd(resetTo)
       handleAutoKeyframe(resetTo)
@@ -86,34 +102,45 @@ export function ValueSlider({
       return
     }
     lastClickTime.current = now
+    hasMoved.current = false
 
     // Start drag
-    dragStart.current = { x: e.x, y: e.y, value }
-    setDragging(true)
     if (registerDrag) {
-      registerDrag(e.x, e.y, value, onChange, (v) => {
-        if (onChangeEnd) onChangeEnd(v)
-        handleAutoKeyframe(v)
-      })
+      setDragging(true)
+      registerDrag(
+        e.x,
+        e.y,
+        value,
+        (v) => {
+          if (v !== value) hasMoved.current = true
+          onChange(v)
+        },
+        (v) => {
+          setDragging(false)
+          if (onChangeEnd) onChangeEnd(v)
+          handleAutoKeyframe(v)
+        },
+      )
     }
+
+    if (clickTimeout.current) clearTimeout(clickTimeout.current)
+    clickTimeout.current = setTimeout(() => {
+      if (!hasMoved.current && !isEditing) {
+        setIsEditing(true)
+        setEditValue(String(value))
+      }
+      clickTimeout.current = null
+    }, 200)
   }
 
-  const handleValueDrag = (e: MouseEvent) => {
-    if (!dragStart.current) return
-    const deltaX = e.x - dragStart.current.x
-    const deltaY = dragStart.current.y - e.y
-    const next = dragStart.current.value + deltaX + deltaY
-    if (next === value) return
-    onChange(next)
-  }
-
-  const handleValueDragEnd = () => {
-    if (dragStart.current) {
-      if (onChangeEnd) onChangeEnd(value)
-      handleAutoKeyframe(value)
+  const handleCommit = () => {
+    const val = parseFloat(editValue)
+    if (!isNaN(val)) {
+      onChange(val)
+      if (onChangeEnd) onChangeEnd(val)
+      handleAutoKeyframe(val)
     }
-    dragStart.current = null
-    setDragging(false)
+    setIsEditing(false)
   }
 
   const isZero = value === 0
@@ -121,10 +148,10 @@ export function ValueSlider({
   const textColor = dragging
     ? COLORS.accentBright
     : isKeyframed
-      ? COLORS.warning
-      : isZero
-        ? COLORS.muted
-        : COLORS.accent
+    ? COLORS.warning
+    : isZero
+    ? COLORS.muted
+    : COLORS.accent
 
   return (
     <>
@@ -135,15 +162,37 @@ export function ValueSlider({
         paddingRight={1}
         flexDirection="row"
         alignItems="center"
-        onMouseDown={handleValueMouseDown}
-        onMouseDrag={handleValueDrag}
-        onMouseDragEnd={handleValueDragEnd}
+        onMouseDown={handleMouseDown}
       >
-        <text fg={textColor} selectable={false}>
-          <strong>
-            {label.toLowerCase()}:{value}
-          </strong>
-        </text>
+        {isEditing ? (
+          <box
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {label && (
+              <text fg={COLORS.muted} selectable={false}>
+                {label.toLowerCase()}:
+              </text>
+            )}
+            <input
+              value={editValue}
+              focused
+              width={label ? 8 : 6}
+              onInput={setEditValue}
+              onSubmit={handleCommit}
+              onKeyDown={(key) => {
+                if (key.name === 'escape') {
+                  setIsEditing(false)
+                  key.preventDefault()
+                }
+              }}
+            />
+          </box>
+        ) : (
+          <text fg={textColor} selectable={false}>
+            <strong>{label ? `${label.toLowerCase()}:${value}` : value}</strong>
+          </text>
+        )}
       </box>
       {showMenu && keyframing && keyframing.selectedId && property && (
         <KeyframeContextMenu
