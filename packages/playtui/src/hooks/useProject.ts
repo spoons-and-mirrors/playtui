@@ -650,6 +650,17 @@ export function useProject(): UseProjectReturn {
     (renderableId: string, property: string, value: number) => {
       setProject((prev) => {
         if (!prev) return prev
+        
+        // Validate that the property is animatable before adding keyframe
+        const node = require('../lib/tree').findRenderable(prev.tree, renderableId)
+        if (node) {
+          const { isAnimatableProperty } = require('../components/renderables/index')
+          if (!isAnimatableProperty(node.type, property)) {
+            console.warn(`Property "${property}" is not animatable for type "${node.type}"`)
+            return prev
+          }
+        }
+        
         const frame = prev.animation.currentFrameIndex
         const nextAnimated = upsertDomainKeyframe(
           prev.animation.keyframing.animatedProperties,

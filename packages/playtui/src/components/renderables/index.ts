@@ -1171,3 +1171,19 @@ export function getAddModeBindings(): Array<[RenderableType, string]> {
     .filter(([, entry]) => entry.addModeKey)
     .map(([, entry]) => [entry.type, entry.addModeKey!])
 }
+
+/**
+ * Check if a property can be animated for a given renderable type.
+ * Derived from RENDERABLE_REGISTRY property definitions (single source of truth).
+ * Use this to validate keyframe operations and prevent animating non-animatable properties.
+ */
+export function isAnimatableProperty(
+  type: RenderableType,
+  propertyKey: string,
+): boolean {
+  const entry = RENDERABLE_REGISTRY[type]
+  if (!entry) return false
+  return entry.properties.some(
+    (p) => p.key === propertyKey && p.animatable === true,
+  )
+}
