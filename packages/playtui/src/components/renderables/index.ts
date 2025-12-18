@@ -1,21 +1,12 @@
 import { BoxRenderer, BOX_DEFAULTS } from './box'
 import { TextRenderer, TEXT_DEFAULTS } from './text'
 import { InputRenderer, INPUT_DEFAULTS } from './input'
-import {
-  TextareaRenderer,
-  TEXTAREA_DEFAULTS,
-} from './textarea'
+import { TextareaRenderer, TEXTAREA_DEFAULTS } from './textarea'
 import { SelectRenderer, SELECT_DEFAULTS } from './select'
-import {
-  ScrollboxRenderer,
-  SCROLLBOX_DEFAULTS,
-} from './scrollbox'
+import { ScrollboxRenderer, SCROLLBOX_DEFAULTS } from './scrollbox'
 import { SliderRenderer, SLIDER_DEFAULTS } from './slider'
 import { AsciiFontRenderer, ASCIIFONT_DEFAULTS } from './asciifont'
-import {
-  TabSelectRenderer,
-  TABSELECT_DEFAULTS,
-} from './tabselect'
+import { TabSelectRenderer, TABSELECT_DEFAULTS } from './tabselect'
 
 import type {
   RenderableType,
@@ -971,7 +962,12 @@ export const RENDERABLE_REGISTRY: Record<
         type: 'color',
         section: 'input',
       },
-      { key: 'cursorHeader', type: 'header', label: 'Cursor', section: 'input' },
+      {
+        key: 'cursorHeader',
+        type: 'header',
+        label: 'Cursor',
+        section: 'input',
+      },
       {
         key: 'cursorStyle',
         label: 'Style',
@@ -1152,7 +1148,12 @@ export const RENDERABLE_REGISTRY: Record<
         default: 5,
         group: 'spacing',
       },
-      { key: 'colorHeader', type: 'header', label: 'Colors', section: 'select' },
+      {
+        key: 'colorHeader',
+        type: 'header',
+        label: 'Colors',
+        section: 'select',
+      },
       {
         key: 'backgroundColor',
         label: 'BG',
@@ -1368,8 +1369,18 @@ export const RENDERABLE_REGISTRY: Record<
         group: 'range',
       },
       { key: 'value', type: 'number', section: 'slider' },
-      { key: 'viewPortSize', label: 'Viewport', type: 'number', section: 'slider' },
-      { key: 'colorHeader', type: 'header', label: 'Colors', section: 'slider' },
+      {
+        key: 'viewPortSize',
+        label: 'Viewport',
+        type: 'number',
+        section: 'slider',
+      },
+      {
+        key: 'colorHeader',
+        type: 'header',
+        label: 'Colors',
+        section: 'slider',
+      },
       {
         key: 'backgroundColor',
         label: 'BG',

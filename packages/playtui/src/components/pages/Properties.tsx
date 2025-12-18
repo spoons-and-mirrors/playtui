@@ -5,6 +5,10 @@ import type {
   BorderSide,
   BoxRenderable,
   ScrollboxRenderable,
+  JustifyContent,
+  AlignItems,
+  AlignContent,
+  FlexDirection,
 } from '../../lib/types'
 import {
   NumberProp,
@@ -375,105 +379,186 @@ export function PropertyPane({
         {!isCollapsed && (
           <box
             style={{
-              flexDirection: 'row',
-              gap: 2,
+              flexDirection: 'column',
               paddingLeft: 1,
               marginTop: 1,
-              alignItems: 'flex-start',
+              gap: 1,
             }}
           >
-            {/* Column 1: Gaps and Direction */}
-            <box style={{ flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-              <box id="flex-gap-sliders" flexDirection="column" gap={0}>
-                <GapControl
-                  label="gap"
-                  property="gap"
-                  value={container.gap}
-                  onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
-                  onChangeEnd={(v) =>
-                    onUpdate({ gap: v } as Partial<Renderable>, true)
-                  }
-                />
-                <GapControl
-                  label="row"
-                  property="rowGap"
-                  value={container.rowGap}
+            {/* Main Controls Row: Stable 2-column split */}
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 0,
+                alignItems: 'flex-start',
+              }}
+            >
+              {/* Column 1: Gaps and Direction */}
+              <box
+                style={{
+                  flexDirection: 'column',
+                  gap: 1,
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                }}
+              >
+                <box id="flex-gap-sliders" flexDirection="column" gap={0}>
+                  <GapControl
+                    label="gap"
+                    property="gap"
+                    value={container.gap}
+                    onChange={(v) => onUpdate({ gap: v } as Partial<Renderable>)}
+                    onChangeEnd={(v) =>
+                      onUpdate({ gap: v } as Partial<Renderable>, true)
+                    }
+                  />
+                  <GapControl
+                    label="row"
+                    property="rowGap"
+                    value={container.rowGap}
+                    onChange={(v) =>
+                      onUpdate({ rowGap: v } as Partial<Renderable>)
+                    }
+                    onChangeEnd={(v) =>
+                      onUpdate({ rowGap: v } as Partial<Renderable>, true)
+                    }
+                  />
+                  <GapControl
+                    label="col"
+                    property="columnGap"
+                    value={container.columnGap}
+                    onChange={(v) =>
+                      onUpdate({ columnGap: v } as Partial<Renderable>)
+                    }
+                    onChangeEnd={(v) =>
+                      onUpdate({ columnGap: v } as Partial<Renderable>, true)
+                    }
+                  />
+                </box>
+                <FlexDirectionPicker
+                  label={null}
+                  value={container.flexDirection}
                   onChange={(v) =>
-                    onUpdate({ rowGap: v } as Partial<Renderable>)
-                  }
-                  onChangeEnd={(v) =>
-                    onUpdate({ rowGap: v } as Partial<Renderable>, true)
-                  }
-                />
-                <GapControl
-                  label="col"
-                  property="columnGap"
-                  value={container.columnGap}
-                  onChange={(v) =>
-                    onUpdate({ columnGap: v } as Partial<Renderable>)
-                  }
-                  onChangeEnd={(v) =>
-                    onUpdate({ columnGap: v } as Partial<Renderable>, true)
+                    onUpdate({ flexDirection: v } as Partial<Renderable>)
                   }
                 />
               </box>
-              <FlexDirectionPicker
-                label={null}
-                value={container.flexDirection}
-                onChange={(v) =>
-                  onUpdate({ flexDirection: v } as Partial<Renderable>)
-                }
-              />
-            </box>
 
-            {/* Column 2: Alignment and Wrap */}
-            <box style={{ flexDirection: 'column', gap: 1, alignItems: 'center' }}>
-              <FlexAlignmentGrid
-                justify={container.justifyContent}
-                align={container.alignItems}
-                direction={container.flexDirection}
-                onJustifyChange={(v) =>
-                  onUpdate({ justifyContent: v } as Partial<Renderable>)
-                }
-                onAlignChange={(v) =>
-                  onUpdate({ alignItems: v } as Partial<Renderable>)
-                }
-                onBothChange={(j, a) =>
-                  onUpdate({
-                    justifyContent: j,
-                    alignItems: a,
-                  } as Partial<Renderable>)
-                }
-              />
-              {wrapProp && (
-                <SelectProp
-                  label={null}
-                  value={String((node as any).flexWrap || 'nowrap')}
-                  options={wrapProp.options!}
-                  onChange={(v) =>
-                    onUpdate({ flexWrap: v } as Partial<Renderable>)
+              {/* Column 2: Alignment and Wrap */}
+              <box
+                style={{
+                  flexDirection: 'column',
+                  gap: 1,
+                  alignItems: 'center',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                }}
+              >
+                <FlexAlignmentGrid
+                  justify={container.justifyContent}
+                  align={container.alignItems}
+                  direction={container.flexDirection}
+                  onBothChange={(j, a) =>
+                    onUpdate({
+                      justifyContent: j,
+                      alignItems: a,
+                    } as Partial<Renderable>)
                   }
                 />
+                {wrapProp && (
+                  <SelectProp
+                    label={null}
+                    value={String((node as any).flexWrap || 'nowrap')}
+                    options={wrapProp.options!}
+                    onChange={(v) =>
+                      onUpdate({ flexWrap: v } as Partial<Renderable>)
+                    }
+                  />
+                )}
+              </box>
+            </box>
+
+            {/* Status Row: 3-column Justify/Align/Content */}
+            <box
+              style={{
+                flexDirection: 'row',
+                gap: 0,
+              }}
+            >
+              <box
+                id="click-justify"
+                style={{
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                  alignItems: 'center',
+                }}
+                onMouseDown={() => {
+                  const opts = (RENDERABLE_REGISTRY.box.properties.find(
+                    (p) => p.key === 'justifyContent',
+                  )?.options as JustifyContent[]) || []
+                  const current = container.justifyContent || 'flex-start'
+                  const idx = opts.indexOf(current as any)
+                  const next = opts[(idx + 1) % opts.length]
+                  onUpdate({ justifyContent: next } as Partial<Renderable>)
+                }}
+              >
+                <text fg={COLORS.muted}>Justify</text>
+                <text fg={COLORS.accent}>
+                  {(container.justifyContent || 'start').replace('flex-', '')}
+                </text>
+              </box>
+              <box
+                id="click-align"
+                style={{
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                  flexBasis: 0,
+                  alignItems: 'center',
+                }}
+                onMouseDown={() => {
+                  const opts = (RENDERABLE_REGISTRY.box.properties.find(
+                    (p) => p.key === 'alignItems',
+                  )?.options as AlignItems[]) || []
+                  const current = container.alignItems || 'flex-start'
+                  const idx = opts.indexOf(current as any)
+                  const next = opts[(idx + 1) % opts.length]
+                  onUpdate({ alignItems: next } as Partial<Renderable>)
+                }}
+              >
+                <text fg={COLORS.muted}>Align</text>
+                <text fg={COLORS.accent}>
+                  {(container.alignItems || 'start').replace('flex-', '')}
+                </text>
+              </box>
+              {(container.flexWrap === 'wrap' ||
+                container.flexWrap === 'wrap-reverse') && (
+                <box
+                  id="click-content"
+                  style={{
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    flexBasis: 0,
+                    alignItems: 'center',
+                  }}
+                  onMouseDown={() => {
+                    const opts = (RENDERABLE_REGISTRY.box.properties.find(
+                      (p) => p.key === 'alignContent',
+                    )?.options as AlignContent[]) || []
+                    const current = container.alignContent || 'flex-start'
+                    const idx = opts.indexOf(current as any)
+                    const next = opts[(idx + 1) % opts.length]
+                    onUpdate({ alignContent: next } as Partial<Renderable>)
+                  }}
+                >
+                  <text fg={COLORS.muted}>Content</text>
+                  <text fg={COLORS.accent}>
+                    {(container.alignContent || 'start').replace('flex-', '')}
+                  </text>
+                </box>
               )}
             </box>
-          </box>
-        )}
-        {!isCollapsed && (
-          <box style={{ flexDirection: 'column', gap: 0, paddingLeft: 1 }}>
-            <PropRow label="Justify">
-              <text fg={COLORS.accent}>
-                {(container.justifyContent || 'start').replace('flex-', '')}
-              </text>
-            </PropRow>
-            <PropRow label="Align">
-              <text fg={COLORS.accent}>
-                {(container.alignItems || 'start').replace('flex-', '')}
-              </text>
-            </PropRow>
-
-            {container.flexWrap === 'wrap' &&
-              alignContentProp &&
-              renderProp(alignContentProp)}
           </box>
         )}
       </box>
@@ -648,14 +733,7 @@ export function PropertyPane({
           collapsible={collapsible}
         />
         {!isCollapsed && (
-          <box
-            style={{
-              flexDirection: 'column',
-              gap: 1,
-              paddingLeft: 1,
-              marginTop: 1,
-            }}
-          >
+          <box style={{ flexDirection: 'column', gap: 1, paddingLeft: 1 }}>
             {ungrouped.map((prop) => renderProp(prop))}
             {Object.entries(groups).map(([group, groupProps]) => (
               <PropRow key={group} label="">

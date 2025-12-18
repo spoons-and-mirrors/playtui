@@ -11,6 +11,7 @@ interface ValueControlBaseProps {
   label: string
   property?: string
   value: number
+  displayValue?: string
   onChange: (value: number) => void
   onChangeEnd?: (value: number) => void
   resetTo?: number
@@ -42,6 +43,7 @@ export function ValueControl({
   label,
   property,
   value,
+  displayValue,
   onChange,
   onChangeEnd,
   resetTo = 0,
@@ -57,7 +59,9 @@ export function ValueControl({
   const dragStart = useRef<{ x: number; y: number; value: number } | null>(null)
   const registerDrag = useDragCapture()
   const keyframing = useKeyframing()
-  const [showMenu, setShowMenu] = useState<{ x: number; y: number } | null>(null)
+  const [showMenu, setShowMenu] = useState<{ x: number; y: number } | null>(
+    null,
+  )
 
   useEffect(() => {
     return () => {
@@ -218,10 +222,10 @@ export function ValueControl({
   const sliderTextColor = dragging
     ? COLORS.accentBright
     : isKeyframed
-      ? COLORS.warning
-      : isZero
-        ? COLORS.muted
-        : COLORS.accent
+    ? COLORS.warning
+    : isZero
+    ? COLORS.muted
+    : COLORS.accent
 
   const contextMenu =
     showMenu && keyframing && keyframing.selectedId && property ? (
@@ -324,7 +328,7 @@ export function ValueControl({
             <input
               value={editValue}
               focused
-              width={label ? 8 : 6}
+              width={label ? 6 : 2}
               onInput={setEditValue}
               onSubmit={handleCommit}
               onKeyDown={(key) => {
@@ -337,7 +341,11 @@ export function ValueControl({
           </box>
         ) : (
           <text fg={sliderTextColor} selectable={false}>
-            <strong>{label ? `${label.toLowerCase()}:${value}` : value}</strong>
+            <strong>
+              {label
+                ? `${label.toLowerCase()}:${displayValue || value}`
+                : displayValue || value}
+            </strong>
           </text>
         )}
       </box>

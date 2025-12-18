@@ -86,6 +86,8 @@ export function ColorControl({
 
   const alpha = getAlpha(value)
 
+  const alphaValue = Math.round((alpha / 255) * 100)
+
   return (
     <PropRow label={label}>
       <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
@@ -93,7 +95,8 @@ export function ColorControl({
           variant="slider"
           id={`color-alpha-${label}`}
           label=""
-          value={Math.round((alpha / 255) * 100)}
+          value={alphaValue}
+          displayValue={alphaValue === 100 ? '∞' : undefined}
           resetTo={100}
           onChange={(v) => onChange(setAlpha(value, (v / 100) * 255))}
         />
