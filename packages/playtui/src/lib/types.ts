@@ -348,15 +348,6 @@ export type {
   SerializableProp as PropertyDef,
 } from '../components/renderables'
 
-// Legacy PropertyType - kept for any remaining references
-export type PropertyType =
-  | 'number'
-  | 'string'
-  | 'select'
-  | 'color'
-  | 'toggle'
-  | 'size'
-  | 'borderSides'
 
 import type { KeyframingState } from './keyframing'
 

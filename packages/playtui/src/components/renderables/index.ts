@@ -86,7 +86,7 @@ export type PropertyLayout =
   | 'flex'
   | 'overflow'
 
-interface PropertySectionMeta {
+export interface PropertySectionMeta {
   id: PropertySection
   label: string
   defaultExpanded: boolean
