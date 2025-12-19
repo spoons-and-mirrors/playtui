@@ -5,7 +5,7 @@ import { LoadConfirmation } from '../library/LoadConfirmation'
 import { COLORS } from '../../theme'
 import type { UseProjectReturn } from '../../hooks/useProject'
 import * as storage from '../../lib/storage'
-import type { ProjectMeta } from '../../lib/projectTypes'
+import type { ProjectMeta } from '../../lib/types'
 import type { Renderable } from '../../lib/types'
 import { Bind, isKeybind } from '../../lib/shortcuts'
 

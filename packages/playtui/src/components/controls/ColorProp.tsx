@@ -1,7 +1,7 @@
 import { COLORS } from '../../theme'
 import { PropRow } from './PropRow'
 import { ValueControl } from '../ui/ValueControl'
-import type { ColorPalette } from '../../lib/projectTypes'
+import type { ColorPalette } from '../../lib/types'
 
 /**
  * Reusable color control with hex input and palette picker button

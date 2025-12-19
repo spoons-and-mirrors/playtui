@@ -1,9 +1,8 @@
 // Project state management hook with auto-save
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import type { Project, ProjectMeta, ColorPalette } from '../lib/projectTypes'
-import { createNewProject } from '../lib/projectTypes'
-import type { Renderable, HistoryEntry } from '../lib/types'
+import type { Renderable, HistoryEntry, Project, ProjectMeta, ColorPalette } from '../lib/types'
+import { createNewProject } from '../lib/types'
 import {
   createDefaultKeyframingState,
   shiftKeyframesOnDelete,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { RGBA } from '@opentui/core'
 import { COLORS } from '../../theme'
-import type { ProjectMeta } from '../../lib/projectTypes'
+import type { ProjectMeta } from '../../lib/types'
 
 type ModalMode = 'new' | 'load' | 'delete' | 'saveAs'
 

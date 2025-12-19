@@ -3,7 +3,7 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { homedir, platform } from 'node:os'
-import type { Project, ProjectMeta } from './projectTypes'
+import type { Project, ProjectMeta } from './types'
 
 /**
  * Get the appropriate data directory for the current platform

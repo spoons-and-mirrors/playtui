@@ -1,6 +1,6 @@
 import { RGBA } from '@opentui/core'
 import { COLORS } from '../../theme'
-import type { ProjectMeta } from '../../lib/projectTypes'
+import type { ProjectMeta } from '../../lib/types'
 
 interface LoadConfirmationProps {
   project: ProjectMeta

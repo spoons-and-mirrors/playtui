@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { COLORS } from '../../theme'
-import type { ColorSwatch, ColorPalette } from '../../lib/projectTypes'
+import type { ColorSwatch, ColorPalette } from '../../lib/types'
 
 // Single swatch component - no inline editing
 function Swatch({

@@ -1,9 +1,8 @@
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { COLORS } from '../../theme'
 import { ProjectPreview } from './ProjectPreview'
-import type { ProjectMeta } from '../../lib/projectTypes'
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { createDefaultTree } from '../../lib/projectTypes'
-import type { Renderable } from '../../lib/types'
+import type { ProjectMeta, Renderable } from '../../lib/types'
+import { createDefaultTree } from '../../lib/types'
 import type { ScrollBoxRenderable } from '@opentui/core'
 
 const ROW_HEIGHT = 12

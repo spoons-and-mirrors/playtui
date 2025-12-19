@@ -13,8 +13,8 @@ import type {
   Renderable,
   BoxRenderable,
   ScrollboxRenderable,
+  ColorPalette,
 } from '../../lib/types'
-import type { ColorPalette } from '../../lib/projectTypes'
 
 // Renderer props shared by all renderable renderers
 export interface RendererProps {
