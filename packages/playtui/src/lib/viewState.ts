@@ -75,52 +75,49 @@ export const VIEW_MODE_BY_MODE: Record<ViewMode, ViewModeConfig> =
 
 export type ViewAction = (typeof VIEW_MODES)[number]['bind'] | Bind.TOGGLE_CODE
 
+export const NAV_ITEMS: { bind: Bind; label: string }[] = [
+  { bind: Bind.VIEW_EDITOR, label: 'Edit' },
+  { bind: Bind.VIEW_PLAY, label: 'Play' },
+  { bind: Bind.TOGGLE_CODE, label: 'Code' },
+  { bind: Bind.VIEW_LIBRARY, label: 'Library' },
+  { bind: Bind.VIEW_DOCS, label: 'Docs' },
+]
+
 export function reduceViewState(
   state: ViewLayoutState,
   action: ViewAction,
 ): ViewLayoutState {
-  if (action === Bind.VIEW_PLAY) {
-    const playCfg = VIEW_MODE_BY_BIND[Bind.VIEW_PLAY]
-    if (!playCfg) {
-      return state
-    }
+  const cfg = VIEW_MODE_BY_BIND[action]
 
-    if (state.mode !== 'play') {
+  // Handle Mode switching or Play toggle
+  if (cfg) {
+    // If we're already in play mode and press F2, toggle timeline
+    if (action === Bind.VIEW_PLAY && state.mode === 'play') {
       return {
         ...state,
-        mode: 'play',
-        showTimeline: playCfg.hasTimeline,
+        showTimeline: !state.showTimeline,
       }
     }
 
-    if (!playCfg.hasTimeline) {
-      return state
-    }
-
+    // Otherwise, switch mode
     return {
       ...state,
-      showTimeline: !state.showTimeline,
+      mode: cfg.mode,
+      // Automatically show timeline when entering play mode
+      showTimeline: cfg.mode === 'play' ? true : state.showTimeline,
     }
   }
 
+  // Handle specialized toggles
   if (action === Bind.TOGGLE_CODE) {
-    const cfg = VIEW_MODE_BY_MODE[state.mode]
-    if (!cfg.supportsCodePanel) {
+    const modeCfg = VIEW_MODE_BY_MODE[state.mode]
+    if (!modeCfg.supportsCodePanel) {
       return state
     }
 
     return {
       ...state,
       showCodePanel: !state.showCodePanel,
-    }
-  }
-
-  const nextCfg = VIEW_MODE_BY_BIND[action]
-
-  if (nextCfg) {
-    return {
-      ...state,
-      mode: nextCfg.mode,
     }
   }
 
