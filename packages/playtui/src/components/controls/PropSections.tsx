@@ -44,7 +44,7 @@ export function DimensionsContent({ node, onUpdate }: SectionProps) {
 
 export function PositionContent({ node, onUpdate }: SectionProps) {
   return (
-    <box flexDirection="column" gap={0}>
+    <>
       <box
         id="pos-mode-tabs"
         flexDirection="row"
@@ -95,18 +95,28 @@ export function PositionContent({ node, onUpdate }: SectionProps) {
           </text>
         </box>
       </box>
-      <PositionControl
-        x={node.x}
-        y={node.y}
-        zIndex={node.zIndex}
-        onChange={(k, v) =>
-          onUpdate({ [k]: v } as Partial<Renderable>, false)
-        }
-        onChangeEnd={(k, v) =>
-          onUpdate({ [k]: v } as Partial<Renderable>, true)
-        }
-      />
-    </box>
+      <box
+        id="pos-row"
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <text fg={COLORS.text}>
+          <strong>Position</strong>
+        </text>
+        <PositionControl
+          x={node.x}
+          y={node.y}
+          zIndex={node.zIndex}
+          onChange={(k, v) =>
+            onUpdate({ [k]: v } as Partial<Renderable>, false)
+          }
+          onChangeEnd={(k, v) =>
+            onUpdate({ [k]: v } as Partial<Renderable>, true)
+          }
+        />
+      </box>
+    </>
   )
 }
 
@@ -147,15 +157,27 @@ export function SpacingContent({ node, onUpdate, meta }: SectionProps) {
     onUpdate({ [meta.keys![key]]: val } as Partial<Renderable>, true)
   }
 
+  const label = meta.label.replace(/^[^\s]+\s/, '')
+
   return (
-    <box style={{ flexDirection: 'column', gap: 0 }}>
-      <SpacingControl
-        label={meta.id}
-        values={values}
-        properties={meta.keys as any}
-        onChange={handleChange}
-        onChangeEnd={handleChangeEnd}
-      />
+    <>
+      <box
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+        marginTop={1}
+      >
+        <text fg={COLORS.text}>
+          <strong>{label}</strong>
+        </text>
+        <SpacingControl
+          label={meta.id}
+          values={values}
+          properties={meta.keys as any}
+          onChange={handleChange}
+          onChangeEnd={handleChangeEnd}
+        />
+      </box>
       {meta.id === 'padding' && (
         <box
           key={`${meta.id}-sep`}
@@ -166,7 +188,7 @@ export function SpacingContent({ node, onUpdate, meta }: SectionProps) {
           marginTop={1}
         />
       )}
-    </box>
+    </>
   )
 }
 

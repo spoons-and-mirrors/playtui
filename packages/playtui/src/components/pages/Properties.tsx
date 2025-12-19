@@ -335,6 +335,9 @@ export function PropertyPane({
       }
     }
 
+    // For position and spacing sections, content includes its own inline label
+    const hasInlineLabel = meta.layout === 'position' || meta.layout === 'spacing'
+
     return (
       <box
         key={section}
@@ -344,12 +347,14 @@ export function PropertyPane({
           marginTop: needsTopSpacing ? 1 : 0,
         }}
       >
-        <SectionHeader
-          title={meta.label}
-          collapsed={isCollapsed}
-          onToggle={() => toggleSection(section)}
-          collapsible={collapsible}
-        />
+        {!hasInlineLabel && (
+          <SectionHeader
+            title={meta.label}
+            collapsed={isCollapsed}
+            onToggle={() => toggleSection(section)}
+            collapsible={collapsible}
+          />
+        )}
         {sectionContent}
       </box>
     )
