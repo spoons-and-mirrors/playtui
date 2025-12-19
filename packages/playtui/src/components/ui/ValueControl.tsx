@@ -15,6 +15,7 @@ interface ValueControlBaseProps {
   onChange: (value: number) => void
   onChangeEnd?: (value: number) => void
   resetTo?: number
+  step?: number
 }
 
 interface CounterProps extends ValueControlBaseProps {
@@ -48,6 +49,7 @@ export function ValueControl({
   onChangeEnd,
   resetTo = 0,
   variant,
+  step = 1,
 }: ValueControlProps) {
   const [pressing, setPressing] = useState<'dec' | 'inc' | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -94,14 +96,14 @@ export function ValueControl({
 
   // Counter-specific handlers
   const handleDec = () => {
-    const newVal = value - 1
+    const newVal = value - step
     onChange(newVal)
     if (onChangeEnd) onChangeEnd(newVal)
     handleAutoKeyframe(newVal)
   }
 
   const handleInc = () => {
-    const newVal = value + 1
+    const newVal = value + step
     onChange(newVal)
     if (onChangeEnd) onChangeEnd(newVal)
     handleAutoKeyframe(newVal)
@@ -222,10 +224,10 @@ export function ValueControl({
   const sliderTextColor = dragging
     ? COLORS.accentBright
     : isKeyframed
-    ? COLORS.warning
-    : isZero
-    ? COLORS.muted
-    : COLORS.accent
+      ? COLORS.warning
+      : isZero
+        ? COLORS.muted
+        : COLORS.accent
 
   const contextMenu =
     showMenu && keyframing && keyframing.selectedId && property ? (
@@ -247,20 +249,28 @@ export function ValueControl({
       />
     ) : null
 
+  const labelText = label && label.trim() ? label.toLowerCase() : ''
+
   if (variant === 'counter') {
     return (
-      <box id={id} flexDirection="row" alignItems="center">
+      <box
+        id={id}
+        style={{ flexDirection: 'row', alignItems: 'center', flexGrow: 1 }}
+      >
         <box
           id={`${id}-dec`}
-          backgroundColor={COLORS.bg}
-          paddingLeft={1}
-          paddingRight={1}
           onMouseDown={() => {
             setPressing('dec')
             handleDec()
           }}
           onMouseUp={() => setPressing(null)}
           onMouseOut={() => setPressing(null)}
+          style={{
+            backgroundColor: COLORS.bg,
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexShrink: 0,
+          }}
         >
           <text fg={COLORS.accent} selectable={false}>
             -
@@ -268,31 +278,38 @@ export function ValueControl({
         </box>
         <box
           id={`${id}-value`}
-          backgroundColor={pressing || dragging ? COLORS.accent : COLORS.muted}
-          paddingLeft={1}
-          paddingRight={1}
-          flexDirection="row"
           onMouseDown={handleCounterMouseDown}
           onMouseDrag={handleCounterDrag}
           onMouseDragEnd={handleCounterDragEnd}
+          style={{
+            backgroundColor:
+              pressing || dragging ? COLORS.accent : COLORS.muted,
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexDirection: 'row',
+            flexGrow: 1,
+            justifyContent: 'center',
+            minWidth: 3,
+          }}
         >
           <text fg={valueTextColor} selectable={false}>
-            <strong>
-              {label.toLowerCase()}:{value}
-            </strong>
+            <strong>{labelText ? `${labelText}:${value}` : value}</strong>
           </text>
         </box>
         <box
           id={`${id}-inc`}
-          backgroundColor={COLORS.bg}
-          paddingLeft={1}
-          paddingRight={1}
           onMouseDown={() => {
             setPressing('inc')
             handleInc()
           }}
           onMouseUp={() => setPressing(null)}
           onMouseOut={() => setPressing(null)}
+          style={{
+            backgroundColor: COLORS.bg,
+            paddingLeft: 1,
+            paddingRight: 1,
+            flexShrink: 0,
+          }}
         >
           <text fg={COLORS.accent} selectable={false}>
             +
@@ -320,15 +337,15 @@ export function ValueControl({
             style={{ flexDirection: 'row', alignItems: 'center' }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {label && (
+            {labelText && (
               <text fg={COLORS.muted} selectable={false}>
-                {label.toLowerCase()}:
+                {labelText}:
               </text>
             )}
             <input
               value={editValue}
               focused
-              width={label ? 6 : 2}
+              width={labelText ? 6 : 2}
               onInput={setEditValue}
               onSubmit={handleCommit}
               onKeyDown={(key) => {
@@ -342,9 +359,9 @@ export function ValueControl({
         ) : (
           <text fg={sliderTextColor} selectable={false}>
             <strong>
-              {label
-                ? `${label.toLowerCase()}:${displayValue || value}`
-                : displayValue || value}
+              {labelText
+                ? `${labelText}:${displayValue ?? value}`
+                : displayValue ?? value}
             </strong>
           </text>
         )}

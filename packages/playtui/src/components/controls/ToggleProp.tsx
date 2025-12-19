@@ -12,19 +12,13 @@ export function ToggleProp({
 }) {
   const handleClick = () => onChange(!value)
   return (
-    <PropRow label={label}>
-      <box
-        id={`tog-${label}`}
-        onMouseDown={handleClick}
-        style={{
-          backgroundColor: value ? COLORS.accent : COLORS.bgAlt,
-          paddingLeft: 1,
-          paddingRight: 1,
-        }}
-      >
-        <text fg={value ? COLORS.bg : COLORS.muted} onMouseDown={handleClick}>
-          {value ? 'ON' : 'OFF'}
-        </text>
+    <PropRow
+      label={label}
+      onMouseDown={handleClick}
+      backgroundColor={value ? COLORS.accent : COLORS.bgAlt}
+    >
+      <box style={{ paddingLeft: 1, paddingRight: 1 }}>
+        <text fg={value ? COLORS.bg : COLORS.muted}>{value ? 'ON' : 'OFF'}</text>
       </box>
     </PropRow>
   )

@@ -37,14 +37,19 @@ export function SizeProp({
       <box
         id={`size-mode-${label}`}
         onMouseDown={cycleMode}
-        style={{ backgroundColor: modeColor, paddingLeft: 1, paddingRight: 1 }}
+        style={{
+          backgroundColor: modeColor,
+          paddingLeft: 1,
+          paddingRight: 1,
+          height: 1,
+        }}
       >
         <text fg={isAuto || isPercent ? COLORS.bg : COLORS.muted}>
           {modeLabel}
         </text>
       </box>
       {!isAuto && (
-        <>
+        <box style={{ flexDirection: 'row', gap: 0, height: 1 }}>
           <box
             id={`size-dec5-${label}`}
             onMouseDown={() => {
@@ -109,7 +114,7 @@ export function SizeProp({
           >
             <text fg={COLORS.success}>»</text>
           </box>
-        </>
+        </box>
       )}
     </PropRow>
   )

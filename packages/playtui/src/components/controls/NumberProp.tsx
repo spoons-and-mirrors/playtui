@@ -6,6 +6,8 @@ interface NumberPropProps {
   label: string
   value: number | undefined
   property?: string
+  focused?: boolean
+  onFocus?: () => void
   onChange: (value: number) => void
   onChangeEnd?: (value: number) => void
   min?: number
@@ -18,11 +20,12 @@ export function NumberProp({
   label,
   value,
   property,
+  focused,
+  onFocus,
   onChange,
   onChangeEnd,
   min = -Infinity,
   max = Infinity,
-  step = 1,
 }: NumberPropProps) {
   const val = value ?? 0
 
@@ -39,7 +42,7 @@ export function NumberProp({
   }
 
   return (
-    <PropRow label={label}>
+    <PropRow label={label} focused={focused} onMouseDown={onFocus}>
       <ValueControl
         variant="counter"
         id={id}

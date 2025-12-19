@@ -18,22 +18,18 @@ export function SelectProp({
     .replace('space-', 'sp-')
     .slice(0, 10)
 
-  const content = (
-    <box
+  const handleClick = () => onChange(options[(idx + 1) % options.length])
+
+  return (
+    <PropRow
+      label={label}
+      onMouseDown={handleClick}
+      backgroundColor={COLORS.bgAlt}
       id={`sel-${label || value}`}
-      onMouseDown={() => onChange(options[(idx + 1) % options.length])}
-      style={{
-        flexDirection: 'row',
-        backgroundColor: COLORS.bgAlt,
-        paddingLeft: 1,
-        paddingRight: 1,
-      }}
     >
-      <text fg={COLORS.accent}>{display}</text>
-    </box>
+      <box style={{ paddingLeft: 1, paddingRight: 1 }}>
+        <text fg={COLORS.accent}>{display}</text>
+      </box>
+    </PropRow>
   )
-
-  if (label === null) return content
-
-  return <PropRow label={label}>{content}</PropRow>
 }

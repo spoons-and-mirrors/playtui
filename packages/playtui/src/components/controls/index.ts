@@ -7,16 +7,14 @@ export { ColorControl } from './ColorProp'
 export { PaletteControl } from './PaletteControl'
 export { ToggleProp } from './ToggleProp'
 export { StringProp } from './StringProp'
-export { SectionHeader } from './SectionHeader'
-export { BorderSidesProp } from './BorderSidesProp'
-export { SpacingControl } from './SpacingControl'
-export { PositionControl } from './PositionControl'
 export {
   FlexDirectionPicker,
   FlexAlignmentGrid,
-  NumericProp,
   OverflowPicker,
 } from './FlexControls'
 export { DimensionsControl } from './DimensionsControl'
 export { BorderCharsControl } from './BorderCharsControl'
-export { ManagedColorControl } from './ManagedColorControl'
+export { BorderSidesProp } from './BorderSidesProp'
+export { PositionControl } from './PositionControl'
+export { SectionHeader } from './SectionHeader'
+export { SpacingControl } from './SpacingControl'

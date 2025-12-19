@@ -8,34 +8,6 @@ import type {
   Overflow,
 } from '../../lib/types'
 
-export function NumericProp({
-  label,
-  value,
-  property,
-  onChange,
-  onChangeEnd,
-}: {
-  label: string
-  value: number | undefined
-  property: string
-  onChange: (v: number) => void
-  onChangeEnd?: (v: number) => void
-}) {
-  const val = value ?? 0
-
-  return (
-    <ValueControl
-      variant="counter"
-      id={`num-${label}`}
-      label={label}
-      property={property}
-      value={val}
-      onChange={onChange}
-      onChangeEnd={onChangeEnd}
-    />
-  )
-}
-
 export function FlexDirectionPicker({
   value,
   onChange,

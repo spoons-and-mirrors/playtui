@@ -23,6 +23,7 @@ export function ColorControl({
   activePaletteIndex,
   onUpdateSwatch,
   onChangePalette,
+  property,
 }: {
   label: string
   value: string
@@ -36,6 +37,7 @@ export function ColorControl({
   activePaletteIndex?: number
   onUpdateSwatch?: (id: string, color: string) => void
   onChangePalette?: (index: number) => void
+  property?: string
 }) {
   const getAlpha = (hex: string) => {
     const cleanHex = (hex || '').replace('#', '')
@@ -85,16 +87,16 @@ export function ColorControl({
   }
 
   const alpha = getAlpha(value)
-
   const alphaValue = Math.round((alpha / 255) * 100)
 
   return (
-    <PropRow label={label}>
+    <PropRow label={label} focused={focused} onMouseDown={onFocus}>
       <box style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
         <ValueControl
           variant="slider"
           id={`color-alpha-${label}`}
           label=""
+          property={property}
           value={alphaValue}
           displayValue={alphaValue === 100 ? '∞' : undefined}
           resetTo={100}
@@ -105,13 +107,8 @@ export function ColorControl({
         </text>
         <box
           id={`color-input-${label}`}
-          onMouseDown={(e) => {
-            e.stopPropagation()
-            onFocus?.()
-          }}
           style={{
             flexDirection: 'row',
-            backgroundColor: focused ? COLORS.bgAlt : 'transparent',
           }}
         >
           <text fg={COLORS.muted}>#</text>

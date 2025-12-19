@@ -169,52 +169,8 @@ export const PROPERTY_SECTIONS: PropertySectionMeta[] = [
     defaultExpanded: false,
     layout: 'overflow',
   },
-  {
-    id: 'visibility',
-    label: '◉ Display',
-    defaultExpanded: false,
-  },
-  {
-    id: 'text',
-    label: 'T Text',
-    defaultExpanded: true,
-  },
-  {
-    id: 'input',
-    label: '▭ Input',
-    defaultExpanded: true,
-  },
-  {
-    id: 'textarea',
-    label: '▯ Textarea',
-    defaultExpanded: false,
-  },
-  {
-    id: 'select',
-    label: '≡ Select',
-    defaultExpanded: false,
-  },
-  {
-    id: 'slider',
-    label: '─ Slider',
-    defaultExpanded: false,
-  },
-  {
-    id: 'asciiFont',
-    label: 'A ASCII Font',
-    defaultExpanded: false,
-  },
-  {
-    id: 'tabSelect',
-    label: '◰ Tabs',
-    defaultExpanded: false,
-  },
-  {
-    id: 'scrollbox',
-    label: '↕ Scrollbox',
-    defaultExpanded: false,
-  },
 ]
+
 
 export interface SerializableProp {
   key: string

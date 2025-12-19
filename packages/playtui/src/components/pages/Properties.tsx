@@ -23,7 +23,6 @@ import {
   PositionControl,
   FlexDirectionPicker,
   FlexAlignmentGrid,
-  NumericProp,
   OverflowPicker,
   DimensionsControl,
   PropRow,
@@ -110,7 +109,12 @@ export function PropertyPane({
   }
 
   // Get properties from the renderable registry - single source of truth
-  const props = RENDERABLE_REGISTRY[node.type].properties
+  // NOTE: We filter out 'visible' here because it's already managed in the Header.
+  // DO NOT re-add 'visible' back to the property panel to avoid redundancy.
+  const props = RENDERABLE_REGISTRY[node.type].properties.filter(
+    (p) => p.key !== 'visible',
+  )
+
   const unsectioned = props.filter((p) => !p.section)
 
   const activeSections = PROPERTY_SECTIONS.filter((meta) => {
@@ -159,21 +163,22 @@ export function PropertyPane({
     }
     if (prop.type === 'options') {
       return (
-        <StringProp
-          key={key}
-          label={label}
-          value={((val as string[]) || []).join(', ')}
-          focused={focusedField === prop.key}
-          onFocus={() => setFocusedField(prop.key)}
-          onChange={(v) =>
-            onUpdate({
-              [prop.key]: v
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean),
-            } as Partial<Renderable>)
-          }
-        />
+        <box key={key}>
+          <StringProp
+            label={label}
+            value={((val as string[]) || []).join(', ')}
+            focused={focusedField === prop.key}
+            onFocus={() => setFocusedField(prop.key)}
+            onChange={(v: string) =>
+              onUpdate({
+                [prop.key]: v
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              } as Partial<Renderable>)
+            }
+          />
+        </box>
       )
     }
     if (prop.type === 'number') {
@@ -183,7 +188,11 @@ export function PropertyPane({
           id={`prop-${prop.key}`}
           label={label}
           value={typeof val === 'number' ? val : 0}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
+          focused={focusedField === prop.key}
+          onFocus={() => setFocusedField(prop.key)}
+          onChange={(v: number) =>
+            onUpdate({ [prop.key]: v } as Partial<Renderable>)
+          }
           min={prop.min}
           max={prop.max}
           property={prop.animatable ? prop.key : undefined}
@@ -196,7 +205,9 @@ export function PropertyPane({
           key={key}
           label={label}
           value={val as number | 'auto' | `${number}%` | undefined}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
+          onChange={(v: any) =>
+            onUpdate({ [prop.key]: v } as Partial<Renderable>)
+          }
         />
       )
     }
@@ -207,7 +218,9 @@ export function PropertyPane({
           label={label}
           value={String(val || prop.options[0])}
           options={prop.options}
-          onChange={(v) => onUpdate({ [prop.key]: v } as Partial<Renderable>)}
+          onChange={(v: string) =>
+            onUpdate({ [prop.key]: v } as Partial<Renderable>)
+          }
         />
       )
     }
@@ -396,7 +409,8 @@ export function PropertyPane({
           >
             <box style={{ flexDirection: 'row', gap: 0 }}>
               <box style={{ flexGrow: 1, flexBasis: 0 }}>
-                <NumericProp
+                <NumberProp
+                  id="flex-grow"
                   label="grow"
                   property="flexGrow"
                   value={node.flexGrow}
@@ -420,7 +434,8 @@ export function PropertyPane({
             </box>
             <box style={{ flexDirection: 'row', gap: 0 }}>
               <box style={{ flexGrow: 1, flexBasis: 0 }}>
-                <NumericProp
+                <NumberProp
+                  id="flex-shrink"
                   label="shrink"
                   property="flexShrink"
                   value={node.flexShrink}
@@ -461,7 +476,6 @@ export function PropertyPane({
 
     const isCollapsed = collapsed['flexContainer']
     const wrapProp = props.find((p) => p.key === 'flexWrap')
-    const alignContentProp = props.find((p) => p.key === 'alignContent')
     const flexMeta = PROPERTY_SECTIONS.find(
       (meta) => meta.id === 'flexContainer',
     )
@@ -555,7 +569,8 @@ export function PropertyPane({
                 }}
               >
                 <box id="flex-gap-sliders" flexDirection="column" gap={0}>
-                  <NumericProp
+                  <NumberProp
+                    id="flex-gap"
                     label="gap"
                     property="gap"
                     value={container.gap}
@@ -566,7 +581,8 @@ export function PropertyPane({
                       onUpdate({ gap: v } as Partial<Renderable>, true)
                     }
                   />
-                  <NumericProp
+                  <NumberProp
+                    id="flex-row-gap"
                     label="row"
                     property="rowGap"
                     value={container.rowGap}
@@ -577,7 +593,8 @@ export function PropertyPane({
                       onUpdate({ rowGap: v } as Partial<Renderable>, true)
                     }
                   />
-                  <NumericProp
+                  <NumberProp
+                    id="flex-col-gap"
                     label="col"
                     property="columnGap"
                     value={container.columnGap}
